@@ -104,3 +104,29 @@ WINDOW_GEOMETRY = "1200x700" # Fenstergrösse
 ## Lizenz
 
 Dieses Projekt steht unter der [MIT License](LICENSE).
+
+---
+
+## English
+
+A static Python code analyzer with AST analysis, duplicate detection, and GUI.
+
+### Features
+
+- AST-based analysis
+- Duplicate code detection
+- Method complexity metrics
+- Interactive GUI
+
+### Installation
+
+```bash
+git clone https://github.com/lukisch/REL-PUB_MethodenAnalyser.git
+cd REL-PUB_MethodenAnalyser
+pip install -r requirements.txt
+python "MethodenAnalyser3.py"
+```
+
+### License
+
+See [LICENSE](LICENSE) for details.
