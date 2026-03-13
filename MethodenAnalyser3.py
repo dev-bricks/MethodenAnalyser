@@ -11,6 +11,7 @@ import collections
 import difflib
 import datetime
 import sqlite3
+import warnings
 from typing import Set, Dict, List, Tuple, Any, Optional
 from dataclasses import dataclass, field
 from functools import lru_cache
@@ -570,6 +571,12 @@ def analyze_file(path: str) -> AnalysisResult:
             # Fallback zu latin-1
             with open(path, "r", encoding="latin-1") as f:
                 code = f.read()
+            warnings.warn(
+                f"Datei '{path}' konnte nicht als UTF-8 gelesen werden. "
+                "latin-1 Fallback wurde verwendet -- Analyse-Ergebnisse koennen Artefakte enthalten.",
+                UnicodeWarning,
+                stacklevel=2,
+            )
         except Exception as e:
             raise RuntimeError(f"Fehler beim Lesen der Datei: {e}")
     except Exception as e:
@@ -800,7 +807,7 @@ def generate_report(result: AnalysisResult) -> str:
     report.append("=" * 70 + "\n\n")
 
     # Hauptergebnisse
-    report.append("🔍 HAUPTERGEBNISSE\n")
+    report.append("[ANALYSE] HAUPTERGEBNISSE\n")
     report.append("-" * 70 + "\n")
     report.append(f"Fehlende Definitionen ({len(result.missing_defs)}):\n")
     report.append(f"  {', '.join(result.missing_defs) if result.missing_defs else '(keine)'}\n\n")
@@ -813,7 +820,7 @@ def generate_report(result: AnalysisResult) -> str:
 
     # Import-Analyse
     if result.import_scopes:
-        report.append("\n📦 IMPORT-SCOPE-ANALYSE\n")
+        report.append("\n[IMPORTS] IMPORT-SCOPE-ANALYSE\n")
         report.append("-" * 70 + "\n")
         
         scopes = result.import_scopes
@@ -830,7 +837,7 @@ def generate_report(result: AnalysisResult) -> str:
 
     # Duplikate
     if result.duplicate_imports:
-        report.append("\n⚠️  DOPPELTE IMPORTS\n")
+        report.append("\n[WARNUNG] DOPPELTE IMPORTS\n")
         report.append("-" * 70 + "\n")
         report.append(f"  {', '.join(result.duplicate_imports)}\n\n")
 
@@ -852,7 +859,7 @@ def generate_report(result: AnalysisResult) -> str:
         report.append("\n")
 
     # Statistik
-    report.append("\n📊 STATISTIK\n")
+    report.append("\n[STATS] STATISTIK\n")
     report.append("-" * 70 + "\n")
     report.append(f"  Aufrufe gesamt: {len(result.calls)}\n")
     report.append(f"  Definitionen gesamt: {len(result.defs)}\n")
@@ -952,17 +959,17 @@ def run_analysis(output_widget: scrolledtext.ScrolledText) -> None:
         _last_analysis_result = result
     except FileNotFoundError as e:
         output_widget.delete("1.0", tk.END)
-        output_widget.insert(tk.END, f"❌ Fehler: {e}")
+        output_widget.insert(tk.END, f"[FEHLER] {e}")
         messagebox.showerror("Dateifehler", str(e))
         return
     except RuntimeError as e:
         output_widget.delete("1.0", tk.END)
-        output_widget.insert(tk.END, f"❌ Fehler: {e}")
+        output_widget.insert(tk.END, f"[FEHLER] {e}")
         messagebox.showerror("Analysefehler", str(e))
         return
     except Exception as e:
         output_widget.delete("1.0", tk.END)
-        output_widget.insert(tk.END, f"❌ Unerwarteter Fehler: {e}")
+        output_widget.insert(tk.END, f"[FEHLER] Unerwarteter Fehler: {e}")
         messagebox.showerror("Fehler", f"Unerwarteter Fehler: {e}")
         return
 
@@ -980,13 +987,13 @@ def run_analysis(output_widget: scrolledtext.ScrolledText) -> None:
             f.write(f"Datum: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n")
             f.write(generate_report(result))
         
-        output_widget.insert(tk.END, f"\n✅ Report gespeichert: {export_path}")
-        
+        output_widget.insert(tk.END, f"\n[OK] Report gespeichert: {export_path}")
+
     except PermissionError:
-        output_widget.insert(tk.END, f"\n⚠️  Keine Schreibberechtigung für Export")
+        output_widget.insert(tk.END, f"\n[WARNUNG] Keine Schreibberechtigung fuer Export")
         messagebox.showwarning("Export-Fehler", "Keine Schreibberechtigung")
     except Exception as e:
-        output_widget.insert(tk.END, f"\n⚠️  Export-Fehler: {e}")
+        output_widget.insert(tk.END, f"\n[WARNUNG] Export-Fehler: {e}")
         messagebox.showwarning("Export-Fehler", str(e))
 
 
@@ -1058,7 +1065,7 @@ def auto_fix_unused_imports(output_widget: scrolledtext.ScrolledText) -> None:
             f.writelines(new_lines)
         
         # Ausgabe
-        output_widget.insert(tk.END, f"\n\n✅ AUTO-FIX ERFOLGREICH\n")
+        output_widget.insert(tk.END, f"\n\n[OK] AUTO-FIX ERFOLGREICH\n")
         output_widget.insert(tk.END, f"Entfernte Zeilen: {sorted(lines_to_remove)}\n")
         output_widget.insert(tk.END, f"Backup erstellt: {backup_path}\n")
         output_widget.insert(tk.END, f"\nBitte Datei erneut analysieren zur Überprüfung.")
