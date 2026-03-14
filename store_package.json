@@ -1,14 +1,14 @@
 {
   "app_name": "MethodenAnalyser",
-  "publisher": "CN=LukasGeiger",
-  "publisher_display": "Lukas Geiger",
-  "identity_name": "LukasGeiger.MethodenAnalyser",
+  "publisher": "CN=52596601-BAB4-4F3F-B182-E8F3F273B202",
+  "publisher_display": "Geiger",
+  "identity_name": "Geiger.MethodenAnalyser",
   "version": "3.0.0.0",
   "description": "Statischer Python-Code-Analyser mit GUI. Findet ungenutzte Imports, Definitionen, Code-Duplikate und Import-Scope-Probleme.",
   "executable": "MethodenAnalyser.exe",
-  "capabilities": "internetClient",
+  "capabilities": "internetClient,runFullTrust",
   "category": "Developer Tools",
   "age_rating": "3+",
-  "privacy_url": "https://github.com/lukisch/MethodenAnalyser",
-  "support_url": "https://github.com/lukisch/MethodenAnalyser/issues"
+  "privacy_url": "https://github.com/dev-bricks/MethodenAnalyser/blob/master/PRIVACY_POLICY.md",
+  "support_url": "https://github.com/dev-bricks/MethodenAnalyser/issues"
 }

@@ -11,6 +11,7 @@ import collections
 import difflib
 import datetime
 import sqlite3
+import threading
 import warnings
 from typing import Set, Dict, List, Tuple, Any, Optional
 from dataclasses import dataclass, field
@@ -220,6 +221,7 @@ class AnalysisResult:
     name_matches: List[Tuple[str, str]] = field(default_factory=list)
     typehints: List[str] = field(default_factory=list)
     module_attribute_usage: Dict[str, List[str]] = field(default_factory=dict)  # NEU: Modul → Attribute Mapping
+    todo_comments: List[Tuple[int, str, str]] = field(default_factory=list)  # (Zeile, Typ, Text)
 
 
 # ============================================================================
@@ -440,6 +442,15 @@ def build_stdlib_whitelist() -> Set[str]:
     return wl
 
 
+# Pre-warm Whitelist im Hintergrund (pkgutil.iter_modules ist langsam auf Python < 3.10)
+_whitelist_prewarm = threading.Thread(
+    target=build_stdlib_whitelist,
+    daemon=True,
+    name="stdlib-whitelist-prewarm"
+)
+_whitelist_prewarm.start()
+
+
 def is_valid_missing_def(name: str) -> bool:
     """
     Prüft, ob ein Name als fehlende Definition gemeldet werden sollte.
@@ -454,11 +465,15 @@ def is_valid_missing_def(name: str) -> bool:
     # Private/Protected Namen überspringen
     if name.startswith("_"):
         return False
-    
-    # Callback-Handler überspringen
-    if name.endswith(CALLBACK_SUFFIXES):
+
+    # Technische Suffixe generell überspringen (eindeutig interne Patterns)
+    if name.endswith(("_fetch", "_stage", "_emit", "_process", "_task", "_async")):
         return False
-    
+
+    # _callback/_handler nur in Framework-Kontext überspringen, nicht pauschal
+    if name.endswith(("_callback", "_handler")) and name in FRAMEWORK_MAP:
+        return False
+
     # Framework-Methoden überspringen
     if name in FRAMEWORK_MAP:
         return False
@@ -502,6 +517,34 @@ def filter_missing_defs(
             filtered.append(name)
     
     return sorted(filtered)
+
+
+_TODO_PATTERN = re.compile(
+    r"#\s*(TODO|FIXME|HACK|NOTE|XXX)[:\s]+(.*)", re.IGNORECASE
+)
+
+
+def scan_todo_comments(code: str) -> List[Tuple[int, str, str]]:
+    """
+    Scannt Quellcode nach TODO/FIXME/HACK/NOTE/XXX Kommentaren.
+
+    Args:
+        code: Python-Quellcode als String
+
+    Returns:
+        Liste von Tupeln (Zeilennummer, Typ, Text).
+        Text wird nur gekuerzt wenn er laenger als 50 Zeichen ist.
+    """
+    results = []
+    for lineno, line in enumerate(code.splitlines(), start=1):
+        match = _TODO_PATTERN.search(line)
+        if match:
+            tag = match.group(1).upper()
+            text = match.group(2).strip()
+            if len(text) > 50:
+                text = text[:50] + "..."
+            results.append((lineno, tag, text))
+    return results
 
 
 def get_available_module_attributes(analyzer: 'CodeAnalyzer') -> Set[str]:
@@ -600,6 +643,9 @@ def analyze_file(path: str) -> AnalysisResult:
     # Dynamische Aufrufe scannen
     dynamic_hits, dynamic_methods = scan_dynamic_usage(code)
 
+    # TODO-Kommentare scannen
+    todo_comments = scan_todo_comments(code)
+
     # TypeHints extrahieren (verwendet bereits geparsten Tree!)
     typehints = _extract_typehints(tree)
 
@@ -681,6 +727,7 @@ def analyze_file(path: str) -> AnalysisResult:
             mod: sorted(attrs) for mod, attrs in analyzer.module_attribute_calls.items()
             if mod in analyzer.imported_modules or mod in analyzer.import_names
         },
+        todo_comments=todo_comments,
     )
 
 
@@ -903,6 +950,13 @@ def generate_report(result: AnalysisResult) -> str:
         
         if len(result.module_attribute_usage) > 10:
             report.append(f"  ... und {len(result.module_attribute_usage) - 10} weitere Module\n")
+
+    # TODO-Kommentare
+    if result.todo_comments:
+        report.append(f"\n[TODO] TODO-KOMMENTARE ({len(result.todo_comments)})\n")
+        report.append("-" * 70 + "\n")
+        for lineno, tag, text in result.todo_comments:
+            report.append(f"  Zeile {lineno:4d}: [{tag}] {text}\n")
 
     report.append("\n" + "=" * 70 + "\n")
 
@@ -1138,7 +1192,7 @@ def analyze_project(folder_path: str, progress_callback=None) -> ProjectAnalysis
             try:
                 with open(file_path, 'r', encoding='utf-8') as f:
                     total_lines += len(f.readlines())
-            except:
+            except (IOError, OSError):
                 pass
             rel_path = os.path.relpath(file_path, folder_path)
             if result.unused_imports:
