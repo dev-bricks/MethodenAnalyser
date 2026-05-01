@@ -30,6 +30,7 @@ _last_analysis_result: 'AnalysisResult' = None
 OUTPUT_WIDTH = 140
 OUTPUT_HEIGHT = 40
 OUTPUT_FONT = ("Courier", 9)
+APP_ICON_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "MethodenAnalyser.ico")
 
 # Analyse Konfiguration
 SIMILARITY_THRESHOLD = 0.8
@@ -1275,6 +1276,11 @@ def create_gui() -> None:
     root = tk.Tk()
     root.title("Python Code Analyzer v3.0 - Multi-File")
     root.geometry(WINDOW_GEOMETRY)
+    if os.path.exists(APP_ICON_PATH):
+        try:
+            root.iconbitmap(default=APP_ICON_PATH)
+        except tk.TclError:
+            pass
     
     # Button-Frame für besseres Layout
     button_frame = tk.Frame(root)

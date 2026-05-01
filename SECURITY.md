@@ -1,27 +1,31 @@
-# Security Policy
+# Security Policy / Sicherheitsrichtlinie
 
 ## Reporting a Vulnerability
 
 If you find a security vulnerability, please report it responsibly:
 
-1. **Do NOT open a public issue**
-2. **Use GitHub's [private vulnerability reporting](https://github.com/lukisch/MethodenAnalyser/security/advisories/new)**
-3. Include: description, steps to reproduce, potential impact
-
-### How to Report
-
-1. Go to: https://github.com/lukisch/MethodenAnalyser/security/advisories/new
-2. Fill out the form (title, description, severity, affected versions)
-3. Submit privately (not visible to public until disclosed)
+1. **Do not open a public issue.**
+2. Use GitHub Private Vulnerability Reporting:
+   https://github.com/dev-bricks/MethodenAnalyser/security/advisories/new
+3. Include a description, steps to reproduce, affected versions, and potential impact.
 
 We will respond as soon as possible.
+
+## Sicherheitslücken melden
+
+Wenn Sie eine Sicherheitslücke finden, melden Sie diese bitte nicht als öffentliches Issue.
+
+Nutzen Sie stattdessen GitHub Private Vulnerability Reporting:
+https://github.com/dev-bricks/MethodenAnalyser/security/advisories/new
+
+Bitte beschreiben Sie das Problem, Reproduktionsschritte, betroffene Versionen und mögliche Auswirkungen.
 
 ## Scope
 
 - Code analysis
-- File system access
+- Local file system access selected by the user
+- Tkinter GUI runtime behavior
 
 ## Response
 
-As a solo project, response times may vary. Critical issues will be
-prioritized. Please allow reasonable time before public disclosure.
+As a solo project, response times may vary. Critical issues will be prioritized. Please allow reasonable time before public disclosure.

@@ -6,6 +6,7 @@
 
 # ---- Python ----
 __pycache__/
+.pytest_cache/
 *.py[cod]
 *$py.class
 *.egg-info/
@@ -27,6 +28,8 @@ TESTS.txt
 TESTERGEBNISSE.txt
 BUGREPORT.md
 DIAGNOSE_REPORT.md
+SKILL.md
+tmpclaude-*
 
 # ---- Persoenliche / Sensible Daten ----
 _USER/
@@ -37,6 +40,9 @@ client_secret*.json
 token.json
 *.pem
 *.key
+*.db
+*.sqlite
+*.sqlite3
 keyring/
 
 # ---- Build-Artefakte & Releases ----
@@ -66,5 +72,7 @@ PLAN.txt
 _archive/
 _private/
 *.log
+*.tmp
+*.bak
 
 # ---- Projektspezifisch (hier eigene Eintraege anfuegen) ----
