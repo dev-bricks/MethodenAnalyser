@@ -2,8 +2,10 @@ const elements = {
   sourceCode: document.querySelector("#sourceCode"),
   sourceFile: document.querySelector("#sourceFile"),
   fileName: document.querySelector("#fileName"),
+  sourceHint: document.querySelector("#sourceHint"),
   snippetMode: document.querySelector("#snippetMode"),
   fileMode: document.querySelector("#fileMode"),
+  zipMode: document.querySelector("#zipMode"),
   analyzeButton: document.querySelector("#analyzeButton"),
   sampleButton: document.querySelector("#sampleButton"),
   clearButton: document.querySelector("#clearButton"),
@@ -28,7 +30,7 @@ def old_helper():
 print(area(3))
 `;
 
-const metricLabels = [
+const singleFileMetricLabels = [
   ["definitions", "Definitionen"],
   ["imports", "Imports"],
   ["unused_imports", "Ungenutzte Imports"],
@@ -37,6 +39,19 @@ const metricLabels = [
   ["missing_definitions", "Fehlende Definitionen"],
   ["duplicate_imports", "Doppelte Imports"],
   ["todos", "TODOs"],
+];
+
+const projectMetricLabels = [
+  ["files_analyzed", "Dateien"],
+  ["files_with_errors", "Fehlerdateien"],
+  ["total_lines", "Zeilen"],
+  ["total_definitions", "Definitionen"],
+  ["total_imports", "Imports"],
+  ["unused_imports", "Ungenutzte Imports"],
+  ["unused_definitions", "Tote Definitionen"],
+  ["missing_imports", "Fehlende Imports"],
+  ["missing_definitions", "Fehlende Definitionen"],
+  ["duplicate_imports", "Doppelte Imports"],
 ];
 
 const findingLabels = [
@@ -49,16 +64,63 @@ const findingLabels = [
 
 let sourceKind = "snippet";
 let currentFileName = "<snippet>";
+let currentZipBase64 = null;
 let lastReport = null;
+
+function getMetricLabels(report = null) {
+  if (report && ["project", "zip"].includes(report.source_kind)) {
+    return projectMetricLabels;
+  }
+  return singleFileMetricLabels;
+}
+
+function zipPlaceholderText() {
+  const archiveLabel = currentZipBase64
+    ? `Archiv bereit: ${currentFileName}`
+    : "Bitte ein kleines ZIP-Archiv mit Python-Dateien auswählen.";
+  return [
+    "# ZIP-Analyse aktiv",
+    archiveLabel,
+    "# Das Archiv wird lokal an den Python-Prozess geschickt, dort temporär entpackt und mit der bestehenden Projektanalyse geprüft.",
+  ].join("\n");
+}
+
+function syncInputUi() {
+  const isZip = sourceKind === "zip";
+  elements.sourceCode.readOnly = isZip;
+  elements.sourceCode.classList.toggle("is-readonly", isZip);
+  elements.sourceFile.accept = isZip
+    ? ".zip,application/zip,application/x-zip-compressed"
+    : ".py,text/x-python,text/plain";
+
+  if (sourceKind === "snippet") {
+    elements.sourceHint.textContent = "Snippets direkt einfügen oder eine einzelne `.py`-Datei laden.";
+  } else if (sourceKind === "file") {
+    elements.sourceHint.textContent = "Eine einzelne Python-Datei wird direkt im Browser gelesen und lokal analysiert.";
+  } else {
+    elements.sourceHint.textContent = "Kleine ZIP-Archive mit `.py`-Dateien werden lokal an den Python-Prozess gesendet, dort temporär entpackt und als Mini-Projekt analysiert.";
+    elements.sourceCode.value = zipPlaceholderText();
+  }
+}
 
 function setMode(nextMode) {
   sourceKind = nextMode;
   elements.snippetMode.classList.toggle("active", nextMode === "snippet");
   elements.fileMode.classList.toggle("active", nextMode === "file");
+  elements.zipMode.classList.toggle("active", nextMode === "zip");
+
   if (nextMode === "snippet") {
     currentFileName = "<snippet>";
+    currentZipBase64 = null;
     elements.fileName.textContent = "Keine Datei gewählt";
+    elements.sourceFile.value = "";
+  } else if (nextMode === "file" && !currentFileName.endsWith(".py")) {
+    currentFileName = "upload.py";
+  } else if (nextMode === "zip" && !currentFileName.endsWith(".zip")) {
+    currentFileName = "upload.zip";
   }
+
+  syncInputUi();
 }
 
 function setState(label, variant = "") {
@@ -69,9 +131,9 @@ function setState(label, variant = "") {
   }
 }
 
-function renderSummary(summary = {}) {
+function renderSummary(summary = {}, report = null) {
   elements.summaryGrid.replaceChildren();
-  for (const [key, label] of metricLabels) {
+  for (const [key, label] of getMetricLabels(report)) {
     const metric = document.createElement("div");
     metric.className = "metric";
     const caption = document.createElement("span");
@@ -97,6 +159,14 @@ function collectFindings(report) {
       groups.push({ label, items });
     }
   }
+
+  if (Array.isArray(report.errors) && report.errors.length > 0) {
+    groups.push({
+      label: "Dateifehler",
+      items: report.errors.map((entry) => `${entry.path}: ${entry.message}`),
+    });
+  }
+
   return groups;
 }
 
@@ -129,7 +199,7 @@ function renderFindings(report) {
 
 function renderResult(payload) {
   lastReport = payload.report;
-  renderSummary(payload.report.summary);
+  renderSummary(payload.report.summary, payload.report);
   renderFindings(payload.report);
   elements.textReport.textContent = payload.text_report;
   elements.jsonPreview.textContent = JSON.stringify(payload.report, null, 2);
@@ -145,20 +215,34 @@ function renderError(message) {
 }
 
 async function analyzeCurrentSource() {
-  const code = elements.sourceCode.value;
   elements.analyzeButton.disabled = true;
   elements.downloadJson.disabled = true;
   setState("Analysiert");
 
   try {
-    const response = await fetch("/api/analyze", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
+    let requestBody;
+    if (sourceKind === "zip") {
+      if (!currentZipBase64) {
+        throw new Error("Bitte zuerst ein kleines ZIP-Archiv auswählen.");
+      }
+      requestBody = {
+        source_kind: "zip",
+        filename: currentFileName,
+        zip_base64: currentZipBase64,
+      };
+    } else {
+      const code = elements.sourceCode.value;
+      requestBody = {
         code,
         source_kind: sourceKind,
         filename: currentFileName,
-      }),
+      };
+    }
+
+    const response = await fetch("/api/analyze", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(requestBody),
     });
     const payload = await response.json();
     if (!response.ok || !payload.ok) {
@@ -189,10 +273,30 @@ function downloadCurrentJson() {
   URL.revokeObjectURL(url);
 }
 
+function readFileAsDataUrl(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result || ""));
+    reader.onerror = () => reject(new Error("Datei konnte nicht gelesen werden."));
+    reader.readAsDataURL(file);
+  });
+}
+
 async function loadSelectedFile(file) {
   if (!file) {
     return;
   }
+
+  const lowerName = (file.name || "").toLowerCase();
+  if (lowerName.endsWith(".zip")) {
+    currentFileName = file.name || "upload.zip";
+    currentZipBase64 = await readFileAsDataUrl(file);
+    elements.fileName.textContent = currentFileName;
+    setMode("zip");
+    return;
+  }
+
+  currentZipBase64 = null;
   currentFileName = file.name || "upload.py";
   elements.fileName.textContent = currentFileName;
   elements.sourceCode.value = await file.text();
@@ -213,20 +317,26 @@ async function checkHealth() {
 
 elements.snippetMode.addEventListener("click", () => setMode("snippet"));
 elements.fileMode.addEventListener("click", () => setMode("file"));
+elements.zipMode.addEventListener("click", () => setMode("zip"));
 elements.analyzeButton.addEventListener("click", analyzeCurrentSource);
 elements.sampleButton.addEventListener("click", () => {
   elements.sourceCode.value = sampleCode;
   setMode("snippet");
 });
 elements.clearButton.addEventListener("click", () => {
-  elements.sourceCode.value = "";
+  currentFileName = "<snippet>";
+  currentZipBase64 = null;
   lastReport = null;
+  elements.sourceCode.value = "";
+  elements.sourceFile.value = "";
+  elements.fileName.textContent = "Keine Datei gewählt";
   renderSummary();
   elements.findingList.replaceChildren();
   elements.textReport.textContent = "Noch keine Analyse gestartet.";
   elements.jsonPreview.textContent = "{}";
   elements.downloadJson.disabled = true;
   setState("Bereit");
+  setMode("snippet");
 });
 elements.downloadJson.addEventListener("click", downloadCurrentJson);
 elements.sourceFile.addEventListener("change", (event) => {
@@ -237,5 +347,6 @@ if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("/service-worker.js").catch(() => {});
 }
 
+setMode("snippet");
 renderSummary();
 checkHealth();

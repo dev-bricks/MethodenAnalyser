@@ -27,7 +27,7 @@ Ohne Dateiwert schreibt `--json-output` nach `methodenanalyser-report-v1.json`.
 |---|---|---|
 | `schema_version` | string | Aktuell immer `methodenanalyser-report-v1`. |
 | `tool_version` | string | MethodenAnalyser-Version, aktuell `3.0`. |
-| `source_kind` | string | `file`, `project`, `snippet` oder reserviert `zip`. |
+| `source_kind` | string | `file`, `project`, `snippet` oder `zip`. |
 | `generated_at` | string | UTC-Zeitstempel im ISO-Format. |
 | `source` | object | Quellkontext ohne absolute Pfade in `files[]`. |
 | `files` | array | Einzelanalysen pro Datei oder Snippet. |
@@ -72,7 +72,6 @@ Ohne Dateiwert schreibt `--json-output` nach `methodenanalyser-report-v1.json`.
 ## Stabilitätsregeln
 
 - Neue Felder dürfen ergänzt werden, bestehende Feldnamen bleiben für `methodenanalyser-report-v1` stabil.
-- PWA- oder Server-Companions dürfen `source_kind = "snippet"` und später `source_kind = "zip"` nutzen.
-- Projektberichte verwenden relative Pfade ab Projektwurzel.
+- PWA- oder Server-Companions dürfen `source_kind = "snippet"` und `source_kind = "zip"` nutzen.
+- Projektberichte verwenden relative Pfade ab Projektwurzel und normalisieren Trenner auf `/`.
 - Fehlerhafte Dateien erscheinen in `errors`, erfolgreiche Dateien weiter in `files`.
-

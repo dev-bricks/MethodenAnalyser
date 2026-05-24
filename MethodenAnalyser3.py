@@ -1425,20 +1425,32 @@ def build_json_report(
 
     if isinstance(result, ProjectAnalysisResult):
         source_root = result.folder_path
-        report["source"] = {"name": os.path.basename(source_root), "kind": source_kind}
+        source_label = os.path.basename(source_name) if source_name else os.path.basename(source_root)
+        normalize = lambda value: value.replace("\\", "/")
+        report["source"] = {"name": source_label, "kind": source_kind}
         report["files"] = [
-            _json_file_entry(os.path.relpath(path, source_root), file_result)
+            _json_file_entry(normalize(os.path.relpath(path, source_root)), file_result)
             for path, file_result in sorted(result.file_results.items())
         ]
-        report["unused_imports"] = dict(sorted(result.all_unused_imports.items()))
-        report["unused_definitions"] = dict(sorted(result.all_unused_defs.items()))
-        report["missing_definitions"] = dict(sorted(result.all_missing_defs.items()))
-        report["missing_imports"] = dict(sorted(result.all_missing_imports.items()))
-        report["duplicate_imports"] = dict(sorted(result.all_duplicate_imports.items()))
+        report["unused_imports"] = {
+            normalize(path): values for path, values in sorted(result.all_unused_imports.items())
+        }
+        report["unused_definitions"] = {
+            normalize(path): values for path, values in sorted(result.all_unused_defs.items())
+        }
+        report["missing_definitions"] = {
+            normalize(path): values for path, values in sorted(result.all_missing_defs.items())
+        }
+        report["missing_imports"] = {
+            normalize(path): values for path, values in sorted(result.all_missing_imports.items())
+        }
+        report["duplicate_imports"] = {
+            normalize(path): values for path, values in sorted(result.all_duplicate_imports.items())
+        }
         report["errors"] = [
             {
-                "path": os.path.relpath(path, source_root)
-                if os.path.isabs(path) else path,
+                "path": normalize(os.path.relpath(path, source_root))
+                if os.path.isabs(path) else normalize(path),
                 "message": message,
             }
             for path, message in result.files_with_errors

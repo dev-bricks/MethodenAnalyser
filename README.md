@@ -90,13 +90,13 @@ type pfad\zur\datei.py | python MethodenAnalyser3.py --stdin --json-output snipp
 
 ### Web/PWA-Companion
 
-Für Snippets und einzelne Python-Dateien gibt es zusätzlich einen lokalen Web Companion:
+Für Snippets, einzelne Python-Dateien und kleine ZIP-Archive gibt es zusätzlich einen lokalen Web Companion:
 
 ```bash
 python webapp/server.py
 ```
 
-Unter Windows startet `START_WEBAPP.bat` denselben lokalen Server. Die Oberfläche läuft standardmäßig unter `http://127.0.0.1:8765/`, nutzt den bestehenden Analysekern und zeigt Text- sowie JSON-Reports an. Details stehen in [WEBAPP.md](WEBAPP.md).
+Unter Windows startet `START_WEBAPP.bat` denselben lokalen Server. Die Oberfläche läuft standardmäßig unter `http://127.0.0.1:8765/`, nutzt den bestehenden Analysekern und zeigt Text- sowie JSON-Reports an. ZIP-Uploads werden lokal an den Python-Prozess geschickt, dort temporär entpackt und als kleines Projekt analysiert. Details stehen in [WEBAPP.md](WEBAPP.md).
 
 Exit-Codes:
 

@@ -2,7 +2,7 @@
 
 Stand: 2026-05-24
 
-Der Web Companion ist eine lokale Web/PWA-Oberfläche für schnelle Snippet- und Einzeldatei-Analysen. Er ersetzt nicht die Desktop-App für ganze Projektordner, sondern nutzt denselben Analysekern und dasselbe JSON-Format wie CLI und GUI.
+Der Web Companion ist eine lokale Web/PWA-Oberfläche für schnelle Snippet-, Einzeldatei- und kleine ZIP-Analysen. Er ersetzt nicht die Desktop-App für ganze Projektordner, sondern nutzt denselben Analysekern und dasselbe JSON-Format wie CLI und GUI.
 
 ## Start
 
@@ -28,6 +28,7 @@ python webapp/server.py --host 127.0.0.1 --port 8765
 
 - Python-Code in das Textfeld einfügen und lokal analysieren.
 - Einzelne `.py`-Dateien im Browser öffnen und analysieren.
+- Kleine `.zip`-Archive mit Python-Dateien lokal hochladen und als Mini-Projekt analysieren.
 - Textreport direkt anzeigen.
 - JSON-Report im Schema `methodenanalyser-report-v1.json` anzeigen und speichern.
 - Statische PWA-Dateien mit Service Worker cachen; die Analyse-API bleibt lokal und wird nicht gecacht.
@@ -46,7 +47,9 @@ Request:
 }
 ```
 
-`source_kind` ist aktuell `snippet` oder `file`.
+`source_kind` ist aktuell `snippet`, `file` oder `zip`.
+
+Für ZIP-Analysen wird statt `code` ein Base64-Feld `zip_base64` gesendet. Das Archiv bleibt lokal, wird temporär entpackt und nur auf `.py`-Dateien geprüft.
 
 Response:
 
@@ -68,5 +71,5 @@ Der Web Companion läuft auf `127.0.0.1`. Code wird an den lokalen Python-Prozes
 ## Grenzen
 
 - Große Projektordner bleiben Aufgabe der Desktop-/CLI-Version.
-- ZIP-Uploads sind im JSON-Schema reserviert, aber in dieser ersten Web-Version noch nicht implementiert.
+- ZIP-Uploads sind bewusst klein gehalten: nur `.py`-Dateien, begrenzte Archivgröße und keine beliebigen Binärdateien.
 - Android und iOS sollen über dieselbe PWA-Linie getestet werden; native Apps sind weiterhin kein Ziel.

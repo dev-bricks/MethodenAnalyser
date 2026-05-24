@@ -175,6 +175,12 @@ button:disabled {
   font-weight: 600;
 }
 
+.field-hint {
+  margin: 0 0 10px;
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+
 #sourceCode {
   width: 100%;
   min-height: 430px;
@@ -196,6 +202,11 @@ input:focus,
 button:focus-visible {
   outline: 3px solid rgba(21, 111, 91, 0.24);
   outline-offset: 2px;
+}
+
+#sourceCode.is-readonly {
+  color: var(--muted);
+  background: var(--surface-muted);
 }
 
 .file-row {

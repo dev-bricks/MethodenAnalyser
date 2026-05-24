@@ -1,12 +1,17 @@
 from __future__ import annotations
 
 import argparse
+import base64
+import binascii
+import io
 import json
 import mimetypes
 import os
 import sys
+import tempfile
+import zipfile
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from typing import Any
 from urllib.parse import unquote, urlparse
 
@@ -14,15 +19,21 @@ from urllib.parse import unquote, urlparse
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 STATIC_ROOT = Path(__file__).resolve().parent / "static"
 ASSETS_ROOT = PROJECT_ROOT / "store_assets"
-MAX_REQUEST_SIZE = 512 * 1024
+MAX_REQUEST_SIZE = 2 * 1024 * 1024
+MAX_ZIP_FILE_COUNT = 64
+MAX_ZIP_MEMBER_SIZE = 512 * 1024
+MAX_ZIP_TOTAL_BYTES = 2 * 1024 * 1024
 
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 from MethodenAnalyser3 import (  # noqa: E402
     _file_has_findings,
+    _project_has_findings,
+    analyze_project,
     analyze_source,
     build_json_report,
+    generate_project_report,
     generate_report,
 )
 
@@ -34,20 +45,115 @@ mimetypes.add_type("text/css", ".css")
 
 def _clean_filename(filename: Any, source_kind: str) -> str:
     if not isinstance(filename, str) or not filename.strip():
-        return "<snippet>" if source_kind == "snippet" else "upload.py"
+        if source_kind == "snippet":
+            return "<snippet>"
+        if source_kind == "zip":
+            return "upload.zip"
+        return "upload.py"
+
     clean = filename.strip().replace("\\", "/").split("/")[-1]
-    return clean or ("<snippet>" if source_kind == "snippet" else "upload.py")
+    if clean:
+        return clean
+    if source_kind == "snippet":
+        return "<snippet>"
+    if source_kind == "zip":
+        return "upload.zip"
+    return "upload.py"
+
+
+def _decode_zip_bytes(encoded_zip: Any) -> bytes:
+    if not isinstance(encoded_zip, str) or not encoded_zip.strip():
+        raise ValueError("ZIP-Inhalt fehlt.")
+
+    payload = encoded_zip.strip()
+    if payload.startswith("data:") and "," in payload:
+        payload = payload.split(",", 1)[1]
+
+    try:
+        return base64.b64decode(payload, validate=True)
+    except (binascii.Error, ValueError) as exc:
+        raise ValueError("ZIP-Inhalt ist kein gültiges Base64-Archiv.") from exc
+
+
+def _safe_zip_members(archive: zipfile.ZipFile) -> list[zipfile.ZipInfo]:
+    python_members: list[zipfile.ZipInfo] = []
+    total_size = 0
+
+    for info in archive.infolist():
+        if info.is_dir():
+            continue
+
+        relative_path = PurePosixPath(info.filename.replace("\\", "/"))
+        if relative_path.is_absolute() or ".." in relative_path.parts:
+            raise ValueError(f"Unsicherer ZIP-Pfad erkannt: {info.filename}")
+        if relative_path.suffix.lower() != ".py":
+            continue
+
+        if len(python_members) >= MAX_ZIP_FILE_COUNT:
+            raise ValueError(f"ZIP enthält mehr als {MAX_ZIP_FILE_COUNT} Python-Dateien.")
+        if info.file_size > MAX_ZIP_MEMBER_SIZE:
+            raise ValueError(
+                f"ZIP-Datei {info.filename} ist größer als {MAX_ZIP_MEMBER_SIZE // 1024} KB."
+            )
+
+        total_size += info.file_size
+        if total_size > MAX_ZIP_TOTAL_BYTES:
+            raise ValueError(f"ZIP enthält mehr als {MAX_ZIP_TOTAL_BYTES // 1024} KB Python-Code.")
+
+        python_members.append(info)
+
+    if not python_members:
+        raise ValueError("ZIP-Archiv enthält keine Python-Dateien.")
+
+    return python_members
+
+
+def _extract_python_zip(zip_bytes: bytes, target_root: Path) -> int:
+    target_root = target_root.resolve()
+    with zipfile.ZipFile(io.BytesIO(zip_bytes)) as archive:
+        members = _safe_zip_members(archive)
+        for info in members:
+            relative_path = PurePosixPath(info.filename.replace("\\", "/"))
+            target_path = (target_root / Path(*relative_path.parts)).resolve()
+            if target_root not in target_path.parents:
+                raise ValueError(f"Unsicherer Zielpfad im ZIP: {info.filename}")
+            target_path.parent.mkdir(parents=True, exist_ok=True)
+            with archive.open(info, "r") as src, open(target_path, "wb") as dst:
+                dst.write(src.read())
+        return len(members)
+
+
+def _analyze_zip_payload(payload: dict[str, Any], source_kind: str) -> dict[str, Any]:
+    filename = _clean_filename(payload.get("filename"), source_kind)
+    zip_bytes = _decode_zip_bytes(payload.get("zip_base64"))
+    if not zip_bytes:
+        raise ValueError("ZIP-Archiv ist leer.")
+
+    with tempfile.TemporaryDirectory(prefix="methodenanalyser-webapp-zip-") as tmpdir:
+        extracted_count = _extract_python_zip(zip_bytes, Path(tmpdir))
+        result = analyze_project(tmpdir)
+        report = build_json_report(source_kind, result, source_name=filename)
+        report["source"]["archive_entries"] = extracted_count
+        return {
+            "ok": True,
+            "has_findings": _project_has_findings(result),
+            "text_report": generate_project_report(result),
+            "report": report,
+        }
 
 
 def analyze_payload(payload: dict[str, Any]) -> dict[str, Any]:
     """Analyze browser-submitted Python code and return API-ready JSON."""
+    source_kind = payload.get("source_kind", "snippet")
+    if source_kind == "zip":
+        return _analyze_zip_payload(payload, source_kind)
+
     code = payload.get("code")
     if not isinstance(code, str) or not code.strip():
         raise ValueError("Python-Code fehlt.")
 
-    source_kind = payload.get("source_kind", "snippet")
     if source_kind not in {"snippet", "file"}:
-        raise ValueError("source_kind muss 'snippet' oder 'file' sein.")
+        raise ValueError("source_kind muss 'snippet', 'file' oder 'zip' sein.")
 
     filename = _clean_filename(payload.get("filename"), source_kind)
     result = analyze_source(code, source_name=filename)
@@ -71,7 +177,7 @@ def _resolve_under(root: Path, relative_path: str) -> Path | None:
 
 
 class MethodenAnalyserPwaHandler(BaseHTTPRequestHandler):
-    server_version = "MethodenAnalyserPWA/0.1"
+    server_version = "MethodenAnalyserPWA/0.2"
 
     def do_GET(self) -> None:
         path = urlparse(self.path).path
@@ -105,7 +211,7 @@ class MethodenAnalyserPwaHandler(BaseHTTPRequestHandler):
             return
         if length > MAX_REQUEST_SIZE:
             self._send_json(
-                {"ok": False, "error": "Request ist größer als 512 KB."},
+                {"ok": False, "error": "Request ist größer als 2 MB."},
                 status=413,
             )
             return
@@ -121,6 +227,9 @@ class MethodenAnalyserPwaHandler(BaseHTTPRequestHandler):
             return
         except SyntaxError as exc:
             self._send_json({"ok": False, "error": f"Python-Syntaxfehler: {exc}"}, status=422)
+            return
+        except zipfile.BadZipFile:
+            self._send_json({"ok": False, "error": "ZIP-Archiv ist beschädigt oder ungültig."}, status=400)
             return
         except ValueError as exc:
             self._send_json({"ok": False, "error": str(exc)}, status=400)
@@ -148,7 +257,10 @@ class MethodenAnalyserPwaHandler(BaseHTTPRequestHandler):
         self.send_header("Content-Length", str(len(body)))
         self.send_header("X-Content-Type-Options", "nosniff")
         if target.name == "index.html":
-            self.send_header("Content-Security-Policy", "default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'; connect-src 'self'")
+            self.send_header(
+                "Content-Security-Policy",
+                "default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'; connect-src 'self'",
+            )
         if target.name == "service-worker.js":
             self.send_header("Cache-Control", "no-cache")
         self.end_headers()

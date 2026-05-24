@@ -30,14 +30,16 @@
           <div class="source-mode" role="group" aria-label="Quelltyp">
             <button id="snippetMode" class="mode-button active" type="button">Snippet</button>
             <button id="fileMode" class="mode-button" type="button">Datei</button>
+            <button id="zipMode" class="mode-button" type="button">ZIP</button>
           </div>
         </div>
 
         <label class="field-label" for="sourceCode">Python-Code</label>
+        <p id="sourceHint" class="field-hint">Snippets direkt einfügen oder eine einzelne `.py`-Datei laden.</p>
         <textarea id="sourceCode" spellcheck="false" autocomplete="off" wrap="off"></textarea>
 
         <div class="file-row">
-          <input id="sourceFile" type="file" accept=".py,text/x-python,text/plain">
+          <input id="sourceFile" type="file" accept=".py,.zip,text/x-python,text/plain,application/zip,application/x-zip-compressed">
           <span id="fileName">Keine Datei gewählt</span>
         </div>
 
