@@ -1,13 +1,23 @@
 {
+  "id": "/",
+  "lang": "de",
   "name": "MethodenAnalyser Web Companion",
   "short_name": "MethodenAnalyser",
   "description": "Lokaler Web-Companion für MethodenAnalyser.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
+  "display_override": ["standalone", "minimal-ui", "browser"],
+  "orientation": "portrait-primary",
   "background_color": "#f6f7f4",
   "theme_color": "#156f5b",
   "icons": [
+    {
+      "src": "/assets/Square44x44Logo.png",
+      "sizes": "44x44",
+      "type": "image/png",
+      "purpose": "any"
+    },
     {
       "src": "/assets/Square150x150Logo.png",
       "sizes": "150x150",

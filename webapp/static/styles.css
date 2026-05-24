@@ -236,6 +236,35 @@ button:focus-visible {
   margin-top: 14px;
 }
 
+.app-notice {
+  margin-top: 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px 14px;
+  background: linear-gradient(135deg, rgba(21, 111, 91, 0.08), rgba(255, 255, 255, 0.96));
+}
+
+.app-notice strong {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 0.95rem;
+}
+
+.app-notice p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.app-notice[data-variant="warning"] {
+  border-color: rgba(184, 110, 34, 0.36);
+  background: linear-gradient(135deg, rgba(184, 110, 34, 0.12), rgba(255, 255, 255, 0.96));
+}
+
+.app-notice[data-variant="ok"] {
+  border-color: rgba(21, 111, 91, 0.28);
+}
+
 .primary-button,
 .secondary-button,
 .ghost-button {
@@ -379,6 +408,43 @@ pre {
   color: #ffffff;
   background: var(--accent);
   border-color: var(--accent);
+}
+
+.offline-page {
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+.offline-card {
+  max-width: 560px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 28px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  text-align: center;
+}
+
+.offline-card img {
+  border-radius: 18px;
+}
+
+.offline-card h1 {
+  margin: 18px 0 10px;
+  font-size: 1.6rem;
+}
+
+.offline-card p {
+  margin: 10px 0 0;
+  color: var(--muted);
+}
+
+.offline-card code {
+  padding: 2px 6px;
+  border-radius: 6px;
+  background: var(--surface-muted);
+  font-family: Consolas, "Cascadia Mono", "Courier New", monospace;
 }
 
 @media (max-width: 980px) {

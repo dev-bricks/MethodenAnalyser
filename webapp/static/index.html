@@ -3,7 +3,14 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta
+      name="description"
+      content="Lokaler Web-Companion für MethodenAnalyser: Snippets, Dateien und kleine ZIP-Archive ohne Cloud analysieren."
+    >
     <meta name="theme-color" content="#156f5b">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <title>MethodenAnalyser Web Companion</title>
     <link rel="manifest" href="/manifest.webmanifest">
     <link rel="stylesheet" href="/styles.css">
@@ -19,6 +26,7 @@
       </div>
       <div class="topbar-actions">
         <span id="connectionStatus" class="status-pill">Lokal</span>
+        <button id="installButton" class="ghost-button" type="button" hidden>App installieren</button>
         <button id="downloadJson" class="ghost-button" type="button" disabled>JSON speichern</button>
       </div>
     </header>
@@ -48,6 +56,11 @@
           <button id="sampleButton" class="secondary-button" type="button">Beispiel laden</button>
           <button id="clearButton" class="secondary-button" type="button">Leeren</button>
         </div>
+
+        <section id="appNotice" class="app-notice" aria-live="polite">
+          <strong id="appNoticeTitle">Lokaler Entwurf aktiv</strong>
+          <p id="appNoticeText">Eingaben und der letzte JSON-Report bleiben nur in diesem Browser gespeichert.</p>
+        </section>
       </section>
 
       <section class="pane result-pane" aria-labelledby="resultTitle">

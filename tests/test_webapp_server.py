@@ -1,9 +1,12 @@
 import base64
 import io
+import threading
 import unittest
 import zipfile
+from http.server import ThreadingHTTPServer
+from urllib.request import urlopen
 
-from webapp.server import analyze_payload
+from webapp.server import MethodenAnalyserPwaHandler, analyze_payload
 
 
 class MethodenAnalyserWebappServerTests(unittest.TestCase):
@@ -84,6 +87,47 @@ class MethodenAnalyserWebappServerTests(unittest.TestCase):
                     }
                 )
             )
+
+
+class MethodenAnalyserStaticHttpTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls) -> None:
+        cls.httpd = ThreadingHTTPServer(("127.0.0.1", 0), MethodenAnalyserPwaHandler)
+        cls.port = cls.httpd.server_address[1]
+        cls.thread = threading.Thread(target=cls.httpd.serve_forever, daemon=True)
+        cls.thread.start()
+
+    @classmethod
+    def tearDownClass(cls) -> None:
+        cls.httpd.shutdown()
+        cls.httpd.server_close()
+        cls.thread.join(timeout=2)
+
+    def build_url(self, path: str) -> str:
+        return f"http://127.0.0.1:{self.port}{path}"
+
+    def test_manifest_is_served_with_expected_fields(self) -> None:
+        with urlopen(self.build_url("/manifest.webmanifest")) as response:
+            body = response.read().decode("utf-8")
+            content_type = response.headers.get_content_type()
+
+        self.assertEqual(content_type, "application/manifest+json")
+        self.assertIn('"display": "standalone"', body)
+        self.assertIn('"orientation": "portrait-primary"', body)
+
+    def test_service_worker_disables_cache_header(self) -> None:
+        with urlopen(self.build_url("/service-worker.js")) as response:
+            body = response.read().decode("utf-8")
+            cache_control = response.headers.get("Cache-Control")
+
+        self.assertEqual(cache_control, "no-cache")
+        self.assertIn('"/offline.html"', body)
+
+    def test_offline_page_is_reachable(self) -> None:
+        with urlopen(self.build_url("/offline.html")) as response:
+            body = response.read().decode("utf-8")
+
+        self.assertIn("MethodenAnalyser ist offline bereit", body)
 
 
 if __name__ == "__main__":

@@ -1,7 +1,8 @@
-const CACHE_NAME = "methodenanalyser-webapp-v2";
+const CACHE_NAME = "methodenanalyser-webapp-v3";
 const STATIC_ASSETS = [
   "/",
   "/index.html",
+  "/offline.html",
   "/styles.css",
   "/app.js",
   "/manifest.webmanifest",
@@ -29,6 +30,25 @@ self.addEventListener("activate", (event) => {
 self.addEventListener("fetch", (event) => {
   const url = new URL(event.request.url);
   if (url.pathname.startsWith("/api/")) {
+    return;
+  }
+
+  if (event.request.mode === "navigate") {
+    event.respondWith(
+      fetch(event.request)
+        .then((response) => {
+          const copy = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
+          return response;
+        })
+        .catch(async () => {
+          const cachedPage = await caches.match(event.request);
+          if (cachedPage) {
+            return cachedPage;
+          }
+          return caches.match("/offline.html");
+        }),
+    );
     return;
   }
 

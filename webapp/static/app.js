@@ -16,6 +16,10 @@ const elements = {
   textReport: document.querySelector("#textReport"),
   jsonPreview: document.querySelector("#jsonPreview"),
   connectionStatus: document.querySelector("#connectionStatus"),
+  installButton: document.querySelector("#installButton"),
+  appNotice: document.querySelector("#appNotice"),
+  appNoticeTitle: document.querySelector("#appNoticeTitle"),
+  appNoticeText: document.querySelector("#appNoticeText"),
 };
 
 const sampleCode = `import os
@@ -62,10 +66,20 @@ const findingLabels = [
   ["duplicate_imports", "Doppelte Imports"],
 ];
 
+const STORAGE_KEYS = {
+  draft: "methodenanalyser-webapp-draft-v1",
+  report: "methodenanalyser-webapp-report-v1",
+};
+
+const EMPTY_TEXT_REPORT = "Noch keine Analyse gestartet.";
+const EMPTY_JSON = "{}";
+
 let sourceKind = "snippet";
 let currentFileName = "<snippet>";
 let currentZipBase64 = null;
 let lastReport = null;
+let installPromptEvent = null;
+let isRestoringDraft = false;
 
 function getMetricLabels(report = null) {
   if (report && ["project", "zip"].includes(report.source_kind)) {
@@ -83,6 +97,12 @@ function zipPlaceholderText() {
     archiveLabel,
     "# Das Archiv wird lokal an den Python-Prozess geschickt, dort temporär entpackt und mit der bestehenden Projektanalyse geprüft.",
   ].join("\n");
+}
+
+function setNotice(title, text, variant = "") {
+  elements.appNotice.dataset.variant = variant;
+  elements.appNoticeTitle.textContent = title;
+  elements.appNoticeText.textContent = text;
 }
 
 function syncInputUi() {
@@ -114,13 +134,16 @@ function setMode(nextMode) {
     currentZipBase64 = null;
     elements.fileName.textContent = "Keine Datei gewählt";
     elements.sourceFile.value = "";
-  } else if (nextMode === "file" && !currentFileName.endsWith(".py")) {
-    currentFileName = "upload.py";
-  } else if (nextMode === "zip" && !currentFileName.endsWith(".zip")) {
+  } else if (nextMode === "file") {
+    if (!currentFileName.endsWith(".py")) {
+      currentFileName = "upload.py";
+    }
+  } else if (!currentFileName.endsWith(".zip")) {
     currentFileName = "upload.zip";
   }
 
   syncInputUi();
+  persistDraft();
 }
 
 function setState(label, variant = "") {
@@ -205,13 +228,105 @@ function renderResult(payload) {
   elements.jsonPreview.textContent = JSON.stringify(payload.report, null, 2);
   elements.downloadJson.disabled = false;
   setState(payload.has_findings ? "Findings" : "Sauber", payload.has_findings ? "state-warning" : "state-ok");
+  persistReport();
 }
 
 function renderError(message) {
   setState("Fehler", "state-error");
   elements.textReport.textContent = message;
-  elements.jsonPreview.textContent = "{}";
-  elements.downloadJson.disabled = true;
+  elements.jsonPreview.textContent = EMPTY_JSON;
+  elements.downloadJson.disabled = !lastReport;
+}
+
+function persistDraft() {
+  if (isRestoringDraft) {
+    return;
+  }
+
+  const payload = {
+    sourceKind,
+    currentFileName,
+    currentZipBase64,
+    code: elements.sourceCode.value,
+  };
+
+  try {
+    localStorage.setItem(STORAGE_KEYS.draft, JSON.stringify(payload));
+  } catch {
+    setNotice(
+      "Browser-Speicher blockiert",
+      "Entwürfe konnten nicht lokal gespeichert werden. Analysen funktionieren trotzdem.",
+      "warning",
+    );
+  }
+}
+
+function persistReport() {
+  if (!lastReport) {
+    localStorage.removeItem(STORAGE_KEYS.report);
+    return;
+  }
+
+  try {
+    localStorage.setItem(STORAGE_KEYS.report, JSON.stringify(lastReport));
+  } catch {
+    setNotice(
+      "Report nicht gespeichert",
+      "Der letzte JSON-Report passt nicht mehr in den lokalen Browser-Speicher.",
+      "warning",
+    );
+  }
+}
+
+function restoreDraft() {
+  const raw = localStorage.getItem(STORAGE_KEYS.draft);
+  if (!raw) {
+    return;
+  }
+
+  try {
+    const saved = JSON.parse(raw);
+    isRestoringDraft = true;
+    sourceKind = saved.sourceKind === "zip"
+      ? "zip"
+      : saved.sourceKind === "file"
+        ? "file"
+        : "snippet";
+    currentFileName = typeof saved.currentFileName === "string" ? saved.currentFileName : "<snippet>";
+    currentZipBase64 = typeof saved.currentZipBase64 === "string" ? saved.currentZipBase64 : null;
+    elements.sourceCode.value = typeof saved.code === "string" ? saved.code : "";
+    elements.fileName.textContent = currentZipBase64 ? currentFileName : "Zuletzt lokal geladen";
+    setMode(sourceKind);
+    setNotice(
+      "Entwurf wiederhergestellt",
+      "Die letzte Eingabe wurde lokal aus diesem Browser geladen.",
+      "ok",
+    );
+  } catch {
+    localStorage.removeItem(STORAGE_KEYS.draft);
+  } finally {
+    isRestoringDraft = false;
+  }
+}
+
+function restoreLastReport() {
+  const raw = localStorage.getItem(STORAGE_KEYS.report);
+  if (!raw) {
+    return;
+  }
+
+  try {
+    lastReport = JSON.parse(raw);
+    renderSummary(lastReport.summary, lastReport);
+    renderFindings(lastReport);
+    elements.jsonPreview.textContent = JSON.stringify(lastReport, null, 2);
+    elements.downloadJson.disabled = false;
+    if (elements.textReport.textContent === EMPTY_TEXT_REPORT) {
+      elements.textReport.textContent = "Letzter JSON-Report lokal wiederhergestellt. Für einen frischen Textreport den Server erneut ansprechen.";
+    }
+  } catch {
+    localStorage.removeItem(STORAGE_KEYS.report);
+  }
 }
 
 async function analyzeCurrentSource() {
@@ -231,9 +346,8 @@ async function analyzeCurrentSource() {
         zip_base64: currentZipBase64,
       };
     } else {
-      const code = elements.sourceCode.value;
       requestBody = {
-        code,
+        code: elements.sourceCode.value,
         source_kind: sourceKind,
         filename: currentFileName,
       };
@@ -249,8 +363,20 @@ async function analyzeCurrentSource() {
       throw new Error(payload.error || `HTTP ${response.status}`);
     }
     renderResult(payload);
+    setNotice(
+      "Analyse lokal abgeschlossen",
+      "Der aktuelle Entwurf und der letzte JSON-Report bleiben auf diesem Gerät gespeichert.",
+      "ok",
+    );
+    await checkHealth();
   } catch (error) {
     renderError(error.message);
+    elements.connectionStatus.textContent = "Server nicht erreichbar";
+    setNotice(
+      "Lokaler Server fehlt",
+      "Die Oberfläche bleibt nutzbar, aber neue Analysen brauchen den laufenden Python-Server.",
+      "warning",
+    );
   } finally {
     elements.analyzeButton.disabled = false;
   }
@@ -301,6 +427,7 @@ async function loadSelectedFile(file) {
   elements.fileName.textContent = currentFileName;
   elements.sourceCode.value = await file.text();
   setMode("file");
+  persistDraft();
 }
 
 async function checkHealth() {
@@ -309,10 +436,71 @@ async function checkHealth() {
     if (!response.ok) {
       throw new Error("offline");
     }
-    elements.connectionStatus.textContent = "Lokal";
+    elements.connectionStatus.textContent = navigator.onLine ? "Lokal bereit" : "Gerät offline";
   } catch {
-    elements.connectionStatus.textContent = "Offline";
+    elements.connectionStatus.textContent = "Server offline";
   }
+}
+
+function syncConnectivityLabel() {
+  if (!navigator.onLine) {
+    elements.connectionStatus.textContent = "Gerät offline";
+    setNotice(
+      "Offline-Modus",
+      "Gespeicherte Entwürfe und der letzte JSON-Report bleiben verfügbar. Für neue Analysen muss das Gerät wieder online sein und der lokale Server laufen.",
+      "warning",
+    );
+    return;
+  }
+  checkHealth();
+}
+
+function updateInstallUi() {
+  const isStandalone = window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
+  elements.installButton.hidden = !installPromptEvent || isStandalone;
+  if (isStandalone) {
+    setNotice(
+      "App installiert",
+      "Die PWA läuft als eigenständige App. Entwürfe und letzte Reports bleiben lokal im Browserprofil.",
+      "ok",
+    );
+  }
+}
+
+async function installApp() {
+  if (!installPromptEvent) {
+    return;
+  }
+
+  installPromptEvent.prompt();
+  try {
+    await installPromptEvent.userChoice;
+  } finally {
+    installPromptEvent = null;
+    updateInstallUi();
+  }
+}
+
+function resetState() {
+  currentFileName = "<snippet>";
+  currentZipBase64 = null;
+  lastReport = null;
+  elements.sourceCode.value = "";
+  elements.sourceFile.value = "";
+  elements.fileName.textContent = "Keine Datei gewählt";
+  renderSummary();
+  elements.findingList.replaceChildren();
+  elements.textReport.textContent = EMPTY_TEXT_REPORT;
+  elements.jsonPreview.textContent = EMPTY_JSON;
+  elements.downloadJson.disabled = true;
+  localStorage.removeItem(STORAGE_KEYS.draft);
+  localStorage.removeItem(STORAGE_KEYS.report);
+  setNotice(
+    "Lokaler Entwurf aktiv",
+    "Eingaben und der letzte JSON-Report bleiben nur in diesem Browser gespeichert.",
+  );
+  setState("Bereit");
+  setMode("snippet");
 }
 
 elements.snippetMode.addEventListener("click", () => setMode("snippet"));
@@ -322,31 +510,37 @@ elements.analyzeButton.addEventListener("click", analyzeCurrentSource);
 elements.sampleButton.addEventListener("click", () => {
   elements.sourceCode.value = sampleCode;
   setMode("snippet");
+  persistDraft();
 });
-elements.clearButton.addEventListener("click", () => {
-  currentFileName = "<snippet>";
-  currentZipBase64 = null;
-  lastReport = null;
-  elements.sourceCode.value = "";
-  elements.sourceFile.value = "";
-  elements.fileName.textContent = "Keine Datei gewählt";
-  renderSummary();
-  elements.findingList.replaceChildren();
-  elements.textReport.textContent = "Noch keine Analyse gestartet.";
-  elements.jsonPreview.textContent = "{}";
-  elements.downloadJson.disabled = true;
-  setState("Bereit");
-  setMode("snippet");
-});
+elements.clearButton.addEventListener("click", resetState);
 elements.downloadJson.addEventListener("click", downloadCurrentJson);
+elements.installButton.addEventListener("click", installApp);
 elements.sourceFile.addEventListener("change", (event) => {
   loadSelectedFile(event.target.files?.[0]);
 });
+elements.sourceCode.addEventListener("input", persistDraft);
+
+window.addEventListener("beforeinstallprompt", (event) => {
+  event.preventDefault();
+  installPromptEvent = event;
+  updateInstallUi();
+});
+
+window.addEventListener("appinstalled", () => {
+  installPromptEvent = null;
+  updateInstallUi();
+});
+
+window.addEventListener("online", syncConnectivityLabel);
+window.addEventListener("offline", syncConnectivityLabel);
 
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("/service-worker.js").catch(() => {});
 }
 
-setMode("snippet");
 renderSummary();
-checkHealth();
+restoreDraft();
+restoreLastReport();
+setMode(sourceKind);
+syncConnectivityLabel();
+updateInstallUi();

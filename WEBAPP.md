@@ -31,7 +31,16 @@ python webapp/server.py --host 127.0.0.1 --port 8765
 - Kleine `.zip`-Archive mit Python-Dateien lokal hochladen und als Mini-Projekt analysieren.
 - Textreport direkt anzeigen.
 - JSON-Report im Schema `methodenanalyser-report-v1.json` anzeigen und speichern.
+- Entwurf und letzter JSON-Report lokal im Browser zwischenspeichern.
+- PWA installieren und nach der ersten Nutzung offline erneut öffnen.
 - Statische PWA-Dateien mit Service Worker cachen; die Analyse-API bleibt lokal und wird nicht gecacht.
+
+## Mobile/PWA-Verhalten
+
+- Chrome und Edge können die App als installierbare PWA anbieten.
+- Bereits geladene Oberfläche bleibt durch den Service Worker auch ohne laufenden Server erreichbar.
+- Neue Analysen benötigen weiter den lokalen Python-Prozess; offline bleiben nur Entwurf, letzter JSON-Report und die UI verfügbar.
+- Android und iOS nutzen dieselbe Web-Linie; es gibt weiterhin keine native App und keinen Cloud-Sync.
 
 ## Lokale API
 
