@@ -75,6 +75,26 @@ Unter Windows kann das Tool auch per Doppelklick auf `START.bat` gestartet werde
 2. Alle `.py`-Dateien werden rekursiv durchsucht.
 3. Der aggregierte Projekt-Report wird im Ausgabefenster angezeigt.
 
+### CLI-Modus für Automationen
+
+Die GUI bleibt Standard, zusätzlich kann MethodenAnalyser jetzt headless laufen:
+
+```bash
+python MethodenAnalyser3.py --file pfad/zur/datei.py
+python MethodenAnalyser3.py --project pfad/zum/projekt
+python MethodenAnalyser3.py --file pfad/zur/datei.py --json-output
+type pfad\zur\datei.py | python MethodenAnalyser3.py --stdin --json-output snippet.json
+```
+
+`--json-output` schreibt zusätzlich den maschinenlesbaren Report `methodenanalyser-report-v1.json`. Mit eigenem Dateinamen kann der Report gezielt abgelegt werden; das Format ist in [EXPORTFORMAT.md](EXPORTFORMAT.md) dokumentiert.
+
+Exit-Codes:
+
+- `0` = Analyse erfolgreich und keine Findings im Report
+- `1` = Aufruf- oder Analysefehler
+- `2` = Analyse erfolgreich, aber Findings vorhanden
+- `3` = Projektanalyse mit Teilfehlern in einzelnen Dateien
+
 ---
 
 ## Beispiel-Output
@@ -133,6 +153,7 @@ Stand: 2026-05-16
 
 ```bash
 python -m py_compile MethodenAnalyser3.py manage_translations.py translator.py
+python -m unittest discover -s tests -v
 ```
 
 GitHub Actions führt denselben Smoke-Test für Python 3.10 bis 3.12 aus.

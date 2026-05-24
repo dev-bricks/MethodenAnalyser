@@ -1,3 +1,5 @@
+import argparse
+import json
 import tkinter as tk
 from tkinter import filedialog, scrolledtext, messagebox
 import ast
@@ -31,6 +33,15 @@ OUTPUT_WIDTH = 140
 OUTPUT_HEIGHT = 40
 OUTPUT_FONT = ("Courier", 9)
 APP_ICON_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "MethodenAnalyser.ico")
+TOOL_VERSION = "3.0"
+JSON_SCHEMA_VERSION = "methodenanalyser-report-v1"
+DEFAULT_JSON_REPORT_NAME = f"{JSON_SCHEMA_VERSION}.json"
+
+# CLI Exit-Codes
+EXIT_OK = 0
+EXIT_ANALYSIS_ERROR = 1
+EXIT_FINDINGS = 2
+EXIT_PARTIAL_ERROR = 3
 
 # Analyse Konfiguration
 SIMILARITY_THRESHOLD = 0.8
@@ -291,6 +302,7 @@ class CodeAnalyzer(ast.NodeVisitor):
         self.import_names: Set[str] = set()
         self.imported_definitions: Set[str] = set()
         self.used_names: Set[str] = set()
+        self.local_names: Set[str] = set()
         # NEU: Track Modul.Attribut Zugriffe
         self.module_attribute_calls: Dict[str, Set[str]] = collections.defaultdict(set)
         self.imported_modules: Set[str] = set()  # Nur Modulnamen (für import X)
@@ -368,7 +380,15 @@ class CodeAnalyzer(ast.NodeVisitor):
 
     def visit_Name(self, node: ast.Name) -> None:
         """Verarbeitet Namensreferenzen."""
-        self.used_names.add(node.id)
+        if isinstance(node.ctx, ast.Load):
+            self.used_names.add(node.id)
+        elif isinstance(node.ctx, ast.Store):
+            self.local_names.add(node.id)
+        self.generic_visit(node)
+
+    def visit_arg(self, node: ast.arg) -> None:
+        """Erfasst Funktionsparameter als lokale Namen."""
+        self.local_names.add(node.arg)
         self.generic_visit(node)
 
 
@@ -585,50 +605,23 @@ def get_available_module_attributes(analyzer: 'CodeAnalyzer') -> Set[str]:
 # HAUPTANALYSE
 # ============================================================================
 
-def analyze_file(path: str) -> AnalysisResult:
+def analyze_source(code: str, source_name: str = "<snippet>") -> AnalysisResult:
     """
-    Führt komplette Analyse einer Python-Datei durch.
-    
+    Führt komplette Analyse für Python-Quellcode aus.
+
     Args:
-        path: Pfad zur zu analysierenden Python-Datei
-        
+        code: Python-Quellcode als String
+        source_name: Anzeigename für Fehlerkontext und JSON-Reports
+
     Returns:
         AnalysisResult mit allen Analyseergebnissen
-        
-    Raises:
-        RuntimeError: Bei Lese- oder Parsing-Fehlern
-        FileNotFoundError: Wenn Datei nicht existiert
-    """
-    # Validierung
-    if not os.path.exists(path):
-        raise FileNotFoundError(f"Datei nicht gefunden: {path}")
-    
-    if not os.path.isfile(path):
-        raise RuntimeError(f"Pfad ist keine Datei: {path}")
-    
-    # Datei lesen
-    try:
-        with open(path, "r", encoding="utf-8") as f:
-            code = f.read()
-    except UnicodeDecodeError:
-        try:
-            # Fallback zu latin-1
-            with open(path, "r", encoding="latin-1") as f:
-                code = f.read()
-            warnings.warn(
-                f"Datei '{path}' konnte nicht als UTF-8 gelesen werden. "
-                "latin-1 Fallback wurde verwendet -- Analyse-Ergebnisse koennen Artefakte enthalten.",
-                UnicodeWarning,
-                stacklevel=2,
-            )
-        except Exception as e:
-            raise RuntimeError(f"Fehler beim Lesen der Datei: {e}")
-    except Exception as e:
-        raise RuntimeError(f"Fehler beim Lesen der Datei: {e}")
 
+    Raises:
+        RuntimeError: Bei Parsing-Fehlern
+    """
     # Code parsen (nur einmal!)
     try:
-        tree = ast.parse(code)
+        tree = ast.parse(code, filename=source_name)
     except SyntaxError as e:
         raise RuntimeError(f"Syntax-Fehler in Zeile {e.lineno}: {e.msg}")
     except Exception as e:
@@ -661,11 +654,11 @@ def analyze_file(path: str) -> AnalysisResult:
 
     # VERBESSERT: Berücksichtige Framework-Namen und Widgets
     framework_and_widgets = COMMON_FRAMEWORK_METHODS | COMMON_WIDGETS | set(FRAMEWORK_MAP.keys())
-    
+
     # ERWEITERT: Berücksichtige auch Modul-Attribute
     missing_defs = (calls - defs) - BUILTINS - framework_and_widgets - module_provided_attrs
     unused_defs = analyzer.defs - calls  # Nur echte Definitionen, nicht Imports
-    
+
     # VERBESSERT: Nur tatsächliche Import-Namen vergleichen
     unused_imports = analyzer.import_names - analyzer.used_names
 
@@ -699,8 +692,8 @@ def analyze_file(path: str) -> AnalysisResult:
 
     # VERBESSERT: missing_imports berücksichtigt Framework-Namen
     missing_imports = (
-        analyzer.used_names - defs - imports_unique - 
-        calls - BUILTINS - framework_and_widgets
+        analyzer.used_names - defs - imports_unique -
+        calls - analyzer.local_names - BUILTINS - framework_and_widgets - module_provided_attrs
     )
 
     return AnalysisResult(
@@ -730,6 +723,50 @@ def analyze_file(path: str) -> AnalysisResult:
         },
         todo_comments=todo_comments,
     )
+
+
+def analyze_file(path: str) -> AnalysisResult:
+    """
+    Führt komplette Analyse einer Python-Datei durch.
+
+    Args:
+        path: Pfad zur zu analysierenden Python-Datei
+
+    Returns:
+        AnalysisResult mit allen Analyseergebnissen
+
+    Raises:
+        RuntimeError: Bei Lese- oder Parsing-Fehlern
+        FileNotFoundError: Wenn Datei nicht existiert
+    """
+    # Validierung
+    if not os.path.exists(path):
+        raise FileNotFoundError(f"Datei nicht gefunden: {path}")
+
+    if not os.path.isfile(path):
+        raise RuntimeError(f"Pfad ist keine Datei: {path}")
+
+    # Datei lesen
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            code = f.read()
+    except UnicodeDecodeError:
+        try:
+            # Fallback zu latin-1
+            with open(path, "r", encoding="latin-1") as f:
+                code = f.read()
+            warnings.warn(
+                f"Datei '{path}' konnte nicht als UTF-8 gelesen werden. "
+                "latin-1 Fallback wurde verwendet -- Analyse-Ergebnisse koennen Artefakte enthalten.",
+                UnicodeWarning,
+                stacklevel=2,
+            )
+        except Exception as e:
+            raise RuntimeError(f"Fehler beim Lesen der Datei: {e}")
+    except Exception as e:
+        raise RuntimeError(f"Fehler beim Lesen der Datei: {e}")
+
+    return analyze_source(code, source_name=path)
 
 
 def _extract_typehints(tree: ast.AST) -> Set[str]:
@@ -865,6 +902,8 @@ def generate_report(result: AnalysisResult) -> str:
     
     report.append(f"Ungenutzte Imports ({len(result.unused_imports)}):\n")
     report.append(f"  {', '.join(result.unused_imports) if result.unused_imports else '(keine)'}\n\n")
+    report.append(f"Fehlende Imports ({len(result.missing_imports)}):\n")
+    report.append(f"  {', '.join(result.missing_imports) if result.missing_imports else '(keine)'}\n\n")
 
     # Import-Analyse
     if result.import_scopes:
@@ -1170,6 +1209,7 @@ class ProjectAnalysisResult:
     all_unused_imports: Dict[str, List[str]]
     all_unused_defs: Dict[str, List[str]]
     all_missing_defs: Dict[str, List[str]]
+    all_missing_imports: Dict[str, List[str]]
     all_duplicate_imports: Dict[str, List[str]]
     file_results: Dict[str, AnalysisResult]
 
@@ -1179,7 +1219,7 @@ def analyze_project(folder_path: str, progress_callback=None) -> ProjectAnalysis
     python_files = collect_python_files(folder_path)
     files_with_errors, file_results = [], {}
     all_unused_imports, all_unused_defs = {}, {}
-    all_missing_defs, all_duplicate_imports = {}, {}
+    all_missing_defs, all_missing_imports, all_duplicate_imports = {}, {}, {}
     total_lines, total_defs, total_imports = 0, 0, 0
     
     for i, file_path in enumerate(python_files):
@@ -1202,6 +1242,8 @@ def analyze_project(folder_path: str, progress_callback=None) -> ProjectAnalysis
                 all_unused_defs[rel_path] = result.unused_defs
             if result.missing_defs:
                 all_missing_defs[rel_path] = result.missing_defs
+            if result.missing_imports:
+                all_missing_imports[rel_path] = result.missing_imports
             if result.duplicate_imports:
                 all_duplicate_imports[rel_path] = result.duplicate_imports
         except Exception as e:
@@ -1212,7 +1254,8 @@ def analyze_project(folder_path: str, progress_callback=None) -> ProjectAnalysis
         files_with_errors=files_with_errors, total_lines=total_lines,
         total_defs=total_defs, total_imports=total_imports,
         all_unused_imports=all_unused_imports, all_unused_defs=all_unused_defs,
-        all_missing_defs=all_missing_defs, all_duplicate_imports=all_duplicate_imports,
+        all_missing_defs=all_missing_defs, all_missing_imports=all_missing_imports,
+        all_duplicate_imports=all_duplicate_imports,
         file_results=file_results
     )
 
@@ -1237,10 +1280,196 @@ def generate_project_report(result: ProjectAnalysisResult) -> str:
         report.append("\nUNGENUTZTE DEFINITIONEN:\n" + "-" * 50 + "\n")
         for fp, defs in sorted(result.all_unused_defs.items()):
             report.append(f"  {fp}: {', '.join(defs)}\n")
-    
+
+    if result.all_missing_defs:
+        report.append("\nFEHLENDE DEFINITIONEN:\n" + "-" * 50 + "\n")
+        for fp, defs in sorted(result.all_missing_defs.items()):
+            report.append(f"  {fp}: {', '.join(defs)}\n")
+
+    if result.all_missing_imports:
+        report.append("\nFEHLENDE IMPORTS:\n" + "-" * 50 + "\n")
+        for fp, imports in sorted(result.all_missing_imports.items()):
+            report.append(f"  {fp}: {', '.join(imports)}\n")
+
+    if result.all_duplicate_imports:
+        report.append("\nDOPPELTE IMPORTS:\n" + "-" * 50 + "\n")
+        for fp, imports in sorted(result.all_duplicate_imports.items()):
+            report.append(f"  {fp}: {', '.join(imports)}\n")
+
+    if result.files_with_errors:
+        report.append("\nDATEIEN MIT FEHLERN:\n" + "-" * 50 + "\n")
+        for fp, error in sorted(result.files_with_errors):
+            report.append(f"  {fp}: {error}\n")
+
     score = max(0, 100 - total_ui * 2 - total_ud * 2)
     report.append(f"\n{'=' * 70}\nSCORE: {score}/100\n{'=' * 70}\n")
     return "".join(report)
+
+
+def _generated_at_iso() -> str:
+    """Erzeugt einen stabilen UTC-Zeitstempel für JSON-Reports."""
+    return (
+        datetime.datetime.now(datetime.timezone.utc)
+        .replace(microsecond=0)
+        .isoformat()
+        .replace("+00:00", "Z")
+    )
+
+
+def _todo_comments_as_dicts(result: AnalysisResult) -> List[Dict[str, Any]]:
+    """Wandelt TODO-Kommentare in JSON-kompatible Objekte um."""
+    return [
+        {"line": lineno, "tag": tag, "text": text}
+        for lineno, tag, text in result.todo_comments
+    ]
+
+
+def _analysis_summary(result: AnalysisResult) -> Dict[str, int]:
+    """Verdichtete Metriken für eine einzelne Analyse."""
+    return {
+        "calls": len(result.calls),
+        "definitions": len(result.defs),
+        "imports": len(result.imports),
+        "unused_imports": len(result.unused_imports),
+        "unused_definitions": len(result.unused_defs),
+        "missing_definitions": len(result.missing_defs),
+        "missing_imports": len(result.missing_imports),
+        "duplicate_imports": len(result.duplicate_imports),
+        "todos": len(result.todo_comments),
+    }
+
+
+def _analysis_result_to_json(result: AnalysisResult) -> Dict[str, Any]:
+    """Serialisiert ein Dateiergebnis in das Austauschformat."""
+    return {
+        "summary": _analysis_summary(result),
+        "calls": result.calls,
+        "definitions": result.defs,
+        "imported_definitions": result.imported_definitions,
+        "imports": result.imports,
+        "used_imports": result.used_imports,
+        "unused_imports": result.unused_imports,
+        "unused_definitions": result.unused_defs,
+        "missing_definitions": result.missing_defs,
+        "missing_imports": result.missing_imports,
+        "duplicate_imports": result.duplicate_imports,
+        "dynamic_usage": result.dynamic_usage,
+        "dynamic_methods": result.dynamic_methods,
+        "framework_hooks": [
+            {"name": name, "kind": kind}
+            for name, kind in result.framework_hooks
+        ],
+        "import_scopes": result.import_scopes,
+        "name_matches": [
+            {"name": name, "candidate": candidate}
+            for name, candidate in result.name_matches
+        ],
+        "typehints": result.typehints,
+        "module_attribute_usage": result.module_attribute_usage,
+        "todos": _todo_comments_as_dicts(result),
+    }
+
+
+def _json_file_entry(path: str, result: AnalysisResult) -> Dict[str, Any]:
+    """Erstellt einen files[]-Eintrag für den JSON-Report."""
+    return {
+        "path": path,
+        "analysis": _analysis_result_to_json(result),
+    }
+
+
+def _project_summary(result: ProjectAnalysisResult) -> Dict[str, int]:
+    """Verdichtete Metriken für eine Projektanalyse."""
+    return {
+        "files_analyzed": result.files_analyzed,
+        "files_with_errors": len(result.files_with_errors),
+        "total_lines": result.total_lines,
+        "total_definitions": result.total_defs,
+        "total_imports": result.total_imports,
+        "unused_imports": sum(len(v) for v in result.all_unused_imports.values()),
+        "unused_definitions": sum(len(v) for v in result.all_unused_defs.values()),
+        "missing_definitions": sum(len(v) for v in result.all_missing_defs.values()),
+        "missing_imports": sum(len(v) for v in result.all_missing_imports.values()),
+        "duplicate_imports": sum(len(v) for v in result.all_duplicate_imports.values()),
+    }
+
+
+def build_json_report(
+    source_kind: str,
+    result: AnalysisResult | ProjectAnalysisResult,
+    source_name: Optional[str] = None,
+) -> Dict[str, Any]:
+    """
+    Baut `methodenanalyser-report-v1.json` für Datei, Projekt oder Snippet.
+
+    Das Format ist bewusst stabil und PWA-freundlich: keine absoluten Pfade in
+    files[], Textreports bleiben unabhängig davon unverändert.
+    """
+    if source_kind not in {"file", "project", "snippet", "zip"}:
+        raise ValueError(f"Unbekannte source_kind: {source_kind}")
+
+    report: Dict[str, Any] = {
+        "schema_version": JSON_SCHEMA_VERSION,
+        "tool_version": TOOL_VERSION,
+        "source_kind": source_kind,
+        "generated_at": _generated_at_iso(),
+        "source": {"name": source_name or source_kind},
+        "files": [],
+        "unused_imports": {},
+        "unused_definitions": {},
+        "missing_definitions": {},
+        "missing_imports": {},
+        "duplicate_imports": {},
+        "summary": {},
+    }
+
+    if isinstance(result, ProjectAnalysisResult):
+        source_root = result.folder_path
+        report["source"] = {"name": os.path.basename(source_root), "kind": source_kind}
+        report["files"] = [
+            _json_file_entry(os.path.relpath(path, source_root), file_result)
+            for path, file_result in sorted(result.file_results.items())
+        ]
+        report["unused_imports"] = dict(sorted(result.all_unused_imports.items()))
+        report["unused_definitions"] = dict(sorted(result.all_unused_defs.items()))
+        report["missing_definitions"] = dict(sorted(result.all_missing_defs.items()))
+        report["missing_imports"] = dict(sorted(result.all_missing_imports.items()))
+        report["duplicate_imports"] = dict(sorted(result.all_duplicate_imports.items()))
+        report["errors"] = [
+            {
+                "path": os.path.relpath(path, source_root)
+                if os.path.isabs(path) else path,
+                "message": message,
+            }
+            for path, message in result.files_with_errors
+        ]
+        report["summary"] = _project_summary(result)
+        return report
+
+    file_key = source_name or ("<snippet>" if source_kind == "snippet" else "file.py")
+    if source_kind == "file":
+        file_key = os.path.basename(file_key)
+
+    report["files"] = [_json_file_entry(file_key, result)]
+    report["unused_imports"] = {file_key: result.unused_imports}
+    report["unused_definitions"] = {file_key: result.unused_defs}
+    report["missing_definitions"] = {file_key: result.missing_defs}
+    report["missing_imports"] = {file_key: result.missing_imports}
+    report["duplicate_imports"] = {file_key: result.duplicate_imports}
+    report["summary"] = _analysis_summary(result)
+    return report
+
+
+def write_json_report(report: Dict[str, Any], output_path: str) -> str:
+    """Schreibt einen JSON-Report und gibt den absoluten Pfad zurück."""
+    target = os.path.abspath(output_path)
+    target_dir = os.path.dirname(target)
+    if target_dir:
+        os.makedirs(target_dir, exist_ok=True)
+    with open(target, "w", encoding="utf-8") as f:
+        json.dump(report, f, indent=2, ensure_ascii=False)
+        f.write("\n")
+    return target
 
 
 def run_project_analysis(output_widget: scrolledtext.ScrolledText) -> None:
@@ -1377,8 +1606,149 @@ def create_gui() -> None:
         "• Mögliche Tippfehler\n"
     )
     output.insert(tk.END, welcome_text)
-    
+
     root.mainloop()
+
+
+def _file_has_findings(result: AnalysisResult) -> bool:
+    """Prüft, ob eine Dateianalyse relevante Funde enthält."""
+    return any((
+        result.missing_defs,
+        result.unused_defs,
+        result.unused_imports,
+        result.duplicate_imports,
+        result.missing_imports,
+        result.todo_comments,
+    ))
+
+
+def _project_has_findings(result: ProjectAnalysisResult) -> bool:
+    """Prüft, ob eine Projektanalyse relevante Funde enthält."""
+    return any((
+        result.all_unused_imports,
+        result.all_unused_defs,
+        result.all_missing_defs,
+        result.all_missing_imports,
+        result.all_duplicate_imports,
+        result.files_with_errors,
+    ))
+
+
+def _emit_cli_report(report: str) -> None:
+    """Schreibt Reports konsistent nach stdout."""
+    sys.stdout.write(report)
+    if not report.endswith("\n"):
+        sys.stdout.write("\n")
+
+
+def _write_cli_json_if_requested(report: Dict[str, Any], output_path: Optional[str]) -> bool:
+    """Schreibt optional den JSON-Report; Fehler gehen nach stderr."""
+    if not output_path:
+        return True
+    try:
+        written_path = write_json_report(report, output_path)
+    except Exception as exc:
+        print(f"[FEHLER] JSON-Export fehlgeschlagen: {exc}", file=sys.stderr)
+        return False
+    print(f"[OK] JSON gespeichert: {written_path}", file=sys.stderr)
+    return True
+
+
+def _run_cli_file(path: str, json_output: Optional[str] = None) -> int:
+    """Führt eine Datei-Analyse ohne GUI aus."""
+    try:
+        result = analyze_file(path)
+    except Exception as exc:
+        print(f"[FEHLER] {exc}", file=sys.stderr)
+        return EXIT_ANALYSIS_ERROR
+
+    _emit_cli_report(generate_report(result))
+    json_report = build_json_report("file", result, source_name=path)
+    if not _write_cli_json_if_requested(json_report, json_output):
+        return EXIT_ANALYSIS_ERROR
+    return EXIT_FINDINGS if _file_has_findings(result) else EXIT_OK
+
+
+def _run_cli_project(path: str, json_output: Optional[str] = None) -> int:
+    """Führt eine Projektanalyse ohne GUI aus."""
+    if not os.path.isdir(path):
+        print(f"[FEHLER] Projektordner nicht gefunden: {path}", file=sys.stderr)
+        return EXIT_ANALYSIS_ERROR
+
+    result = analyze_project(path)
+    _emit_cli_report(generate_project_report(result))
+    json_report = build_json_report("project", result, source_name=path)
+    if not _write_cli_json_if_requested(json_report, json_output):
+        return EXIT_ANALYSIS_ERROR
+
+    if result.files_with_errors:
+        return EXIT_PARTIAL_ERROR
+    return EXIT_FINDINGS if _project_has_findings(result) else EXIT_OK
+
+
+def _run_cli_snippet(code: str, json_output: Optional[str] = None) -> int:
+    """Analysiert ein Snippet ohne temporäre Projektdateien."""
+    try:
+        result = analyze_source(code, source_name="<snippet>")
+    except Exception as exc:
+        print(f"[FEHLER] {exc}", file=sys.stderr)
+        return EXIT_ANALYSIS_ERROR
+
+    _emit_cli_report(generate_report(result))
+    json_report = build_json_report("snippet", result, source_name="<snippet>")
+    if not _write_cli_json_if_requested(json_report, json_output):
+        return EXIT_ANALYSIS_ERROR
+    return EXIT_FINDINGS if _file_has_findings(result) else EXIT_OK
+
+
+def build_cli_parser() -> argparse.ArgumentParser:
+    """Erstellt den Argument-Parser für den CLI-Modus."""
+    parser = argparse.ArgumentParser(
+        description="Analysiert Python-Dateien oder ganze Projektordner ohne GUI.",
+    )
+    target_group = parser.add_mutually_exclusive_group()
+    target_group.add_argument(
+        "--file",
+        metavar="DATEI.py",
+        help="analysiert eine einzelne Python-Datei und schreibt den Textreport nach stdout",
+    )
+    target_group.add_argument(
+        "--project",
+        metavar="ORDNER",
+        help="analysiert rekursiv einen Projektordner und schreibt den Projektreport nach stdout",
+    )
+    target_group.add_argument(
+        "--stdin",
+        action="store_true",
+        help="liest Python-Code aus stdin und behandelt ihn als Snippet",
+    )
+    parser.add_argument(
+        "--json-output",
+        nargs="?",
+        const=DEFAULT_JSON_REPORT_NAME,
+        metavar="DATEI.json",
+        help=(
+            "schreibt zusätzlich einen JSON-Report im Schema "
+            f"{JSON_SCHEMA_VERSION}; ohne Wert wird {DEFAULT_JSON_REPORT_NAME} genutzt"
+        ),
+    )
+    return parser
+
+
+def main(argv: Optional[List[str]] = None) -> int:
+    """Startet GUI oder CLI je nach Argumenten."""
+    parser = build_cli_parser()
+    args = parser.parse_args(argv)
+
+    if args.file:
+        return _run_cli_file(args.file, args.json_output)
+    if args.project:
+        return _run_cli_project(args.project, args.json_output)
+    if args.stdin:
+        return _run_cli_snippet(sys.stdin.read(), args.json_output)
+
+    create_gui()
+    return EXIT_OK
 
 
 # ============================================================================
@@ -1386,4 +1756,4 @@ def create_gui() -> None:
 # ============================================================================
 
 if __name__ == "__main__":
-    create_gui()
+    sys.exit(main())

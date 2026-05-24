@@ -1,7 +1,7 @@
 # Portierungsplan - MethodenAnalyser
 
 Stand: 2026-05-24  
-Status: Plan erstellt, Umsetzung offen
+Status: CLI- und JSON-Export umgesetzt, PWA-Planung offen
 
 ## Ausgangslage
 
@@ -65,8 +65,8 @@ Mindestfelder:
 ## Umsetzungsreihenfolge
 
 1. P0: Windows-Store-Vorbereitung abschließen.
-2. P0: CLI-Modus für Datei- und Projektanalyse ergänzen.
-3. P1: JSON-Export `methodenanalyser-report-v1.json` aus Desktop-Kernlogik erzeugen.
+2. P0: CLI-Modus für Datei- und Projektanalyse ergänzen. (erledigt 2026-05-24)
+3. P1: JSON-Export `methodenanalyser-report-v1.json` aus Desktop-Kernlogik erzeugen. (erledigt 2026-05-24)
 4. P1: PWA-Prototyp für Snippet- und Einzeldatei-Analyse planen.
 5. P2: Android-/iOS-Browsertests für die PWA durchführen.
 6. P3: macOS- und Linux-Smoke-Tests für Source-Start dokumentieren.
