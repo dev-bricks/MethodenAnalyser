@@ -5,6 +5,10 @@ Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
 ## [Unreleased]
 
+### Portierung / Platforms
+- `PORTIERUNGSPLAN.md` dokumentiert die Plattformstrategie: Windows Store zuerst, Web/PWA als gemeinsame Android-/iOS-/Web-Linie, macOS/Linux als Source-Smoke-Ziele.
+- `AUFGABEN.txt` enthält konkrete P0-P3-Aufgaben für CLI-Modus, JSON-Export, PWA-Companion und Cross-Platform-Smoke-Tests.
+
 ### Hinzugefügt / Added
 - README dokumentiert jetzt den GitHub-/Privacy-Hygiene-Check vom 2026-05-16, den synchronen Branch-Stand und die lokalen Artefaktgrenzen.
 - README bindet jetzt den vorhandenen GUI-Screenshot aus `README/screenshots/main.png` direkt ein.
