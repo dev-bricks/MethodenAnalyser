@@ -6,7 +6,7 @@ import zipfile
 from http.server import ThreadingHTTPServer
 from urllib.request import urlopen
 
-from webapp.server import MethodenAnalyserPwaHandler, analyze_payload
+from webapp.server import MethodenAnalyserPwaHandler, analyze_payload, build_runtime_info
 
 
 class MethodenAnalyserWebappServerTests(unittest.TestCase):
@@ -88,12 +88,34 @@ class MethodenAnalyserWebappServerTests(unittest.TestCase):
                 )
             )
 
+    def test_runtime_info_for_local_only_server(self) -> None:
+        info = build_runtime_info("127.0.0.1", 8765, address_supplier=lambda: ["192.168.0.5"])
+
+        self.assertTrue(info["local_only"])
+        self.assertFalse(info["candidate_urls"])
+        self.assertEqual(info["mobile_command"], "python webapp/server.py --host 0.0.0.0 --port 8765")
+
+    def test_runtime_info_for_wildcard_server_includes_lan_urls(self) -> None:
+        info = build_runtime_info(
+            "0.0.0.0",
+            8765,
+            address_supplier=lambda: ["10.0.0.8", "192.168.0.5"],
+        )
+
+        self.assertFalse(info["local_only"])
+        self.assertTrue(info["mobile_ready"])
+        self.assertEqual(
+            info["candidate_urls"],
+            ["http://10.0.0.8:8765/", "http://192.168.0.5:8765/"],
+        )
+
 
 class MethodenAnalyserStaticHttpTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         cls.httpd = ThreadingHTTPServer(("127.0.0.1", 0), MethodenAnalyserPwaHandler)
         cls.port = cls.httpd.server_address[1]
+        cls.httpd.runtime_info = build_runtime_info("127.0.0.1", cls.port)
         cls.thread = threading.Thread(target=cls.httpd.serve_forever, daemon=True)
         cls.thread.start()
 
@@ -128,6 +150,14 @@ class MethodenAnalyserStaticHttpTests(unittest.TestCase):
             body = response.read().decode("utf-8")
 
         self.assertIn("MethodenAnalyser ist offline bereit", body)
+
+    def test_runtime_endpoint_returns_mobile_metadata(self) -> None:
+        with urlopen(self.build_url("/api/runtime")) as response:
+            payload = response.read().decode("utf-8")
+
+        self.assertIn('"ok": true', payload)
+        self.assertIn('"local_only": true', payload)
+        self.assertIn('"mobile_command": "python webapp/server.py --host 0.0.0.0 --port', payload)
 
 
 if __name__ == "__main__":

@@ -4,9 +4,11 @@ import argparse
 import base64
 import binascii
 import io
+import ipaddress
 import json
 import mimetypes
 import os
+import socket
 import sys
 import tempfile
 import zipfile
@@ -41,6 +43,9 @@ from MethodenAnalyser3 import (  # noqa: E402
 mimetypes.add_type("application/manifest+json", ".webmanifest")
 mimetypes.add_type("text/javascript", ".js")
 mimetypes.add_type("text/css", ".css")
+
+LOCAL_ONLY_HOSTS = {"127.0.0.1", "::1", "localhost"}
+WILDCARD_HOSTS = {"0.0.0.0", "::"}
 
 
 def _clean_filename(filename: Any, source_kind: str) -> str:
@@ -176,13 +181,94 @@ def _resolve_under(root: Path, relative_path: str) -> Path | None:
     return target
 
 
+def _discover_candidate_ipv4_addresses() -> list[str]:
+    addresses: set[str] = set()
+
+    for host_name in {socket.gethostname(), socket.getfqdn()}:
+        if not host_name:
+            continue
+        try:
+            infos = socket.getaddrinfo(host_name, None, family=socket.AF_INET, type=socket.SOCK_STREAM)
+        except socket.gaierror:
+            continue
+        for info in infos:
+            candidate = info[4][0]
+            if candidate:
+                addresses.add(candidate)
+
+    try:
+        with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as probe:
+            probe.connect(("8.8.8.8", 80))
+            addresses.add(probe.getsockname()[0])
+    except OSError:
+        pass
+
+    filtered: list[str] = []
+    for candidate in sorted(addresses):
+        try:
+            parsed = ipaddress.ip_address(candidate)
+        except ValueError:
+            continue
+        if parsed.is_loopback or parsed.is_multicast or parsed.is_unspecified:
+            continue
+        filtered.append(candidate)
+    return filtered
+
+
+def build_runtime_info(
+    bind_host: str,
+    bind_port: int,
+    address_supplier: Any | None = None,
+) -> dict[str, Any]:
+    host = (bind_host or "127.0.0.1").strip() or "127.0.0.1"
+    supplier = address_supplier or _discover_candidate_ipv4_addresses
+    local_url = f"http://127.0.0.1:{bind_port}/"
+
+    info: dict[str, Any] = {
+        "bind_host": host,
+        "bind_port": bind_port,
+        "local_url": local_url,
+        "local_only": host in LOCAL_ONLY_HOSTS,
+        "mobile_ready": host not in LOCAL_ONLY_HOSTS,
+        "candidate_urls": [],
+        "mobile_command": f"python webapp/server.py --host 0.0.0.0 --port {bind_port}",
+        "mobile_notes": {
+            "network": "Geräte müssen im selben WLAN sein; Browser-Analyse bleibt lokal ohne Cloud.",
+            "android": "Android: URL in Chrome oder Edge öffnen und bei Bedarf über das Menü als App installieren.",
+            "ios": "iPhone/iPad: URL in Safari öffnen und über Teilen > Zum Home-Bildschirm sichern.",
+        },
+    }
+
+    if host in WILDCARD_HOSTS:
+        for candidate in supplier():
+            info["candidate_urls"].append(f"http://{candidate}:{bind_port}/")
+        return info
+
+    if host not in LOCAL_ONLY_HOSTS:
+        info["candidate_urls"].append(f"http://{host}:{bind_port}/")
+
+    return info
+
+
+def get_runtime_info(server: Any) -> dict[str, Any]:
+    runtime_info = getattr(server, "runtime_info", None)
+    if isinstance(runtime_info, dict):
+        return runtime_info
+
+    host, port = server.server_address[:2]
+    return build_runtime_info(str(host), int(port))
+
+
 class MethodenAnalyserPwaHandler(BaseHTTPRequestHandler):
-    server_version = "MethodenAnalyserPWA/0.2"
+    server_version = "MethodenAnalyserPWA/0.3"
 
     def do_GET(self) -> None:
         path = urlparse(self.path).path
         if path == "/api/health":
             self._send_json({"ok": True, "service": "methodenanalyser-webapp"})
+            return
+        if path == "/api/runtime":
+            self._send_json({"ok": True, "runtime": get_runtime_info(self.server)})
             return
         if path.startswith("/assets/"):
             asset_name = unquote(path.removeprefix("/assets/"))
@@ -286,8 +372,15 @@ def build_arg_parser() -> argparse.ArgumentParser:
 def main(argv: list[str] | None = None) -> int:
     args = build_arg_parser().parse_args(argv)
     server = ThreadingHTTPServer((args.host, args.port), MethodenAnalyserPwaHandler)
+    server.runtime_info = build_runtime_info(args.host, args.port)
     url = f"http://{args.host}:{args.port}/"
     print(f"MethodenAnalyser Web/PWA läuft lokal unter {url}")
+    if server.runtime_info["candidate_urls"]:
+        print("Mobile/WLAN-Testpfade:")
+        for candidate in server.runtime_info["candidate_urls"]:
+            print(f"  - {candidate}")
+    elif server.runtime_info["local_only"]:
+        print(f"Für Android/iOS im selben WLAN neu starten mit: {server.runtime_info['mobile_command']}")
     print("Beenden mit Strg+C.")
     try:
         server.serve_forever()

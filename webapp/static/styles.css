@@ -265,6 +265,100 @@ button:focus-visible {
   border-color: rgba(21, 111, 91, 0.28);
 }
 
+.mobile-guide {
+  margin-top: 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px;
+  background:
+    radial-gradient(circle at top right, rgba(21, 111, 91, 0.12), transparent 44%),
+    linear-gradient(180deg, #fbfcfb, #f2f6f3);
+}
+
+.mobile-guide-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.mobile-guide-header h3 {
+  margin: 0 0 4px;
+  font-size: 1rem;
+}
+
+.mobile-command {
+  margin: 12px 0 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.mobile-command code,
+.mobile-url-empty,
+.mobile-url-item a {
+  overflow-wrap: anywhere;
+}
+
+.mobile-url-list {
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.mobile-url-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.92);
+}
+
+.mobile-url-item a {
+  color: var(--accent-strong);
+  font-family: Consolas, "Cascadia Mono", "Courier New", monospace;
+  font-size: 0.88rem;
+  text-decoration: none;
+}
+
+.mobile-copy-button {
+  flex: 0 0 auto;
+}
+
+.mobile-url-empty {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.mobile-steps {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.mobile-steps article {
+  min-height: 100%;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.76);
+}
+
+.mobile-steps h4 {
+  margin: 0 0 6px;
+  font-size: 0.93rem;
+}
+
+.mobile-steps p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+
 .primary-button,
 .secondary-button,
 .ghost-button {
@@ -487,6 +581,16 @@ pre {
 
   .summary-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .mobile-guide-header,
+  .mobile-url-item {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .mobile-steps {
+    grid-template-columns: 1fr;
   }
 
   .source-mode,

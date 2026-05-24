@@ -12,6 +12,8 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <title>MethodenAnalyser Web Companion</title>
+    <link rel="icon" href="/assets/Square44x44Logo.png" sizes="44x44" type="image/png">
+    <link rel="apple-touch-icon" href="/assets/Square150x150Logo.png">
     <link rel="manifest" href="/manifest.webmanifest">
     <link rel="stylesheet" href="/styles.css">
   </head>
@@ -60,6 +62,28 @@
         <section id="appNotice" class="app-notice" aria-live="polite">
           <strong id="appNoticeTitle">Lokaler Entwurf aktiv</strong>
           <p id="appNoticeText">Eingaben und der letzte JSON-Report bleiben nur in diesem Browser gespeichert.</p>
+        </section>
+
+        <section class="mobile-guide" aria-labelledby="mobileGuideTitle">
+          <div class="mobile-guide-header">
+            <div>
+              <h3 id="mobileGuideTitle">Android/iOS-Testpfad</h3>
+              <p id="mobileGuideSummary" class="field-hint">Standardmäßig läuft der Companion nur lokal auf diesem Gerät.</p>
+            </div>
+            <span id="mobileGuideBadge" class="status-pill">Nur lokal</span>
+          </div>
+          <p id="mobileGuideCommand" class="mobile-command">Für WLAN-Tests: <code>python webapp/server.py --host 0.0.0.0 --port 8765</code></p>
+          <div id="mobileUrlList" class="mobile-url-list"></div>
+          <div class="mobile-steps">
+            <article>
+              <h4>Android</h4>
+              <p id="androidHint">Chrome oder Edge im selben WLAN öffnen und die URL bei Bedarf als App installieren.</p>
+            </article>
+            <article>
+              <h4>iPhone / iPad</h4>
+              <p id="iosHint">Safari im selben WLAN öffnen und die Seite über Teilen zum Home-Bildschirm sichern.</p>
+            </article>
+          </div>
         </section>
       </section>
 

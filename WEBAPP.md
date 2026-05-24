@@ -24,6 +24,14 @@ Optionale Parameter:
 python webapp/server.py --host 127.0.0.1 --port 8765
 ```
 
+Für Android-/iOS-Tests im selben WLAN:
+
+```bash
+python webapp/server.py --host 0.0.0.0 --port 8765
+```
+
+Der Web Companion blendet dann im Bereich **Android/iOS-Testpfad** erkannte LAN-URLs und Install-Hinweise für Android sowie iPhone/iPad ein.
+
 ## Funktionen
 
 - Python-Code in das Textfeld einfügen und lokal analysieren.
@@ -38,6 +46,7 @@ python webapp/server.py --host 127.0.0.1 --port 8765
 ## Mobile/PWA-Verhalten
 
 - Chrome und Edge können die App als installierbare PWA anbieten.
+- Für mobile Tests im selben WLAN zeigt die Oberfläche den empfohlenen LAN-Startbefehl und, falls erkannt, direkte Geräte-URLs zum Kopieren.
 - Bereits geladene Oberfläche bleibt durch den Service Worker auch ohne laufenden Server erreichbar.
 - Neue Analysen benötigen weiter den lokalen Python-Prozess; offline bleiben nur Entwurf, letzter JSON-Report und die UI verfügbar.
 - Android und iOS nutzen dieselbe Web-Linie; es gibt weiterhin keine native App und keinen Cloud-Sync.

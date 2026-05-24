@@ -42,6 +42,7 @@ Die Nachfrage liegt vor allem bei Entwicklerinnen und Entwicklern, die kleine bi
 - Start als getrennte, kleine Companion-App, nicht als Umbau der Desktop-GUI.
 - Erste Ausbaustufe umgesetzt: Code-Paste, einzelne `.py`-Dateien und kleine `.zip`-Archive laufen über einen lokalen stdlib-Python-Dienst unter `webapp/server.py`.
 - Zweite Ausbaustufe umgesetzt: Install-Button, lokale Draft-/Report-Persistenz und Offline-Shell für bereits geladene PWA-Ressourcen.
+- Dritte Ausbaustufe umgesetzt: Der Companion liefert jetzt einen eigenen Android/iOS-Testpfad mit LAN-Startkommando, Laufzeitmetadaten und getrennten Install-Hinweisen für Android sowie iPhone/iPad.
 - Kein direkter Zugriff auf beliebige lokale Projektordner im Browser.
 - Export/Import über `methodenanalyser-report-v1.json`.
 - Android und iOS nutzen dieselbe PWA statt eigener nativer Codebasen.
@@ -70,7 +71,7 @@ Mindestfelder:
 3. P1: JSON-Export `methodenanalyser-report-v1.json` aus Desktop-Kernlogik erzeugen. (erledigt 2026-05-24)
 4. P1: PWA-Companion für Snippet-, Einzeldatei- und kleine ZIP-Analyse umsetzen. (erledigt 2026-05-24)
 5. P1/P2: PWA-Installierbarkeit, Draft-Persistenz und Offline-Shell lokal absichern. (erledigt 2026-05-24)
-6. P2: Android-/iOS-Browsertests für die PWA durchführen.
+6. P2: Android-/iOS-Browsertests für die PWA durchführen. Vorbereitung über LAN-Startpfad und Laufzeit-Hinweise im Companion erledigt 2026-05-24.
 7. P3: macOS- und Linux-Smoke-Tests für Source-Start dokumentieren.
 
 ## Nicht-Ziele
@@ -86,5 +87,6 @@ Mindestfelder:
 - CLI kann Datei und Projektordner ohne GUI analysieren.
 - JSON-Export ist stabil genug für Web/PWA und spätere Automationen.
 - Web Companion startet lokal ohne externe Abhängigkeiten, lässt sich als PWA installieren und erzeugt dasselbe JSON-Format.
+- Web Companion erklärt den LAN-/WLAN-Testpfad für Android und iOS direkt in der Oberfläche.
 - Microsoft-Store-Paket bleibt ohne Netzwerkanforderung nutzbar.
 - PWA verarbeitet mindestens Snippets, einzelne Python-Dateien und kleine ZIP-Archive.

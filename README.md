@@ -100,6 +100,14 @@ Unter Windows startet `START_WEBAPP.bat` denselben lokalen Server. Die Oberfläc
 
 Die PWA speichert den aktuellen Entwurf und den letzten JSON-Report lokal im Browser, bietet einen Install-Flow für Chromium-basierte Browser und hält die bereits geladene Oberfläche per Service Worker offline verfügbar. Für neue Analysen muss der lokale Python-Server trotzdem laufen.
 
+Für Android-/iOS-Tests im selben WLAN kann derselbe lokale Dienst gezielt auf dem Netzwerk lauschen:
+
+```bash
+python webapp/server.py --host 0.0.0.0 --port 8765
+```
+
+Der Web Companion zeigt dann im neuen Bereich **Android/iOS-Testpfad** die passende Startanweisung, erkannte LAN-URLs sowie getrennte Install-Hinweise für Android (Chrome/Edge) und iPhone/iPad (Safari).
+
 Exit-Codes:
 
 - `0` = Analyse erfolgreich und keine Findings im Report

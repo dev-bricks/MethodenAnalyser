@@ -20,6 +20,12 @@ const elements = {
   appNotice: document.querySelector("#appNotice"),
   appNoticeTitle: document.querySelector("#appNoticeTitle"),
   appNoticeText: document.querySelector("#appNoticeText"),
+  mobileGuideSummary: document.querySelector("#mobileGuideSummary"),
+  mobileGuideBadge: document.querySelector("#mobileGuideBadge"),
+  mobileGuideCommand: document.querySelector("#mobileGuideCommand"),
+  mobileUrlList: document.querySelector("#mobileUrlList"),
+  androidHint: document.querySelector("#androidHint"),
+  iosHint: document.querySelector("#iosHint"),
 };
 
 const sampleCode = `import os
@@ -80,6 +86,7 @@ let currentZipBase64 = null;
 let lastReport = null;
 let installPromptEvent = null;
 let isRestoringDraft = false;
+let runtimeInfo = null;
 
 function getMetricLabels(report = null) {
   if (report && ["project", "zip"].includes(report.source_kind)) {
@@ -103,6 +110,78 @@ function setNotice(title, text, variant = "") {
   elements.appNotice.dataset.variant = variant;
   elements.appNoticeTitle.textContent = title;
   elements.appNoticeText.textContent = text;
+}
+
+async function copyText(value) {
+  if (navigator.clipboard?.writeText) {
+    await navigator.clipboard.writeText(value);
+    return true;
+  }
+
+  const helper = document.createElement("textarea");
+  helper.value = value;
+  helper.setAttribute("readonly", "readonly");
+  helper.style.position = "absolute";
+  helper.style.left = "-9999px";
+  document.body.append(helper);
+  helper.select();
+  const copied = document.execCommand("copy");
+  helper.remove();
+  return copied;
+}
+
+function renderMobileGuide(info) {
+  runtimeInfo = info;
+  elements.mobileUrlList.replaceChildren();
+  elements.mobileGuideCommand.innerHTML = `Für WLAN-Tests: <code>${info.mobile_command}</code>`;
+  elements.androidHint.textContent = info.mobile_notes.android;
+  elements.iosHint.textContent = info.mobile_notes.ios;
+
+  if (info.local_only) {
+    elements.mobileGuideBadge.textContent = "Nur lokal";
+    elements.mobileGuideSummary.textContent = "Standardmäßig ist die PWA nur auf diesem Gerät erreichbar. Für Android/iOS im selben WLAN den Server mit 0.0.0.0 starten.";
+    return;
+  }
+
+  elements.mobileGuideBadge.textContent = "WLAN bereit";
+  elements.mobileGuideSummary.textContent = info.mobile_notes.network;
+
+  if (!Array.isArray(info.candidate_urls) || info.candidate_urls.length === 0) {
+    const note = document.createElement("p");
+    note.className = "mobile-url-empty";
+    note.textContent = "Keine LAN-Adressen erkannt. Du kannst stattdessen den manuellen Host oder Rechnernamen in derselben Port-Kombination verwenden.";
+    elements.mobileUrlList.append(note);
+    return;
+  }
+
+  for (const url of info.candidate_urls) {
+    const item = document.createElement("div");
+    item.className = "mobile-url-item";
+
+    const link = document.createElement("a");
+    link.href = url;
+    link.textContent = url;
+    link.target = "_blank";
+    link.rel = "noreferrer";
+
+    const copyButton = document.createElement("button");
+    copyButton.type = "button";
+    copyButton.className = "ghost-button mobile-copy-button";
+    copyButton.textContent = "Kopieren";
+    copyButton.addEventListener("click", async () => {
+      const copied = await copyText(url);
+      if (copied) {
+        setNotice(
+          "URL kopiert",
+          "Die LAN-Adresse liegt jetzt in der Zwischenablage und kann an ein Mobilgerät geschickt werden.",
+          "ok",
+        );
+      }
+    });
+
+    item.append(link, copyButton);
+    elements.mobileUrlList.append(item);
+  }
 }
 
 function syncInputUi() {
@@ -442,6 +521,31 @@ async function checkHealth() {
   }
 }
 
+async function loadRuntimeInfo() {
+  try {
+    const response = await fetch("/api/runtime");
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+    const payload = await response.json();
+    if (!payload.ok || !payload.runtime) {
+      throw new Error("runtime");
+    }
+    renderMobileGuide(payload.runtime);
+  } catch {
+    renderMobileGuide({
+      local_only: true,
+      mobile_command: "python webapp/server.py --host 0.0.0.0 --port 8765",
+      candidate_urls: [],
+      mobile_notes: {
+        network: "Geräte müssen im selben WLAN sein; Browser-Analyse bleibt lokal ohne Cloud.",
+        android: "Chrome oder Edge im selben WLAN öffnen und die URL bei Bedarf als App installieren.",
+        ios: "Safari im selben WLAN öffnen und die Seite über Teilen zum Home-Bildschirm sichern.",
+      },
+    });
+  }
+}
+
 function syncConnectivityLabel() {
   if (!navigator.onLine) {
     elements.connectionStatus.textContent = "Gerät offline";
@@ -539,6 +643,7 @@ if ("serviceWorker" in navigator) {
 }
 
 renderSummary();
+loadRuntimeInfo();
 restoreDraft();
 restoreLastReport();
 setMode(sourceKind);
