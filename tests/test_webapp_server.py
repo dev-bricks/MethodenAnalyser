@@ -151,6 +151,13 @@ class MethodenAnalyserStaticHttpTests(unittest.TestCase):
 
         self.assertIn("MethodenAnalyser ist offline bereit", body)
 
+    def test_index_includes_json_import_controls(self) -> None:
+        with urlopen(self.build_url("/")) as response:
+            body = response.read().decode("utf-8")
+
+        self.assertIn('id="importJson"', body)
+        self.assertIn('id="reportFile"', body)
+
     def test_runtime_endpoint_returns_mobile_metadata(self) -> None:
         with urlopen(self.build_url("/api/runtime")) as response:
             payload = response.read().decode("utf-8")

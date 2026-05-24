@@ -38,7 +38,7 @@ Der Web Companion blendet dann im Bereich **Android/iOS-Testpfad** erkannte LAN-
 - Einzelne `.py`-Dateien im Browser öffnen und analysieren.
 - Kleine `.zip`-Archive mit Python-Dateien lokal hochladen und als Mini-Projekt analysieren.
 - Textreport direkt anzeigen.
-- JSON-Report im Schema `methodenanalyser-report-v1.json` anzeigen und speichern.
+- JSON-Report im Schema `methodenanalyser-report-v1.json` anzeigen, speichern und wieder importieren.
 - Entwurf und letzter JSON-Report lokal im Browser zwischenspeichern.
 - PWA installieren und nach der ersten Nutzung offline erneut öffnen.
 - Statische PWA-Dateien mit Service Worker cachen; die Analyse-API bleibt lokal und wird nicht gecacht.
@@ -48,7 +48,7 @@ Der Web Companion blendet dann im Bereich **Android/iOS-Testpfad** erkannte LAN-
 - Chrome und Edge können die App als installierbare PWA anbieten.
 - Für mobile Tests im selben WLAN zeigt die Oberfläche den empfohlenen LAN-Startbefehl und, falls erkannt, direkte Geräte-URLs zum Kopieren.
 - Bereits geladene Oberfläche bleibt durch den Service Worker auch ohne laufenden Server erreichbar.
-- Neue Analysen benötigen weiter den lokalen Python-Prozess; offline bleiben nur Entwurf, letzter JSON-Report und die UI verfügbar.
+- Neue Analysen benötigen weiter den lokalen Python-Prozess; offline bleiben Entwurf, letzter JSON-Report, importierte Reports und die UI verfügbar.
 - Android und iOS nutzen dieselbe Web-Linie; es gibt weiterhin keine native App und keinen Cloud-Sync.
 
 ## Lokale API

@@ -1,7 +1,7 @@
 # Portierungsplan - MethodenAnalyser
 
 Stand: 2026-05-24  
-Status: CLI-, JSON-Export und lokaler Web/PWA-Companion inklusive ZIP-Upload, Install-Flow und Offline-Shell umgesetzt
+Status: CLI-, JSON-Export und lokaler Web/PWA-Companion inklusive ZIP-Upload, Report-Import, Install-Flow und Offline-Shell umgesetzt
 
 ## Ausgangslage
 
@@ -44,7 +44,7 @@ Die Nachfrage liegt vor allem bei Entwicklerinnen und Entwicklern, die kleine bi
 - Zweite Ausbaustufe umgesetzt: Install-Button, lokale Draft-/Report-Persistenz und Offline-Shell für bereits geladene PWA-Ressourcen.
 - Dritte Ausbaustufe umgesetzt: Der Companion liefert jetzt einen eigenen Android/iOS-Testpfad mit LAN-Startkommando, Laufzeitmetadaten und getrennten Install-Hinweisen für Android sowie iPhone/iPad.
 - Kein direkter Zugriff auf beliebige lokale Projektordner im Browser.
-- Export/Import über `methodenanalyser-report-v1.json`.
+- Export/Import über `methodenanalyser-report-v1.json`, damit Desktop-Reports auch im Browser lokal geprüft werden können.
 - Android und iOS nutzen dieselbe PWA statt eigener nativer Codebasen.
 
 ### Austauschformat

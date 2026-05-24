@@ -29,6 +29,7 @@
       <div class="topbar-actions">
         <span id="connectionStatus" class="status-pill">Lokal</span>
         <button id="installButton" class="ghost-button" type="button" hidden>App installieren</button>
+        <button id="importJson" class="ghost-button" type="button">JSON laden</button>
         <button id="downloadJson" class="ghost-button" type="button" disabled>JSON speichern</button>
       </div>
     </header>
@@ -50,6 +51,7 @@
 
         <div class="file-row">
           <input id="sourceFile" type="file" accept=".py,.zip,text/x-python,text/plain,application/zip,application/x-zip-compressed">
+          <input id="reportFile" class="visually-hidden" type="file" accept=".json,application/json">
           <span id="fileName">Keine Datei gewählt</span>
         </div>
 

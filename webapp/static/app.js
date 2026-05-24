@@ -9,7 +9,9 @@ const elements = {
   analyzeButton: document.querySelector("#analyzeButton"),
   sampleButton: document.querySelector("#sampleButton"),
   clearButton: document.querySelector("#clearButton"),
+  importJson: document.querySelector("#importJson"),
   downloadJson: document.querySelector("#downloadJson"),
+  reportFile: document.querySelector("#reportFile"),
   resultState: document.querySelector("#resultState"),
   summaryGrid: document.querySelector("#summaryGrid"),
   findingList: document.querySelector("#findingList"),
@@ -87,6 +89,10 @@ let lastReport = null;
 let installPromptEvent = null;
 let isRestoringDraft = false;
 let runtimeInfo = null;
+
+function isPlainObject(value) {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
 
 function getMetricLabels(report = null) {
   if (report && ["project", "zip"].includes(report.source_kind)) {
@@ -272,6 +278,63 @@ function collectFindings(report) {
   return groups;
 }
 
+function reportHasFindings(report) {
+  return collectFindings(report).length > 0;
+}
+
+function normalizeImportedReport(rawReport) {
+  if (!isPlainObject(rawReport)) {
+    throw new Error("Die JSON-Datei muss ein Objekt im Report-Format enthalten.");
+  }
+  if (rawReport.schema_version !== "methodenanalyser-report-v1") {
+    throw new Error("Nur methodenanalyser-report-v1.json wird unterstützt.");
+  }
+  if (!["snippet", "file", "project", "zip"].includes(rawReport.source_kind)) {
+    throw new Error("Der JSON-Report enthält keinen unterstützten source_kind.");
+  }
+
+  return {
+    ...rawReport,
+    files: Array.isArray(rawReport.files) ? rawReport.files : [],
+    summary: isPlainObject(rawReport.summary) ? rawReport.summary : {},
+    unused_imports: isPlainObject(rawReport.unused_imports) ? rawReport.unused_imports : {},
+    unused_definitions: isPlainObject(rawReport.unused_definitions) ? rawReport.unused_definitions : {},
+    missing_imports: isPlainObject(rawReport.missing_imports) ? rawReport.missing_imports : {},
+    missing_definitions: isPlainObject(rawReport.missing_definitions) ? rawReport.missing_definitions : {},
+    duplicate_imports: isPlainObject(rawReport.duplicate_imports) ? rawReport.duplicate_imports : {},
+    errors: Array.isArray(rawReport.errors) ? rawReport.errors : [],
+  };
+}
+
+function describeImportedReport(report, importedFileName) {
+  const sourceLabelMap = {
+    snippet: "Snippet",
+    file: "Datei",
+    project: "Projekt",
+    zip: "ZIP-Projekt",
+  };
+  const sourceName = typeof report.source?.name === "string" && report.source.name
+    ? report.source.name
+    : importedFileName;
+  const lines = [
+    `Importierter JSON-Report: ${importedFileName}`,
+    `Quelle: ${sourceLabelMap[report.source_kind] || report.source_kind} (${sourceName})`,
+    `Schema: ${report.schema_version}`,
+  ];
+
+  if (typeof report.generated_at === "string" && report.generated_at) {
+    lines.push(`Erzeugt am: ${report.generated_at}`);
+  }
+  if (report.source_kind === "project" || report.source_kind === "zip") {
+    lines.push(`Dateien im Report: ${report.summary.files_analyzed ?? report.files.length ?? 0}`);
+  }
+
+  lines.push(
+    "Der Textreport selbst wird nicht im JSON gespeichert. Für eine frische Textansicht den lokalen Python-Server erneut nutzen."
+  );
+  return lines.join("\n");
+}
+
 function renderFindings(report) {
   elements.findingList.replaceChildren();
   const groups = collectFindings(report);
@@ -307,6 +370,18 @@ function renderResult(payload) {
   elements.jsonPreview.textContent = JSON.stringify(payload.report, null, 2);
   elements.downloadJson.disabled = false;
   setState(payload.has_findings ? "Findings" : "Sauber", payload.has_findings ? "state-warning" : "state-ok");
+  persistReport();
+}
+
+function renderImportedReport(report, importedFileName) {
+  lastReport = report;
+  const hasFindings = reportHasFindings(report);
+  renderSummary(report.summary, report);
+  renderFindings(report);
+  elements.textReport.textContent = describeImportedReport(report, importedFileName);
+  elements.jsonPreview.textContent = JSON.stringify(report, null, 2);
+  elements.downloadJson.disabled = false;
+  setState(hasFindings ? "Report geladen" : "Report sauber", hasFindings ? "state-warning" : "state-ok");
   persistReport();
 }
 
@@ -461,6 +536,33 @@ async function analyzeCurrentSource() {
   }
 }
 
+async function loadReportFile(file) {
+  if (!file) {
+    return;
+  }
+
+  try {
+    const rawText = await file.text();
+    const parsed = JSON.parse(rawText);
+    const report = normalizeImportedReport(parsed);
+    renderImportedReport(report, file.name || "methodenanalyser-report-v1.json");
+    setNotice(
+      "JSON-Report geladen",
+      "Der Report ist jetzt lokal im Browser verfügbar und kann mobil oder offline erneut betrachtet werden.",
+      "ok",
+    );
+  } catch (error) {
+    renderError(error instanceof Error ? error.message : "JSON-Report konnte nicht geladen werden.");
+    setNotice(
+      "JSON-Import fehlgeschlagen",
+      "Bitte nur gültige methodenanalyser-report-v1.json-Dateien laden.",
+      "warning",
+    );
+  } finally {
+    elements.reportFile.value = "";
+  }
+}
+
 function downloadCurrentJson() {
   if (!lastReport) {
     return;
@@ -591,6 +693,7 @@ function resetState() {
   lastReport = null;
   elements.sourceCode.value = "";
   elements.sourceFile.value = "";
+  elements.reportFile.value = "";
   elements.fileName.textContent = "Keine Datei gewählt";
   renderSummary();
   elements.findingList.replaceChildren();
@@ -617,10 +720,16 @@ elements.sampleButton.addEventListener("click", () => {
   persistDraft();
 });
 elements.clearButton.addEventListener("click", resetState);
+elements.importJson.addEventListener("click", () => {
+  elements.reportFile.click();
+});
 elements.downloadJson.addEventListener("click", downloadCurrentJson);
 elements.installButton.addEventListener("click", installApp);
 elements.sourceFile.addEventListener("change", (event) => {
   loadSelectedFile(event.target.files?.[0]);
+});
+elements.reportFile.addEventListener("change", (event) => {
+  loadReportFile(event.target.files?.[0]);
 });
 elements.sourceCode.addEventListener("input", persistDraft);
 
