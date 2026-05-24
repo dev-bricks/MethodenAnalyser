@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#156f5b">
+    <title>MethodenAnalyser Web Companion</title>
+    <link rel="manifest" href="/manifest.webmanifest">
+    <link rel="stylesheet" href="/styles.css">
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">
+        <img src="/assets/Square44x44Logo.png" alt="" width="44" height="44">
+        <div>
+          <h1>MethodenAnalyser</h1>
+          <p>Web Companion</p>
+        </div>
+      </div>
+      <div class="topbar-actions">
+        <span id="connectionStatus" class="status-pill">Lokal</span>
+        <button id="downloadJson" class="ghost-button" type="button" disabled>JSON speichern</button>
+      </div>
+    </header>
+
+    <main class="workspace">
+      <section class="pane input-pane" aria-labelledby="inputTitle">
+        <div class="pane-header">
+          <h2 id="inputTitle">Quelle</h2>
+          <div class="source-mode" role="group" aria-label="Quelltyp">
+            <button id="snippetMode" class="mode-button active" type="button">Snippet</button>
+            <button id="fileMode" class="mode-button" type="button">Datei</button>
+          </div>
+        </div>
+
+        <label class="field-label" for="sourceCode">Python-Code</label>
+        <textarea id="sourceCode" spellcheck="false" autocomplete="off" wrap="off"></textarea>
+
+        <div class="file-row">
+          <input id="sourceFile" type="file" accept=".py,text/x-python,text/plain">
+          <span id="fileName">Keine Datei gewählt</span>
+        </div>
+
+        <div class="action-row">
+          <button id="analyzeButton" class="primary-button" type="button">Analysieren</button>
+          <button id="sampleButton" class="secondary-button" type="button">Beispiel laden</button>
+          <button id="clearButton" class="secondary-button" type="button">Leeren</button>
+        </div>
+      </section>
+
+      <section class="pane result-pane" aria-labelledby="resultTitle">
+        <div class="pane-header">
+          <h2 id="resultTitle">Ergebnis</h2>
+          <span id="resultState" class="result-state">Bereit</span>
+        </div>
+
+        <div id="summaryGrid" class="summary-grid" aria-live="polite"></div>
+        <div id="findingList" class="finding-list"></div>
+
+        <details class="report-section" open>
+          <summary>Textreport</summary>
+          <pre id="textReport">Noch keine Analyse gestartet.</pre>
+        </details>
+
+        <details class="report-section">
+          <summary>JSON</summary>
+          <pre id="jsonPreview">{}</pre>
+        </details>
+      </section>
+    </main>
+
+    <script src="/app.js" defer></script>
+  </body>
+</html>

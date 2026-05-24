@@ -1,7 +1,7 @@
 # Portierungsplan - MethodenAnalyser
 
 Stand: 2026-05-24  
-Status: CLI- und JSON-Export umgesetzt, PWA-Planung offen
+Status: CLI-, JSON-Export und lokaler Web/PWA-Prototyp umgesetzt
 
 ## Ausgangslage
 
@@ -22,9 +22,9 @@ Die Nachfrage liegt vor allem bei Entwicklerinnen und Entwicklern, die kleine bi
 | Plattform | Entscheidung | Begründung | Nächster Schritt |
 |---|---|---|---|
 | Windows Store | Priorität P0 | Beste Zielgruppe, vorhandene Store-Artefakte, keine externen Laufzeitabhängigkeiten | Store-Screenshots, Listing, Dogfooding-Build und Pre-Submission prüfen |
-| Webapp / PWA | Priorität P1 | Gute Demo- und Companion-Linie für Snippets, einzelne Dateien und kleine Uploads | Minimalen Web-Prototyp mit `methodenanalyser-report-v1.json` planen |
-| Android | P2 über PWA | Native App wäre Mehraufwand ohne klaren Mehrwert; PWA reicht für mobile Kurzchecks | PWA auf Android-Browser testen |
-| iOS | P2 über PWA | Gleiche Logik wie Android; nativer App-Store-Weg lohnt aktuell nicht | PWA auf iOS Safari testen |
+| Webapp / PWA | Priorität P1 | Gute Demo- und Companion-Linie für Snippets, einzelne Dateien und kleine Uploads | Lokalen Prototyp unter `webapp/` dogfooden und danach ZIP-Upload bewerten |
+| Android | P2 über PWA | Native App wäre Mehraufwand ohne klaren Mehrwert; PWA reicht für mobile Kurzchecks | Web Companion auf Android-Browser testen |
+| iOS | P2 über PWA | Gleiche Logik wie Android; nativer App-Store-Weg lohnt aktuell nicht | Web Companion auf iOS Safari testen |
 | macOS App | P3 | Tkinter/Python sollte laufen, aber Packaging und Signierung sind für die Zielgruppe nachrangig | Source-Smoke-Test und optionales PyInstaller-Bundle prüfen |
 | Linux Version | P3 | Für Entwickler nützlich, aber Distribution über Source/ZIP reicht zunächst | Source-Smoke-Test und README-Hinweis ergänzen |
 
@@ -40,7 +40,7 @@ Die Nachfrage liegt vor allem bei Entwicklerinnen und Entwicklern, die kleine bi
 ### Web/PWA-Linie
 
 - Start als getrennte, kleine Companion-App, nicht als Umbau der Desktop-GUI.
-- Erste Ausbaustufe: Datei-Upload oder Code-Paste, Analyse im Browser oder über kleinen lokalen/serverseitigen Python-Dienst.
+- Erste Ausbaustufe umgesetzt: Code-Paste und einzelne `.py`-Dateien laufen über einen lokalen stdlib-Python-Dienst unter `webapp/server.py`.
 - Kein direkter Zugriff auf beliebige lokale Projektordner im Browser.
 - Export/Import über `methodenanalyser-report-v1.json`.
 - Android und iOS nutzen dieselbe PWA statt eigener nativer Codebasen.
@@ -67,7 +67,7 @@ Mindestfelder:
 1. P0: Windows-Store-Vorbereitung abschließen.
 2. P0: CLI-Modus für Datei- und Projektanalyse ergänzen. (erledigt 2026-05-24)
 3. P1: JSON-Export `methodenanalyser-report-v1.json` aus Desktop-Kernlogik erzeugen. (erledigt 2026-05-24)
-4. P1: PWA-Prototyp für Snippet- und Einzeldatei-Analyse planen.
+4. P1: PWA-Prototyp für Snippet- und Einzeldatei-Analyse umsetzen. (erledigt 2026-05-24)
 5. P2: Android-/iOS-Browsertests für die PWA durchführen.
 6. P3: macOS- und Linux-Smoke-Tests für Source-Start dokumentieren.
 
@@ -83,5 +83,6 @@ Mindestfelder:
 - Desktop-App startet weiter per `START.bat` und `python MethodenAnalyser3.py`.
 - CLI kann Datei und Projektordner ohne GUI analysieren.
 - JSON-Export ist stabil genug für Web/PWA und spätere Automationen.
+- Web Companion startet lokal ohne externe Abhängigkeiten und erzeugt dasselbe JSON-Format.
 - Microsoft-Store-Paket bleibt ohne Netzwerkanforderung nutzbar.
 - PWA verarbeitet mindestens Snippets und einzelne Python-Dateien.

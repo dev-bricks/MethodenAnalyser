@@ -88,6 +88,16 @@ type pfad\zur\datei.py | python MethodenAnalyser3.py --stdin --json-output snipp
 
 `--json-output` schreibt zusätzlich den maschinenlesbaren Report `methodenanalyser-report-v1.json`. Mit eigenem Dateinamen kann der Report gezielt abgelegt werden; das Format ist in [EXPORTFORMAT.md](EXPORTFORMAT.md) dokumentiert.
 
+### Web/PWA-Companion
+
+Für Snippets und einzelne Python-Dateien gibt es zusätzlich einen lokalen Web Companion:
+
+```bash
+python webapp/server.py
+```
+
+Unter Windows startet `START_WEBAPP.bat` denselben lokalen Server. Die Oberfläche läuft standardmäßig unter `http://127.0.0.1:8765/`, nutzt den bestehenden Analysekern und zeigt Text- sowie JSON-Reports an. Details stehen in [WEBAPP.md](WEBAPP.md).
+
 Exit-Codes:
 
 - `0` = Analyse erfolgreich und keine Findings im Report
@@ -153,6 +163,7 @@ Stand: 2026-05-16
 
 ```bash
 python -m py_compile MethodenAnalyser3.py manage_translations.py translator.py
+python -m py_compile webapp/server.py
 python -m unittest discover -s tests -v
 ```
 
