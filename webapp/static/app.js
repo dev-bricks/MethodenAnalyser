@@ -28,6 +28,14 @@ const elements = {
   mobileUrlList: document.querySelector("#mobileUrlList"),
   androidHint: document.querySelector("#androidHint"),
   iosHint: document.querySelector("#iosHint"),
+  refreshPwaStatus: document.querySelector("#refreshPwaStatus"),
+  copyPwaStatus: document.querySelector("#copyPwaStatus"),
+  pwaModeValue: document.querySelector("#pwaModeValue"),
+  pwaInstallValue: document.querySelector("#pwaInstallValue"),
+  pwaWorkerValue: document.querySelector("#pwaWorkerValue"),
+  pwaStorageValue: document.querySelector("#pwaStorageValue"),
+  pwaViewportValue: document.querySelector("#pwaViewportValue"),
+  pwaServerValue: document.querySelector("#pwaServerValue"),
 };
 
 const sampleCode = `import os
@@ -89,6 +97,7 @@ let lastReport = null;
 let installPromptEvent = null;
 let isRestoringDraft = false;
 let runtimeInfo = null;
+let latestPwaStatus = null;
 
 function isPlainObject(value) {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -134,6 +143,126 @@ async function copyText(value) {
   const copied = document.execCommand("copy");
   helper.remove();
   return copied;
+}
+
+function currentStandaloneMode() {
+  return window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
+}
+
+function formatBytes(value) {
+  if (!Number.isFinite(value) || value < 0) {
+    return "unbekannt";
+  }
+  if (value < 1024) {
+    return `${value} B`;
+  }
+  if (value < 1024 * 1024) {
+    return `${(value / 1024).toFixed(0)} KB`;
+  }
+  return `${(value / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+async function collectPwaStatus() {
+  const isStandalone = currentStandaloneMode();
+  const draftSaved = Boolean(localStorage.getItem(STORAGE_KEYS.draft));
+  const reportSaved = Boolean(localStorage.getItem(STORAGE_KEYS.report));
+
+  let workerLabel = "Nicht unterstützt";
+  if ("serviceWorker" in navigator) {
+    try {
+      const registration = await navigator.serviceWorker.getRegistration();
+      if (registration) {
+        workerLabel = navigator.serviceWorker.controller ? "Aktiv und steuert diese Seite" : "Registriert, wartet auf Übernahme";
+      } else {
+        workerLabel = "Noch nicht registriert";
+      }
+    } catch {
+      workerLabel = "Status konnte nicht gelesen werden";
+    }
+  }
+
+  let persistedLabel = `Entwurf: ${draftSaved ? "ja" : "nein"} · Report: ${reportSaved ? "ja" : "nein"}`;
+  if (navigator.storage?.persisted) {
+    try {
+      const persisted = await navigator.storage.persisted();
+      persistedLabel += persisted ? " · Persistenz erlaubt" : " · Persistenz offen";
+    } catch {
+      persistedLabel += " · Persistenz unbekannt";
+    }
+  }
+  if (navigator.storage?.estimate) {
+    try {
+      const estimate = await navigator.storage.estimate();
+      persistedLabel += ` · Nutzung ${formatBytes(estimate.usage ?? 0)} / ${formatBytes(estimate.quota ?? 0)}`;
+    } catch {
+      // Browser ohne verwertbare Speicherwerte ignorieren.
+    }
+  }
+
+  const installLabel = installPromptEvent
+    ? "Prompt verfügbar"
+    : isStandalone
+      ? "Bereits installiert"
+      : "Noch kein Prompt";
+
+  const serverValue = runtimeInfo?.local_only
+    ? runtimeInfo.local_url || "Nur dieses Gerät"
+    : Array.isArray(runtimeInfo?.candidate_urls) && runtimeInfo.candidate_urls.length > 0
+      ? runtimeInfo.candidate_urls[0]
+      : runtimeInfo?.local_url || "Wird lokal erkannt";
+
+  return {
+    mode: isStandalone ? "Standalone / Homescreen-App" : "Browser-Tab",
+    install: installLabel,
+    worker: workerLabel,
+    storage: persistedLabel,
+    viewport: `${window.innerWidth} × ${window.innerHeight} px @ ${window.devicePixelRatio || 1}x`,
+    server: serverValue,
+    online: navigator.onLine,
+  };
+}
+
+function renderPwaStatus(status) {
+  latestPwaStatus = status;
+  elements.pwaModeValue.textContent = status.mode;
+  elements.pwaInstallValue.textContent = status.install;
+  elements.pwaWorkerValue.textContent = status.worker;
+  elements.pwaStorageValue.textContent = status.storage;
+  elements.pwaViewportValue.textContent = status.viewport;
+  elements.pwaServerValue.textContent = status.server;
+}
+
+function buildPwaStatusSummary(status) {
+  const onlineLabel = status.online ? "online" : "offline";
+  return [
+    "MethodenAnalyser Web Companion – PWA-Status",
+    `App-Modus: ${status.mode}`,
+    `Install-Flow: ${status.install}`,
+    `Service Worker: ${status.worker}`,
+    `Lokaler Speicher: ${status.storage}`,
+    `Viewport: ${status.viewport}`,
+    `Server: ${status.server}`,
+    `Netzstatus: ${onlineLabel}`,
+  ].join("\n");
+}
+
+async function refreshPwaStatus() {
+  const status = await collectPwaStatus();
+  renderPwaStatus(status);
+}
+
+async function copyPwaStatus() {
+  if (!latestPwaStatus) {
+    await refreshPwaStatus();
+  }
+  const copied = await copyText(buildPwaStatusSummary(latestPwaStatus));
+  if (copied) {
+    setNotice(
+      "PWA-Status kopiert",
+      "Die kompakte Testkarte liegt jetzt in der Zwischenablage und kann direkt in ein Testprotokoll eingefügt werden.",
+      "ok",
+    );
+  }
 }
 
 function renderMobileGuide(info) {
@@ -406,6 +535,7 @@ function persistDraft() {
 
   try {
     localStorage.setItem(STORAGE_KEYS.draft, JSON.stringify(payload));
+    refreshPwaStatus();
   } catch {
     setNotice(
       "Browser-Speicher blockiert",
@@ -418,11 +548,13 @@ function persistDraft() {
 function persistReport() {
   if (!lastReport) {
     localStorage.removeItem(STORAGE_KEYS.report);
+    refreshPwaStatus();
     return;
   }
 
   try {
     localStorage.setItem(STORAGE_KEYS.report, JSON.stringify(lastReport));
+    refreshPwaStatus();
   } catch {
     setNotice(
       "Report nicht gespeichert",
@@ -634,9 +766,11 @@ async function loadRuntimeInfo() {
       throw new Error("runtime");
     }
     renderMobileGuide(payload.runtime);
+    await refreshPwaStatus();
   } catch {
     renderMobileGuide({
       local_only: true,
+      local_url: "http://127.0.0.1:8765/",
       mobile_command: "python webapp/server.py --host 0.0.0.0 --port 8765",
       candidate_urls: [],
       mobile_notes: {
@@ -645,6 +779,11 @@ async function loadRuntimeInfo() {
         ios: "Safari im selben WLAN öffnen und die Seite über Teilen zum Home-Bildschirm sichern.",
       },
     });
+    runtimeInfo = {
+      local_only: true,
+      local_url: "http://127.0.0.1:8765/",
+    };
+    await refreshPwaStatus();
   }
 }
 
@@ -662,7 +801,7 @@ function syncConnectivityLabel() {
 }
 
 function updateInstallUi() {
-  const isStandalone = window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
+  const isStandalone = currentStandaloneMode();
   elements.installButton.hidden = !installPromptEvent || isStandalone;
   if (isStandalone) {
     setNotice(
@@ -671,6 +810,7 @@ function updateInstallUi() {
       "ok",
     );
   }
+  refreshPwaStatus();
 }
 
 async function installApp() {
@@ -702,6 +842,7 @@ function resetState() {
   elements.downloadJson.disabled = true;
   localStorage.removeItem(STORAGE_KEYS.draft);
   localStorage.removeItem(STORAGE_KEYS.report);
+  refreshPwaStatus();
   setNotice(
     "Lokaler Entwurf aktiv",
     "Eingaben und der letzte JSON-Report bleiben nur in diesem Browser gespeichert.",
@@ -725,6 +866,12 @@ elements.importJson.addEventListener("click", () => {
 });
 elements.downloadJson.addEventListener("click", downloadCurrentJson);
 elements.installButton.addEventListener("click", installApp);
+elements.refreshPwaStatus.addEventListener("click", () => {
+  refreshPwaStatus();
+});
+elements.copyPwaStatus.addEventListener("click", () => {
+  copyPwaStatus();
+});
 elements.sourceFile.addEventListener("change", (event) => {
   loadSelectedFile(event.target.files?.[0]);
 });
@@ -746,6 +893,9 @@ window.addEventListener("appinstalled", () => {
 
 window.addEventListener("online", syncConnectivityLabel);
 window.addEventListener("offline", syncConnectivityLabel);
+window.addEventListener("resize", () => {
+  refreshPwaStatus();
+});
 
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("/service-worker.js").catch(() => {});
@@ -758,3 +908,4 @@ restoreLastReport();
 setMode(sourceKind);
 syncConnectivityLabel();
 updateInstallUi();
+refreshPwaStatus();

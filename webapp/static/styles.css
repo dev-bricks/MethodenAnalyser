@@ -371,6 +371,64 @@ button:focus-visible {
   font-size: 0.88rem;
 }
 
+.pwa-status-card {
+  margin-top: 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px;
+  background:
+    linear-gradient(160deg, rgba(13, 79, 66, 0.06), rgba(255, 255, 255, 0.98)),
+    var(--surface);
+}
+
+.pwa-status-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.pwa-status-header h3 {
+  margin: 0 0 4px;
+  font-size: 1rem;
+}
+
+.pwa-status-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.pwa-status-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.pwa-status-item {
+  min-height: 84px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.92);
+}
+
+.pwa-status-item span {
+  display: block;
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.pwa-status-item strong {
+  display: block;
+  margin-top: 8px;
+  font-size: 0.98rem;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
 .primary-button,
 .secondary-button,
 .ghost-button {
@@ -605,6 +663,10 @@ pre {
     grid-template-columns: 1fr;
   }
 
+  .pwa-status-grid {
+    grid-template-columns: 1fr;
+  }
+
   .source-mode,
   .primary-button,
   .secondary-button,
@@ -614,5 +676,11 @@ pre {
 
   .mode-button {
     flex: 1;
+  }
+
+  .pwa-status-header,
+  .pwa-status-actions {
+    align-items: stretch;
+    flex-direction: column;
   }
 }

@@ -87,6 +87,48 @@
             </article>
           </div>
         </section>
+
+        <section class="pwa-status-card" aria-labelledby="pwaStatusTitle">
+          <div class="pwa-status-header">
+            <div>
+              <h3 id="pwaStatusTitle">PWA-Testkarte</h3>
+              <p class="field-hint">Liefert eine kompakte Geräte- und Install-Diagnose für Android-/iOS-Smokes.</p>
+            </div>
+            <div class="pwa-status-actions">
+              <button id="refreshPwaStatus" class="ghost-button" type="button">Status aktualisieren</button>
+              <button id="copyPwaStatus" class="ghost-button" type="button">Status kopieren</button>
+            </div>
+          </div>
+          <div class="pwa-status-grid">
+            <div class="pwa-status-item">
+              <span>App-Modus</span>
+              <strong id="pwaModeValue">Wird geladen…</strong>
+            </div>
+            <div class="pwa-status-item">
+              <span>Install-Flow</span>
+              <strong id="pwaInstallValue">Wird geladen…</strong>
+            </div>
+            <div class="pwa-status-item">
+              <span>Service Worker</span>
+              <strong id="pwaWorkerValue">Wird geladen…</strong>
+            </div>
+            <div class="pwa-status-item">
+              <span>Lokaler Speicher</span>
+              <strong id="pwaStorageValue">Wird geladen…</strong>
+            </div>
+            <div class="pwa-status-item">
+              <span>Viewport</span>
+              <strong id="pwaViewportValue">Wird geladen…</strong>
+            </div>
+            <div class="pwa-status-item">
+              <span>Server</span>
+              <strong id="pwaServerValue">Wird geladen…</strong>
+            </div>
+          </div>
+          <p id="pwaStatusHint" class="field-hint">
+            Den kopierten Status am besten direkt in ein Testprotokoll oder in <code>AUFGABEN.txt</code> übernehmen.
+          </p>
+        </section>
       </section>
 
       <section class="pane result-pane" aria-labelledby="resultTitle">

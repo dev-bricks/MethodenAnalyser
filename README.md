@@ -107,6 +107,7 @@ python webapp/server.py --host 0.0.0.0 --port 8765
 ```
 
 Der Web Companion zeigt dann im neuen Bereich **Android/iOS-Testpfad** die passende Startanweisung, erkannte LAN-URLs sowie getrennte Install-Hinweise für Android (Chrome/Edge) und iPhone/iPad (Safari).
+Zusätzlich bündelt die **PWA-Testkarte** Install-Status, Service-Worker-, Speicher- und Viewport-Diagnostik in einer kopierbaren Kurzfassung für mobile Smoke-Tests.
 
 Exit-Codes:
 

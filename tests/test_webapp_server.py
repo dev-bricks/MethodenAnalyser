@@ -157,6 +157,9 @@ class MethodenAnalyserStaticHttpTests(unittest.TestCase):
 
         self.assertIn('id="importJson"', body)
         self.assertIn('id="reportFile"', body)
+        self.assertIn('id="refreshPwaStatus"', body)
+        self.assertIn('id="copyPwaStatus"', body)
+        self.assertIn('id="pwaServerValue"', body)
 
     def test_runtime_endpoint_returns_mobile_metadata(self) -> None:
         with urlopen(self.build_url("/api/runtime")) as response:
@@ -164,6 +167,7 @@ class MethodenAnalyserStaticHttpTests(unittest.TestCase):
 
         self.assertIn('"ok": true', payload)
         self.assertIn('"local_only": true', payload)
+        self.assertIn('"local_url": "http://127.0.0.1:', payload)
         self.assertIn('"mobile_command": "python webapp/server.py --host 0.0.0.0 --port', payload)
 
 

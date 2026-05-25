@@ -47,6 +47,7 @@ Der Web Companion blendet dann im Bereich **Android/iOS-Testpfad** erkannte LAN-
 
 - Chrome und Edge können die App als installierbare PWA anbieten.
 - Für mobile Tests im selben WLAN zeigt die Oberfläche den empfohlenen LAN-Startbefehl und, falls erkannt, direkte Geräte-URLs zum Kopieren.
+- Die neue **PWA-Testkarte** bündelt App-Modus, Install-Flow, Service-Worker-Status, lokalen Speicher, Viewport und den erkannten Serverpfad in einer kopierbaren Kurzdiagnose für Android-/iOS-Smokes.
 - Bereits geladene Oberfläche bleibt durch den Service Worker auch ohne laufenden Server erreichbar.
 - Neue Analysen benötigen weiter den lokalen Python-Prozess; offline bleiben Entwurf, letzter JSON-Report, importierte Reports und die UI verfügbar.
 - Android und iOS nutzen dieselbe Web-Linie; es gibt weiterhin keine native App und keinen Cloud-Sync.
