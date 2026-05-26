@@ -1,7 +1,7 @@
 # Portierungsplan - MethodenAnalyser
 
-Stand: 2026-05-24  
-Status: CLI-, JSON-Export und lokaler Web/PWA-Companion inklusive ZIP-Upload, Report-Import, Install-Flow und Offline-Shell umgesetzt
+Stand: 2026-05-26
+Status: CLI-, JSON-Export und lokaler Web/PWA-Companion inklusive ZIP-Upload, Report-Import, Install-Flow und Offline-Shell umgesetzt; Cross-Platform-Smoke-Automation für Windows/macOS/Linux eingerichtet
 
 ## Ausgangslage
 
@@ -25,8 +25,8 @@ Die Nachfrage liegt vor allem bei Entwicklerinnen und Entwicklern, die kleine bi
 | Webapp / PWA | Priorität P1 | Gute Demo- und Companion-Linie für Snippets, einzelne Dateien und kleine Uploads | Install-/Offline-Verhalten lokal dogfooden und danach Android-/iOS-Browsertests durchführen |
 | Android | P2 über PWA | Native App wäre Mehraufwand ohne klaren Mehrwert; PWA reicht für mobile Kurzchecks | Web Companion auf Android-Browser testen |
 | iOS | P2 über PWA | Gleiche Logik wie Android; nativer App-Store-Weg lohnt aktuell nicht | Web Companion auf iOS Safari testen |
-| macOS App | P3 | Tkinter/Python sollte laufen, aber Packaging und Signierung sind für die Zielgruppe nachrangig | Source-Smoke-Test und optionales PyInstaller-Bundle prüfen |
-| Linux Version | P3 | Für Entwickler nützlich, aber Distribution über Source/ZIP reicht zunächst | Source-Smoke-Test und README-Hinweis ergänzen |
+| macOS App | P3 | Tkinter/Python sollte laufen, aber Packaging und Signierung sind für die Zielgruppe nachrangig | Neue GitHub-Actions-Smokes für `macos-latest` beobachten; Packaging erst nach stabilen Läufen prüfen |
+| Linux Version | P3 | Für Entwickler nützlich, aber Distribution über Source/ZIP reicht zunächst | Neue GitHub-Actions-Smokes für `ubuntu-latest` beobachten; Packaging erst nach stabilen Läufen prüfen |
 
 ## Architekturplan
 
@@ -73,7 +73,7 @@ Mindestfelder:
 4. P1: PWA-Companion für Snippet-, Einzeldatei- und kleine ZIP-Analyse umsetzen. (erledigt 2026-05-24)
 5. P1/P2: PWA-Installierbarkeit, Draft-Persistenz und Offline-Shell lokal absichern. (erledigt 2026-05-24)
 6. P2: Android-/iOS-Browsertests für die PWA durchführen. Vorbereitung über LAN-Startpfad, Laufzeit-Hinweise und kopierbare PWA-Testkarte im Companion erledigt 2026-05-26.
-7. P3: macOS- und Linux-Smoke-Tests für Source-Start dokumentieren.
+7. P3: macOS- und Linux-Smoke-Tests für Source-Start automatisieren und dokumentieren. (CI-Vorbereitung erledigt 2026-05-26)
 
 ## Nicht-Ziele
 
@@ -92,3 +92,4 @@ Mindestfelder:
 - Web Companion zeigt eine kopierbare PWA-Testkarte für Install-, Speicher-, Viewport- und Service-Worker-Diagnose an.
 - Microsoft-Store-Paket bleibt ohne Netzwerkanforderung nutzbar.
 - PWA verarbeitet mindestens Snippets, einzelne Python-Dateien und kleine ZIP-Archive.
+- GitHub Actions prüft denselben Quellstand jetzt auf Windows (3.10-3.12) sowie zusätzlich auf Ubuntu und macOS (3.11) per Compile-, Tkinter-Import- und `unittest`-Smoke.

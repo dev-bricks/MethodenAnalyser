@@ -12,11 +12,25 @@ permissions:
 
 jobs:
   smoke:
-    runs-on: windows-latest
+    name: Smoke (${{ matrix.os }} / Python ${{ matrix.python-version }})
+    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.10", "3.11", "3.12"]
+        include:
+          - os: windows-latest
+            python-version: "3.10"
+          - os: windows-latest
+            python-version: "3.11"
+          - os: windows-latest
+            python-version: "3.12"
+          - os: ubuntu-latest
+            python-version: "3.11"
+          - os: macos-latest
+            python-version: "3.11"
+
+    env:
+      PYTHONIOENCODING: utf-8
 
     steps:
       - uses: actions/checkout@v6
@@ -25,7 +39,10 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Compile Python files
-        run: python -m py_compile MethodenAnalyser3.py manage_translations.py translator.py
+        run: python -m py_compile MethodenAnalyser3.py manage_translations.py translator.py webapp/server.py
 
-      - name: Import analyzer module
-        run: python -c "import MethodenAnalyser3 as m; print(m.SIMILARITY_THRESHOLD)"
+      - name: Import analyzer module and Tk runtime
+        run: python -c "import tkinter as tk; import MethodenAnalyser3 as m; print(f'Tk {tk.TkVersion} / threshold {m.SIMILARITY_THRESHOLD}')"
+
+      - name: Run unittest smoke suite
+        run: python -m unittest discover -s tests -v

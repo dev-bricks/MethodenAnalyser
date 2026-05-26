@@ -109,6 +109,17 @@ python webapp/server.py --host 0.0.0.0 --port 8765
 Der Web Companion zeigt dann im neuen Bereich **Android/iOS-Testpfad** die passende Startanweisung, erkannte LAN-URLs sowie getrennte Install-Hinweise für Android (Chrome/Edge) und iPhone/iPad (Safari).
 Zusätzlich bündelt die **PWA-Testkarte** Install-Status, Service-Worker-, Speicher- und Viewport-Diagnostik in einer kopierbaren Kurzfassung für mobile Smoke-Tests.
 
+### macOS- und Linux-Smoke
+
+Die Desktop-Version bleibt Windows-first, aber der Quellstand wird jetzt gezielt auch als Source-Smoke für macOS und Linux abgesichert. Lokal reicht dafür dieselbe Basis:
+
+```bash
+python -m py_compile MethodenAnalyser3.py manage_translations.py translator.py webapp/server.py
+python -m unittest discover -s tests -v
+```
+
+Zusätzlich prüft die GitHub-Action denselben Stand automatisch auf Windows (Python 3.10 bis 3.12) sowie auf Ubuntu und macOS (jeweils Python 3.11). Damit bleiben Tkinter-Import, CLI und Web-Companion auch außerhalb von Windows im Blick, ohne bereits eine eigene Mac- oder Linux-Paketlinie zu versprechen.
+
 Exit-Codes:
 
 - `0` = Analyse erfolgreich und keine Findings im Report
@@ -173,12 +184,11 @@ Stand: 2026-05-16
 ## Entwicklung / Verification
 
 ```bash
-python -m py_compile MethodenAnalyser3.py manage_translations.py translator.py
-python -m py_compile webapp/server.py
+python -m py_compile MethodenAnalyser3.py manage_translations.py translator.py webapp/server.py
 python -m unittest discover -s tests -v
 ```
 
-GitHub Actions führt denselben Smoke-Test für Python 3.10 bis 3.12 aus.
+GitHub Actions führt denselben Smoke-Test jetzt auf Windows (Python 3.10 bis 3.12) sowie zusätzlich auf Ubuntu und macOS (Python 3.11) aus.
 
 ---
 
