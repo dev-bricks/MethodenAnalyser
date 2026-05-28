@@ -8,6 +8,8 @@ Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 ### Portierung / Platforms
 - `PORTIERUNGSPLAN.md` dokumentiert die Plattformstrategie: Windows Store zuerst, Web/PWA als gemeinsame Android-/iOS-/Web-Linie, macOS/Linux als Source-Smoke-Ziele.
 - `AUFGABEN.txt` enthält konkrete P0-P3-Aufgaben für CLI-Modus, JSON-Export, PWA-Companion und Cross-Platform-Smoke-Tests.
+- Windows-Store-P0 abgeschlossen: `_WARTUNG/generate_store_screenshots.py` erzeugt jetzt reproduzierbar `main.png`, `file-analysis.png`, `project-analysis.png`, `duplicate-detection.png` und `manifest.json` unter `releases/windowsstore/screenshots/`.
+- `releases/windowsstore/store_settings.json`, `BUILD.md` und die DE/EN-Store-Listings sind auf den realen Projektstand, aktuelle GitHub-URLs und den dokumentierten Pretest-Workflow synchronisiert.
 
 ### Hinzugefügt / Added
 - GitHub-Actions-Smoke-Matrix prüft den Quellstand jetzt auf Windows (Python 3.10-3.12) sowie zusätzlich auf Ubuntu und macOS (Python 3.11), inklusive Compile-, Tkinter-Import- und `unittest`-Smoke.
@@ -24,6 +26,7 @@ Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 - JSON-Export über `--json-output` im Schema `methodenanalyser-report-v1.json`, inklusive Datei-, Projekt- und stdin-Snippet-Analyse.
 - `EXPORTFORMAT.md` dokumentiert Top-Level-Felder, `files[]`-Einträge und Stabilitätsregeln für Web/PWA-Companions.
 - `tests/test_cli.py` deckt CLI-Erfolg, Findings, Teilfehler und Fehlerpfade per `unittest` ab.
+- `tests/test_store_screenshots.py` deckt den Screenshot-Manifest-Pfad für die Store-Artefakte ab.
 - README dokumentiert jetzt den GitHub-/Privacy-Hygiene-Check vom 2026-05-16, den synchronen Branch-Stand und die lokalen Artefaktgrenzen.
 - README bindet jetzt den vorhandenen GUI-Screenshot aus `README/screenshots/main.png` direkt ein.
 - Das Hauptfenster verwendet das lokale `MethodenAnalyser.ico`, wenn es verfügbar ist.

@@ -1,7 +1,7 @@
 # Portierungsplan - MethodenAnalyser
 
-Stand: 2026-05-26
-Status: CLI-, JSON-Export und lokaler Web/PWA-Companion inklusive ZIP-Upload, Report-Import, Install-Flow und Offline-Shell umgesetzt; Cross-Platform-Smoke-Automation für Windows/macOS/Linux eingerichtet
+Stand: 2026-05-27
+Status: Windows-Store-P0 mit reproduzierbarem Screenshot-Satz, synchronisierten Store-Settings und dokumentiertem Dogfooding-Pretest abgeschlossen; CLI-, JSON-Export und lokaler Web/PWA-Companion inklusive ZIP-Upload, Report-Import, Install-Flow und Offline-Shell umgesetzt; Cross-Platform-Smoke-Automation für Windows/macOS/Linux eingerichtet
 
 ## Ausgangslage
 
@@ -21,7 +21,7 @@ Die Nachfrage liegt vor allem bei Entwicklerinnen und Entwicklern, die kleine bi
 
 | Plattform | Entscheidung | Begründung | Nächster Schritt |
 |---|---|---|---|
-| Windows Store | Priorität P0 | Beste Zielgruppe, vorhandene Store-Artefakte, keine externen Laufzeitabhängigkeiten | Store-Screenshots, Listing, Dogfooding-Build und Pre-Submission prüfen |
+| Windows Store | Priorität P0 | Beste Zielgruppe, vorhandene Store-Artefakte, keine externen Laufzeitabhängigkeiten | Screenshot-Satz, Listing und Dogfooding-Pretest sind fertig; als Nächstes MSIX-/WACK-Protokoll erneuern |
 | Webapp / PWA | Priorität P1 | Gute Demo- und Companion-Linie für Snippets, einzelne Dateien und kleine Uploads | Install-/Offline-Verhalten lokal dogfooden und danach Android-/iOS-Browsertests durchführen |
 | Android | P2 über PWA | Native App wäre Mehraufwand ohne klaren Mehrwert; PWA reicht für mobile Kurzchecks | Web Companion auf Android-Browser testen |
 | iOS | P2 über PWA | Gleiche Logik wie Android; nativer App-Store-Weg lohnt aktuell nicht | Web Companion auf iOS Safari testen |
@@ -67,12 +67,12 @@ Mindestfelder:
 
 ## Umsetzungsreihenfolge
 
-1. P0: Windows-Store-Vorbereitung abschließen.
+1. P0: Windows-Store-Vorbereitung abschließen. (erledigt 2026-05-27)
 2. P0: CLI-Modus für Datei- und Projektanalyse ergänzen. (erledigt 2026-05-24)
 3. P1: JSON-Export `methodenanalyser-report-v1.json` aus Desktop-Kernlogik erzeugen. (erledigt 2026-05-24)
 4. P1: PWA-Companion für Snippet-, Einzeldatei- und kleine ZIP-Analyse umsetzen. (erledigt 2026-05-24)
 5. P1/P2: PWA-Installierbarkeit, Draft-Persistenz und Offline-Shell lokal absichern. (erledigt 2026-05-24)
-6. P2: Android-/iOS-Browsertests für die PWA durchführen. Vorbereitung über LAN-Startpfad, Laufzeit-Hinweise und kopierbare PWA-Testkarte im Companion erledigt 2026-05-26.
+6. P2: Android-/iOS-Browsertests für die PWA durchführen. Vorbereitung über LAN-Startpfad, Laufzeit-Hinweise und kopierbare PWA-Testkarte erledigt 2026-05-26.
 7. P3: macOS- und Linux-Smoke-Tests für Source-Start automatisieren und dokumentieren. (CI-Vorbereitung erledigt 2026-05-26)
 
 ## Nicht-Ziele
@@ -91,5 +91,6 @@ Mindestfelder:
 - Web Companion erklärt den LAN-/WLAN-Testpfad für Android und iOS direkt in der Oberfläche.
 - Web Companion zeigt eine kopierbare PWA-Testkarte für Install-, Speicher-, Viewport- und Service-Worker-Diagnose an.
 - Microsoft-Store-Paket bleibt ohne Netzwerkanforderung nutzbar.
+- `releases/windowsstore/screenshots/` enthält einen reproduzierbaren Screenshot-Satz samt Manifest.
 - PWA verarbeitet mindestens Snippets, einzelne Python-Dateien und kleine ZIP-Archive.
 - GitHub Actions prüft denselben Quellstand jetzt auf Windows (3.10-3.12) sowie zusätzlich auf Ubuntu und macOS (3.11) per Compile-, Tkinter-Import- und `unittest`-Smoke.
