@@ -6,8 +6,9 @@ Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 ## [Unreleased]
 
 ### Portierung / Platforms
-- `PORTIERUNGSPLAN.md` ist jetzt usecase-basiert geschärft: Features der besten Version werden zu Usecases abgeleitet, Usecase-Settings werden getrennt bewertet und native Mobile-Apps bleiben ohne eigenes mobiles Setting ein Nicht-Ziel.
-- `PORTIERUNGSPLAN.md` dokumentiert die Plattformstrategie: Windows Store zuerst, Web/PWA als gemeinsame Android-/iOS-/Web-Linie, macOS/Linux als Source-Smoke-Ziele.
+- `PORTIERUNGSPLAN.md` ist nach User-Korrektur auf Desktop-only geschärft: Windows Store bleibt Hauptkanal, macOS/Linux bleiben Source-Smoke-Ziele, Web/PWA/Android/iOS sind keine Produktlinien.
+- Die vorhandene lokale Weboberfläche wird nur noch als Hilfs-/Demo-Modus innerhalb des Desktop-Projekts geführt, nicht als Companion-App.
+- README, WEBAPP.md und EXPORTFORMAT.md verwenden entsprechend keine Companion-Roadmap mehr.
 - `AUFGABEN.txt` enthält konkrete P0-P3-Aufgaben für CLI-Modus, JSON-Export, PWA-Companion und Cross-Platform-Smoke-Tests.
 - Windows-Store-P0 abgeschlossen: `_WARTUNG/generate_store_screenshots.py` erzeugt jetzt reproduzierbar `main.png`, `file-analysis.png`, `project-analysis.png`, `duplicate-detection.png` und `manifest.json` unter `releases/windowsstore/screenshots/`.
 - `releases/windowsstore/store_settings.json`, `BUILD.md` und die DE/EN-Store-Listings sind auf den realen Projektstand, aktuelle GitHub-URLs und den dokumentierten Pretest-Workflow synchronisiert.
