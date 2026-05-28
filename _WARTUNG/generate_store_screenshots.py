@@ -11,8 +11,6 @@ from pathlib import Path
 from tkinter import scrolledtext
 from typing import Dict, List
 
-from PIL import ImageGrab
-
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
@@ -216,6 +214,8 @@ def _create_window(report: str, title: str, subtitle: str) -> tk.Tk:
 
 
 def _capture(root: tk.Tk, destination: Path) -> None:
+    from PIL import ImageGrab
+
     root.update_idletasks()
     root.update()
     root.lift()
