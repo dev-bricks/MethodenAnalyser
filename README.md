@@ -190,6 +190,8 @@ python -m unittest discover -s tests -v
 
 GitHub Actions führt denselben Smoke-Test jetzt auf Windows (Python 3.10 bis 3.12) sowie zusätzlich auf Ubuntu und macOS (Python 3.11) aus.
 
+Für Crawler, LLMs und Verzeichnisdienste liegt ein knapper maschinenlesbarer Projektkontext in [llms.txt](llms.txt). Die Community-Workflows verwenden aktuelle `actions/stale`- und `actions/first-interaction`-Versionen.
+
 ---
 
 ## Lizenz
