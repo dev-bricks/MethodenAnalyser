@@ -1,3 +1,4 @@
+import ast
 import json
 import os
 import subprocess
@@ -168,6 +169,34 @@ class MethodenAnalyserCliTests(unittest.TestCase):
 
         self.assertEqual(result.returncode, 1)
         self.assertIn("[FEHLER]", result.stderr)
+
+    def test_info_dialog_version_matches_tool_version(self) -> None:
+        """TOOL_VERSION muss mit der Versionsangabe im Info-Dialog übereinstimmen."""
+        source = SCRIPT_PATH.read_text(encoding="utf-8")
+        tree = ast.parse(source)
+
+        tool_version = None
+        info_dialog_version = None
+
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Assign):
+                for target in node.targets:
+                    if isinstance(target, ast.Name) and target.id == "TOOL_VERSION":
+                        if isinstance(node.value, ast.Constant):
+                            tool_version = node.value.value
+
+            # f-string: f"Python Code Analyzer v{TOOL_VERSION}\n\n"
+            if isinstance(node, ast.JoinedStr):
+                for part in node.values:
+                    if isinstance(part, ast.FormattedValue):
+                        if isinstance(part.value, ast.Name) and part.value.id == "TOOL_VERSION":
+                            info_dialog_version = "TOOL_VERSION_ref"
+
+        self.assertIsNotNone(tool_version, "TOOL_VERSION nicht gefunden")
+        self.assertIsNotNone(
+            info_dialog_version,
+            "Info-Dialog referenziert TOOL_VERSION nicht als f-string — Versions-Mismatch möglich",
+        )
 
 
 if __name__ == "__main__":

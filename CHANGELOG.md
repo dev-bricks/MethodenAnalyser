@@ -54,6 +54,8 @@ Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 - README beschreibt jetzt explizit den neuen macOS-/Linux-Source-Smoke-Pfad und grenzt ihn gegen eine echte Packaging-Linie ab.
 
 ### Behoben / Fixed
+- Info-Dialog in `create_gui()` zeigte hardcodiert „Python Code Analyzer v2.0" statt des tatsächlichen `TOOL_VERSION`-Werts (3.0); Zeichenkette auf `f"Python Code Analyzer v{TOOL_VERSION}"` umgestellt, Copyright-Jahr auf 2026 aktualisiert.
+- `do_POST()` in `webapp/server.py` gab bei ungültigem UTF-8-Request-Body HTTP 500 statt 400 zurück, weil `UnicodeDecodeError` nicht explizit abgefangen wurde; separater `except UnicodeDecodeError`-Handler ergänzt.
 - `missing_imports` behandelt Modulattribute und lokale Parameternamen jetzt korrekt statt sie fälschlich als Importlücke zu melden.
 - Die PWA lädt jetzt ohne unnötigen `favicon.ico`-404, weil App-Icon und Apple-Touch-Icon explizit eingebunden sind.
 - Privacy-/Secret-Check ohne Befund; keine Credentials oder getrackten ignorierten Dateien gefunden.

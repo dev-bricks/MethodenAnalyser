@@ -1547,14 +1547,14 @@ def create_gui() -> None:
         text="ℹ️  Info",
         command=lambda: messagebox.showinfo(
             "Python Code Analyzer",
-            "Python Code Analyzer v2.0\n\n"
+            f"Python Code Analyzer v{TOOL_VERSION}\n\n"
             "Analysiert Python-Dateien auf:\n"
             "• Fehlende Definitionen\n"
             "• Ungenutzte Definitionen\n"
             "• Ungenutzte Imports\n"
             "• Dynamische Aufrufe\n"
             "• Import-Scope-Probleme\n\n"
-            "© 2024 - Optimierte Version"
+            "© 2026 - Optimierte Version"
         ),
         bg="#2196F3",
         fg="white",

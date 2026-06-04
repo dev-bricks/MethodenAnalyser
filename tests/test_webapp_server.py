@@ -1,7 +1,10 @@
 import base64
 import io
+import json
 import threading
 import unittest
+import urllib.error
+import urllib.request
 import zipfile
 from http.server import ThreadingHTTPServer
 from urllib.request import urlopen
@@ -108,6 +111,50 @@ class MethodenAnalyserWebappServerTests(unittest.TestCase):
             info["candidate_urls"],
             ["http://10.0.0.8:8765/", "http://192.168.0.5:8765/"],
         )
+
+
+class MethodenAnalyserInvalidBodyTests(unittest.TestCase):
+    """Verifies that malformed POST bodies return 400, not 500."""
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        cls.httpd = ThreadingHTTPServer(("127.0.0.1", 0), MethodenAnalyserPwaHandler)
+        cls.port = cls.httpd.server_address[1]
+        cls.httpd.runtime_info = build_runtime_info("127.0.0.1", cls.port)
+        cls.thread = threading.Thread(target=cls.httpd.serve_forever, daemon=True)
+        cls.thread.start()
+
+    @classmethod
+    def tearDownClass(cls) -> None:
+        cls.httpd.shutdown()
+        cls.httpd.server_close()
+        cls.thread.join(timeout=2)
+
+    def post_raw(self, body: bytes, content_type: str = "application/json") -> tuple[int, dict]:
+        req = urllib.request.Request(
+            f"http://127.0.0.1:{self.port}/api/analyze",
+            data=body,
+            method="POST",
+            headers={"Content-Type": content_type, "Content-Length": str(len(body))},
+        )
+        try:
+            with urllib.request.urlopen(req) as resp:
+                return resp.status, json.loads(resp.read().decode("utf-8"))
+        except urllib.error.HTTPError as exc:
+            return exc.code, json.loads(exc.read().decode("utf-8"))
+
+    def test_invalid_utf8_body_returns_400(self) -> None:
+        # 0x80 is invalid UTF-8 as a standalone byte
+        status, payload = self.post_raw(b"\x80\x81\x82")
+        self.assertEqual(status, 400)
+        self.assertFalse(payload["ok"])
+        self.assertIn("UTF-8", payload["error"])
+
+    def test_valid_but_empty_json_body_returns_400(self) -> None:
+        body = json.dumps({"code": "", "source_kind": "snippet"}).encode("utf-8")
+        status, payload = self.post_raw(body)
+        self.assertEqual(status, 400)
+        self.assertFalse(payload["ok"])
 
 
 class MethodenAnalyserStaticHttpTests(unittest.TestCase):

@@ -308,6 +308,9 @@ class MethodenAnalyserPwaHandler(BaseHTTPRequestHandler):
             if not isinstance(payload, dict):
                 raise ValueError("JSON-Body muss ein Objekt sein.")
             response = analyze_payload(payload)
+        except UnicodeDecodeError as exc:
+            self._send_json({"ok": False, "error": f"Request-Body ist kein gültiges UTF-8: {exc}"}, status=400)
+            return
         except json.JSONDecodeError as exc:
             self._send_json({"ok": False, "error": f"Ungültiges JSON: {exc}"}, status=400)
             return

@@ -2,13 +2,13 @@
 
 Stand: 2026-05-24
 
-Dieses Dokument beschreibt das JSON-Austauschformat für MethodenAnalyser. Das Format verbindet GUI, CLI, Tests, Automationen und die optionale lokale Weboberfläche derselben Desktop-Linie. Der bestehende Textreport bleibt unverändert; JSON ist eine zusätzliche maschinenlesbare Ausgabe, keine Companion- oder Mobile-Sync-Schnittstelle.
+Dieses Dokument beschreibt das JSON-Austauschformat für MethodenAnalyser. Das Format verbindet die lokale Desktop-/CLI-Version mit späteren Web-, Android- und iOS-PWA-Companions. Der bestehende Textreport bleibt unverändert; JSON ist eine zusätzliche maschinenlesbare Ausgabe.
 
 ## Ziel
 
 - Datei-, Projekt- und Snippet-Analysen einheitlich serialisieren.
 - Ergebnisse ohne absolute lokale Pfade weitergeben.
-- Ein stabiles Format für Automationen, Store-Demos und lokale Browser-Smokes bereitstellen.
+- Ein stabiles Format für Automationen, Store-Demos und PWA-Prototypen bereitstellen.
 - Datenschutzfreundlich bleiben: Quellcode wird nicht in den Report geschrieben, nur Analyseergebnisse.
 
 ## CLI-Ausgabe
@@ -72,6 +72,6 @@ Ohne Dateiwert schreibt `--json-output` nach `methodenanalyser-report-v1.json`.
 ## Stabilitätsregeln
 
 - Neue Felder dürfen ergänzt werden, bestehende Feldnamen bleiben für `methodenanalyser-report-v1` stabil.
-- Lokale Browser- oder Server-Hilfsmodi dürfen `source_kind = "snippet"` und `source_kind = "zip"` nutzen.
+- PWA- oder Server-Companions dürfen `source_kind = "snippet"` und `source_kind = "zip"` nutzen.
 - Projektberichte verwenden relative Pfade ab Projektwurzel und normalisieren Trenner auf `/`.
 - Fehlerhafte Dateien erscheinen in `errors`, erfolgreiche Dateien weiter in `files`.
