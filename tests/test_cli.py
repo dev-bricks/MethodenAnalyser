@@ -268,25 +268,34 @@ class RegressionTests(unittest.TestCase):
         self.assertNotIn("output.py", names, "Datei in 'build/'-Ordner muss ausgeschlossen sein")
 
     def test_project_cli_handles_permission_error_gracefully(self) -> None:
-        """Regression (Bug B): _run_cli_project muss Exception abfangen und
-        Exit-Code 1 liefern statt unbehandelt zu crashen."""
+        """Regression (Bug B): _run_cli_project muss Exception aus analyze_project
+        abfangen und Exit-Code 1 liefern statt unbehandelt zu crashen."""
         import tempfile
-        # Verwende nicht-existenten Ordner — os.path.isdir liefert False → Exit 1
-        result = self.run_cli(
-            "--project",
-            "/nonexistent_path_that_does_not_exist_xyz",
-            extra_env={"PYTHONIOENCODING": "utf-8"},
-        )
-        self.assertEqual(result.returncode, 1, result.stderr)
-        self.assertIn("[FEHLER]", result.stderr)
+        import unittest.mock
+        import io
+
+        sys.path.insert(0, str(PROJECT_ROOT))
+        from MethodenAnalyser3 import _run_cli_project, EXIT_ANALYSIS_ERROR
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            captured = io.StringIO()
+            with unittest.mock.patch(
+                "MethodenAnalyser3.analyze_project",
+                side_effect=RuntimeError("simulated permission error"),
+            ), unittest.mock.patch("sys.stderr", captured):
+                exit_code = _run_cli_project(tmpdir)
+
+        self.assertEqual(exit_code, EXIT_ANALYSIS_ERROR)
+        self.assertIn("[FEHLER]", captured.getvalue())
 
     def test_auto_fix_removes_multiline_imports_completely(self) -> None:
-        """Regression (Bug D): auto_fix_unused_imports() muss mehrzeilige
-        Klammer-Imports vollständig entfernen (alle Zeilen lineno..end_lineno),
+        """Regression (Bug D): _collect_unused_import_lines() muss mehrzeilige
+        Klammer-Imports vollständig markieren (alle Zeilen lineno..end_lineno),
         nicht nur die erste Zeile."""
-        sys.path.insert(0, str(PROJECT_ROOT))
         import ast as _ast
-        import tempfile
+
+        sys.path.insert(0, str(PROJECT_ROOT))
+        from MethodenAnalyser3 import _collect_unused_import_lines
 
         code = (
             "from threading import (\n"
@@ -296,13 +305,7 @@ class RegressionTests(unittest.TestCase):
             "x = 1\n"
         )
         tree = _ast.parse(code)
-        lines_to_remove: set = set()
-        unused_set = {"Thread", "Lock"}
-        for node in _ast.walk(tree):
-            if isinstance(node, _ast.ImportFrom):
-                names = [alias.asname or alias.name for alias in node.names]
-                if all(name in unused_set for name in names):
-                    lines_to_remove.update(range(node.lineno, node.end_lineno + 1))
+        lines_to_remove = _collect_unused_import_lines(tree, {"Thread", "Lock"})
 
         # Alle 4 Import-Zeilen (1-4) müssen markiert sein
         self.assertEqual(lines_to_remove, {1, 2, 3, 4},

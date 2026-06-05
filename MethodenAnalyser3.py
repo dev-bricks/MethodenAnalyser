@@ -1093,6 +1093,18 @@ def run_analysis(output_widget: scrolledtext.ScrolledText) -> None:
 
 
 
+def _collect_unused_import_lines(tree: ast.AST, unused_set: Set[str]) -> Set[int]:
+    """Gibt die Zeilennummern zurück, die zu vollständig ungenutzten Imports gehören."""
+    lines_to_remove: Set[int] = set()
+    for node in ast.walk(tree):
+        if isinstance(node, (ast.Import, ast.ImportFrom)):
+            names = [alias.asname or alias.name for alias in node.names
+                     if alias.name != "*"]
+            if names and all(name in unused_set for name in names):
+                lines_to_remove.update(range(node.lineno, node.end_lineno + 1))
+    return lines_to_remove
+
+
 def auto_fix_unused_imports(output_widget: scrolledtext.ScrolledText) -> None:
     """
     Entfernt ungenutzte Imports aus der zuletzt analysierten Datei.
@@ -1128,20 +1140,8 @@ def auto_fix_unused_imports(output_widget: scrolledtext.ScrolledText) -> None:
             tree = ast.parse(f.read())
         
         # Import-Zeilen markieren die entfernt werden sollen
-        lines_to_remove = set()
         unused_set = set(_last_analysis_result.unused_imports)
-        
-        for node in ast.walk(tree):
-            if isinstance(node, ast.Import):
-                # import x, y, z
-                names = [alias.asname or alias.name for alias in node.names]
-                if all(name in unused_set for name in names):
-                    lines_to_remove.update(range(node.lineno, node.end_lineno + 1))
-            elif isinstance(node, ast.ImportFrom):
-                # from x import y, z (auch mehrzeilige Klammer-Imports)
-                names = [alias.asname or alias.name for alias in node.names]
-                if all(name in unused_set for name in names):
-                    lines_to_remove.update(range(node.lineno, node.end_lineno + 1))
+        lines_to_remove = _collect_unused_import_lines(tree, unused_set)
         
         if not lines_to_remove:
             messagebox.showinfo("Info", "Keine vollständig ungenutzten Import-Zeilen gefunden.\n(Teilweise genutzte Imports müssen manuell bearbeitet werden)")
