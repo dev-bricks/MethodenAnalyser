@@ -426,9 +426,11 @@ def scan_dynamic_usage(code: str) -> Tuple[List[str], Set[str]]:
         matches = pattern.findall(code)
         if matches:
             dynamic_hits.append(name)
-            # Nur String-Matches (Methodennamen) hinzufügen
+            # Nur echte Bezeichner (Methodennamen) hinzufügen — Patterns ohne
+            # Capture-Gruppe liefern den vollen Match inkl. '(' (z.B. 'getattr('),
+            # die kein gueltiger Methodenname sind.
             for match in matches:
-                if isinstance(match, str) and match:
+                if isinstance(match, str) and match and "(" not in match:
                     dynamic_methods.add(match)
 
     return dynamic_hits, dynamic_methods

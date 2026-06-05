@@ -321,6 +321,26 @@ class RegressionTests(unittest.TestCase):
             self.fail(f"Nach Entfernen des mehrzeiligen Imports ist das Ergebnis kein valides Python: {e}")
 
 
+    def test_scan_dynamic_usage_excludes_pattern_markers_from_methods(self) -> None:
+        """Regression (B-003): scan_dynamic_usage() darf 'getattr(' und 'setattr('
+        NICHT als extrahierte Methodennamen zurueckgeben — nur echte Bezeichner."""
+        sys.path.insert(0, str(PROJECT_ROOT))
+        from MethodenAnalyser3 import scan_dynamic_usage
+
+        code = (
+            "handler = getattr(self, 'on_click')\n"
+            "setattr(self, 'x', 1)\n"
+            "result = eval('1+1')\n"
+        )
+        _, dynamic_methods = scan_dynamic_usage(code)
+
+        for bad_token in ("getattr(", "setattr(", "eval("):
+            self.assertNotIn(
+                bad_token,
+                dynamic_methods,
+                f"'{bad_token}' ist kein Methodenname und darf nicht in dynamic_methods erscheinen",
+            )
+
     def test_collect_unused_import_lines_handles_dotted_imports(self) -> None:
         """Regression (B-002): _collect_unused_import_lines() muss 'import os.path'
         als entfernbar markieren wenn 'os' in unused_set ist.
