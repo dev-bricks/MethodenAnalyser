@@ -321,6 +321,26 @@ class RegressionTests(unittest.TestCase):
             self.fail(f"Nach Entfernen des mehrzeiligen Imports ist das Ergebnis kein valides Python: {e}")
 
 
+    def test_collect_unused_import_lines_handles_dotted_imports(self) -> None:
+        """Regression (B-002): _collect_unused_import_lines() muss 'import os.path'
+        als entfernbar markieren wenn 'os' in unused_set ist.
+        alias.name='os.path' != 'os', deshalb split('.')[0] noetig."""
+        import ast as _ast
+
+        sys.path.insert(0, str(PROJECT_ROOT))
+        from MethodenAnalyser3 import _collect_unused_import_lines
+
+        code = "import os.path\nx = 1\n"
+        tree = _ast.parse(code)
+        lines_to_remove = _collect_unused_import_lines(tree, {"os"})
+
+        self.assertEqual(
+            lines_to_remove,
+            {1},
+            "import os.path muss als entfernbar markiert werden wenn 'os' ungenutzt ist",
+        )
+
+
 class TranslatorIsGermanTests(unittest.TestCase):
     """Tests für TranslationSystem._is_german()."""
 

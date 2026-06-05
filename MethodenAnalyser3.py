@@ -1098,7 +1098,7 @@ def _collect_unused_import_lines(tree: ast.AST, unused_set: Set[str]) -> Set[int
     lines_to_remove: Set[int] = set()
     for node in ast.walk(tree):
         if isinstance(node, (ast.Import, ast.ImportFrom)):
-            names = [alias.asname or alias.name for alias in node.names
+            names = [alias.asname or alias.name.split(".")[0] for alias in node.names
                      if alias.name != "*"]
             if names and all(name in unused_set for name in names):
                 lines_to_remove.update(range(node.lineno, node.end_lineno + 1))
