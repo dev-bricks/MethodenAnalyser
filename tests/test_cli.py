@@ -321,5 +321,37 @@ class RegressionTests(unittest.TestCase):
             self.fail(f"Nach Entfernen des mehrzeiligen Imports ist das Ergebnis kein valides Python: {e}")
 
 
+class TranslatorIsGermanTests(unittest.TestCase):
+    """Tests für TranslationSystem._is_german()."""
+
+    def setUp(self):
+        sys.path.insert(0, str(PROJECT_ROOT))
+        from translator import TranslationSystem
+        self.tr = TranslationSystem.__new__(TranslationSystem)
+        self.tr.german_hints = [
+            "datei", "bearbeiten", "ansicht", "hilfe", "oeffnen", "speichern",
+            "schliessen", "einstellungen", "abbrechen", "ok", "ja", "nein",
+        ]
+
+    def test_english_words_not_classified_as_german(self) -> None:
+        """Regression (B-001): _is_german() darf englische Woerter nicht als deutsch
+        klassifizieren — war fehlerhaft mit 'aeoeueAeOeUess' als ASCII-Zeichenmenge."""
+        for word in ("error", "success", "open", "close", "Python", "import", "run", "test"):
+            with self.subTest(word=word):
+                self.assertFalse(
+                    self.tr._is_german(word),
+                    f"'{word}' ist kein deutsches Wort und darf nicht als deutsch erkannt werden",
+                )
+
+    def test_german_umlaut_words_classified_as_german(self) -> None:
+        """Woerter mit echten Umlauten muessen als deutsch erkannt werden."""
+        for word in ("Öffnen", "schließen", "Übersicht", "Änderung", "Größe"):
+            with self.subTest(word=word):
+                self.assertTrue(
+                    self.tr._is_german(word),
+                    f"'{word}' enthaelt Umlaute und muss als deutsch erkannt werden",
+                )
+
+
 if __name__ == "__main__":
     unittest.main()
