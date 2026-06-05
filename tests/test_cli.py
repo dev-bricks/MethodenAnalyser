@@ -280,6 +280,43 @@ class RegressionTests(unittest.TestCase):
         self.assertEqual(result.returncode, 1, result.stderr)
         self.assertIn("[FEHLER]", result.stderr)
 
+    def test_auto_fix_removes_multiline_imports_completely(self) -> None:
+        """Regression (Bug D): auto_fix_unused_imports() muss mehrzeilige
+        Klammer-Imports vollständig entfernen (alle Zeilen lineno..end_lineno),
+        nicht nur die erste Zeile."""
+        sys.path.insert(0, str(PROJECT_ROOT))
+        import ast as _ast
+        import tempfile
+
+        code = (
+            "from threading import (\n"
+            "    Thread,\n"
+            "    Lock\n"
+            ")\n"
+            "x = 1\n"
+        )
+        tree = _ast.parse(code)
+        lines_to_remove: set = set()
+        unused_set = {"Thread", "Lock"}
+        for node in _ast.walk(tree):
+            if isinstance(node, _ast.ImportFrom):
+                names = [alias.asname or alias.name for alias in node.names]
+                if all(name in unused_set for name in names):
+                    lines_to_remove.update(range(node.lineno, node.end_lineno + 1))
+
+        # Alle 4 Import-Zeilen (1-4) müssen markiert sein
+        self.assertEqual(lines_to_remove, {1, 2, 3, 4},
+                         "Mehrzeiliger Import muss alle Zeilen (lineno..end_lineno) markieren")
+
+        # Ergebnis-Datei muss syntaktisch valide Python sein
+        all_lines = code.splitlines(keepends=True)
+        remaining = [line for i, line in enumerate(all_lines, 1) if i not in lines_to_remove]
+        remaining_code = "".join(remaining)
+        try:
+            _ast.parse(remaining_code)
+        except SyntaxError as e:
+            self.fail(f"Nach Entfernen des mehrzeiligen Imports ist das Ergebnis kein valides Python: {e}")
+
 
 if __name__ == "__main__":
     unittest.main()

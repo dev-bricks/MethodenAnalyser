@@ -1136,12 +1136,12 @@ def auto_fix_unused_imports(output_widget: scrolledtext.ScrolledText) -> None:
                 # import x, y, z
                 names = [alias.asname or alias.name for alias in node.names]
                 if all(name in unused_set for name in names):
-                    lines_to_remove.add(node.lineno)
+                    lines_to_remove.update(range(node.lineno, node.end_lineno + 1))
             elif isinstance(node, ast.ImportFrom):
-                # from x import y, z
+                # from x import y, z (auch mehrzeilige Klammer-Imports)
                 names = [alias.asname or alias.name for alias in node.names]
                 if all(name in unused_set for name in names):
-                    lines_to_remove.add(node.lineno)
+                    lines_to_remove.update(range(node.lineno, node.end_lineno + 1))
         
         if not lines_to_remove:
             messagebox.showinfo("Info", "Keine vollständig ungenutzten Import-Zeilen gefunden.\n(Teilweise genutzte Imports müssen manuell bearbeitet werden)")
