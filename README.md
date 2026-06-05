@@ -88,15 +88,15 @@ type pfad\zur\datei.py | python MethodenAnalyser3.py --stdin --json-output snipp
 
 `--json-output` schreibt zusätzlich den maschinenlesbaren Report `methodenanalyser-report-v1.json`. Mit eigenem Dateinamen kann der Report gezielt abgelegt werden; das Format ist in [EXPORTFORMAT.md](EXPORTFORMAT.md) dokumentiert.
 
-### Web/PWA-Companion
+### Lokale Weboberfläche
 
-Für Snippets, einzelne Python-Dateien und kleine ZIP-Archive gibt es zusätzlich einen lokalen Web Companion:
+Für Snippets, einzelne Python-Dateien und kleine ZIP-Archive gibt es zusätzlich eine optionale lokale Weboberfläche:
 
 ```bash
 python webapp/server.py
 ```
 
-Unter Windows startet `START_WEBAPP.bat` denselben lokalen Server. Die Oberfläche läuft standardmäßig unter `http://127.0.0.1:8765/`, nutzt den bestehenden Analysekern und zeigt Text- sowie JSON-Reports an. ZIP-Uploads werden lokal an den Python-Prozess geschickt, dort temporär entpackt und als kleines Projekt analysiert. Zusätzlich kann der Companion bestehende `methodenanalyser-report-v1.json`-Dateien importieren, damit Desktop- und Web-Linie denselben Report-Vertrag auch ohne frische Analyse gemeinsam nutzen. Details stehen in [WEBAPP.md](WEBAPP.md).
+Unter Windows startet `START_WEBAPP.bat` denselben lokalen Server. Die Oberfläche läuft standardmäßig unter `http://127.0.0.1:8765/`, nutzt den bestehenden Analysekern und zeigt Text- sowie JSON-Reports an. ZIP-Uploads werden lokal an den Python-Prozess geschickt, dort temporär entpackt und als kleines Projekt analysiert. Zusätzlich kann die lokale Weboberfläche bestehende `methodenanalyser-report-v1.json`-Dateien importieren. Sie ist ein Hilfs-/Demo-Modus für denselben Rechner, keine Companion-App und keine eigene Mobile-Produktlinie. Details stehen in [WEBAPP.md](WEBAPP.md).
 
 Die PWA speichert den aktuellen Entwurf und den letzten JSON-Report lokal im Browser, bietet einen Install-Flow für Chromium-basierte Browser und hält die bereits geladene Oberfläche per Service Worker offline verfügbar. Für neue Analysen muss der lokale Python-Server trotzdem laufen.
 
@@ -106,8 +106,8 @@ Für Android-/iOS-Tests im selben WLAN kann derselbe lokale Dienst gezielt auf d
 python webapp/server.py --host 0.0.0.0 --port 8765
 ```
 
-Der Web Companion zeigt dann im neuen Bereich **Android/iOS-Testpfad** die passende Startanweisung, erkannte LAN-URLs sowie getrennte Install-Hinweise für Android (Chrome/Edge) und iPhone/iPad (Safari).
-Zusätzlich bündelt die **PWA-Testkarte** Install-Status, Service-Worker-, Speicher- und Viewport-Diagnostik in einer kopierbaren Kurzfassung für mobile Smoke-Tests.
+Die lokale Weboberfläche kann LAN-URLs anzeigen, falls der Server bewusst im Netzwerk freigegeben wird. Das bleibt ein technischer Testpfad, kein geplantes Android-/iOS-Produkt.
+Zusätzlich bündelt die **PWA-Testkarte** Install-Status, Service-Worker-, Speicher- und Viewport-Diagnostik in einer kopierbaren Kurzfassung für lokale Browser-Smokes.
 
 ### macOS- und Linux-Smoke
 
@@ -189,6 +189,8 @@ python -m unittest discover -s tests -v
 ```
 
 GitHub Actions führt denselben Smoke-Test jetzt auf Windows (Python 3.10 bis 3.12) sowie zusätzlich auf Ubuntu und macOS (Python 3.11) aus.
+
+Für Crawler, LLMs und Verzeichnisdienste liegt ein knapper maschinenlesbarer Projektkontext in [llms.txt](llms.txt). Die Community-Workflows verwenden aktuelle `actions/stale`- und `actions/first-interaction`-Versionen.
 
 ---
 

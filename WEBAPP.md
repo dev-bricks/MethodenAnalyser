@@ -1,8 +1,8 @@
-# MethodenAnalyser Web Companion
+# MethodenAnalyser Lokale Weboberfläche
 
 Stand: 2026-05-24
 
-Der Web Companion ist eine lokale Web/PWA-Oberfläche für schnelle Snippet-, Einzeldatei- und kleine ZIP-Analysen. Er ersetzt nicht die Desktop-App für ganze Projektordner, sondern nutzt denselben Analysekern und dasselbe JSON-Format wie CLI und GUI.
+Die lokale Weboberfläche ist ein Hilfs-/Demo-Modus für schnelle Snippet-, Einzeldatei- und kleine ZIP-Analysen auf demselben Rechner. Sie ersetzt nicht die Desktop-App für ganze Projektordner, ist keine Companion-App und keine eigene Mobile-Produktlinie. Sie nutzt denselben Analysekern und dasselbe JSON-Format wie CLI und GUI.
 
 ## Start
 
@@ -30,7 +30,7 @@ Für Android-/iOS-Tests im selben WLAN:
 python webapp/server.py --host 0.0.0.0 --port 8765
 ```
 
-Der Web Companion blendet dann im Bereich **Android/iOS-Testpfad** erkannte LAN-URLs und Install-Hinweise für Android sowie iPhone/iPad ein.
+Die Oberfläche kann dann erkannte LAN-URLs anzeigen. Das ist nur ein technischer Testpfad für lokale Browser-Smokes, kein geplanter Android-/iOS-Releasepfad.
 
 ## Funktionen
 
@@ -43,14 +43,14 @@ Der Web Companion blendet dann im Bereich **Android/iOS-Testpfad** erkannte LAN-
 - PWA installieren und nach der ersten Nutzung offline erneut öffnen.
 - Statische PWA-Dateien mit Service Worker cachen; die Analyse-API bleibt lokal und wird nicht gecacht.
 
-## Mobile/PWA-Verhalten
+## Browser-Verhalten
 
-- Chrome und Edge können die App als installierbare PWA anbieten.
-- Für mobile Tests im selben WLAN zeigt die Oberfläche den empfohlenen LAN-Startbefehl und, falls erkannt, direkte Geräte-URLs zum Kopieren.
-- Die neue **PWA-Testkarte** bündelt App-Modus, Install-Flow, Service-Worker-Status, lokalen Speicher, Viewport und den erkannten Serverpfad in einer kopierbaren Kurzdiagnose für Android-/iOS-Smokes.
+- Chrome und Edge können die Oberfläche als installierbare PWA anbieten.
+- Für lokale Browser-Smokes zeigt die Oberfläche den empfohlenen LAN-Startbefehl und, falls erkannt, direkte URLs zum Kopieren.
+- Die **PWA-Testkarte** bündelt App-Modus, Install-Flow, Service-Worker-Status, lokalen Speicher, Viewport und den erkannten Serverpfad in einer kopierbaren Kurzdiagnose.
 - Bereits geladene Oberfläche bleibt durch den Service Worker auch ohne laufenden Server erreichbar.
 - Neue Analysen benötigen weiter den lokalen Python-Prozess; offline bleiben Entwurf, letzter JSON-Report, importierte Reports und die UI verfügbar.
-- Android und iOS nutzen dieselbe Web-Linie; es gibt weiterhin keine native App und keinen Cloud-Sync.
+- Android und iOS sind keine Zielplattformen; es gibt keine native App, keine Mobile-Roadmap und keinen Cloud-Sync.
 
 ## Lokale API
 

@@ -1,4 +1,4 @@
-# =============================================================================
+﻿# =============================================================================
 # .gitignore Template fuer Software Entwicklung Projekte
 # Kopieren und als .gitignore im Projektroot ablegen
 # Projektspezifische Eintraege am Ende anfuegen
@@ -87,3 +87,7 @@ _private/
 *.bak
 
 # ---- Projektspezifisch (hier eigene Eintraege anfuegen) ----
+DECISIONS.md
+PORTIERUNGSPLAN.md
+TODO.md
+DONE.md
