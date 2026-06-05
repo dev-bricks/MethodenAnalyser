@@ -1,6 +1,7 @@
 import ast
 import json
 import os
+import pathlib
 import subprocess
 import sys
 import tempfile
@@ -197,6 +198,87 @@ class MethodenAnalyserCliTests(unittest.TestCase):
             info_dialog_version,
             "Info-Dialog referenziert TOOL_VERSION nicht als f-string — Versions-Mismatch möglich",
         )
+
+
+class RegressionTests(unittest.TestCase):
+    """Regression-Tests für Bugfixes."""
+
+    def run_cli(self, *args: str, input_text: str | None = None, extra_env: dict | None = None) -> subprocess.CompletedProcess[str]:
+        env = os.environ.copy()
+        if extra_env:
+            env.update(extra_env)
+        return subprocess.run(
+            [sys.executable, str(SCRIPT_PATH), *args],
+            input=input_text,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            env=env,
+            check=False,
+        )
+
+    def test_report_text_contains_no_emojis(self) -> None:
+        """Regression (Bug A): generate_report() darf keine Emojis enthalten —
+        UnicodeEncodeError auf Windows cp1252 wenn stdout nicht UTF-8."""
+        sys.path.insert(0, str(PROJECT_ROOT))
+        from MethodenAnalyser3 import analyze_source, generate_report
+        code = (
+            "import os\n"
+            "import re\n"
+            "from threading import Thread, Lock\n"
+            "def helper(): pass\n"
+            "x = Thread(target=helper)\n"
+            "x.start()\n"
+        )
+        result = analyze_source(code)
+        report = generate_report(result)
+        # Alle Zeichen müssen in cp1252 (Windows-Standardencoding) encodierbar sein.
+        try:
+            report.encode("cp1252")
+        except UnicodeEncodeError as e:
+            self.fail(
+                f"generate_report() enthält nicht-cp1252-encodierbare Zeichen: {e}\n"
+                "Bitte Emojis durch ASCII-Marker ersetzen."
+            )
+
+    def test_collect_python_files_excludes_exact_dir_names_only(self) -> None:
+        """Regression (Bug C): collect_python_files() darf 'build' nicht als
+        Substring matchen — Pfade wie 'C:/Users/builder/...' dürfen NICHT
+        ausgeschlossen werden."""
+        sys.path.insert(0, str(PROJECT_ROOT))
+        from MethodenAnalyser3 import collect_python_files
+        import tempfile
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            base = pathlib.Path(tmpdir)
+            # Ordner mit Namen der "build" als Substring enthalten, aber KEIN build/-Ordner
+            builder_dir = base / "builder"
+            builder_dir.mkdir()
+            (builder_dir / "main.py").write_text("x = 1\n", encoding="utf-8")
+
+            # Echter build/-Ordner — soll exkludiert werden
+            build_dir = base / "build"
+            build_dir.mkdir()
+            (build_dir / "output.py").write_text("y = 2\n", encoding="utf-8")
+
+            files = collect_python_files(str(base))
+
+        names = [pathlib.Path(f).name for f in files]
+        self.assertIn("main.py", names, "Datei in 'builder/'-Ordner muss eingeschlossen sein")
+        self.assertNotIn("output.py", names, "Datei in 'build/'-Ordner muss ausgeschlossen sein")
+
+    def test_project_cli_handles_permission_error_gracefully(self) -> None:
+        """Regression (Bug B): _run_cli_project muss Exception abfangen und
+        Exit-Code 1 liefern statt unbehandelt zu crashen."""
+        import tempfile
+        # Verwende nicht-existenten Ordner — os.path.isdir liefert False → Exit 1
+        result = self.run_cli(
+            "--project",
+            "/nonexistent_path_that_does_not_exist_xyz",
+            extra_env={"PYTHONIOENCODING": "utf-8"},
+        )
+        self.assertEqual(result.returncode, 1, result.stderr)
+        self.assertIn("[FEHLER]", result.stderr)
 
 
 if __name__ == "__main__":

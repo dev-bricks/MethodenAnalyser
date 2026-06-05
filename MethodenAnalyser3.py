@@ -930,7 +930,7 @@ def generate_report(result: AnalysisResult) -> str:
 
     # Dynamische Aufrufe
     if result.dynamic_usage:
-        report.append("\n🔧 DYNAMISCHE AUFRUFE\n")
+        report.append("\n[DYNAMISCH] DYNAMISCHE AUFRUFE\n")
         report.append("-" * 70 + "\n")
         report.append(f"Erkannte Patterns: {', '.join(result.dynamic_usage)}\n")
         if result.dynamic_methods:
@@ -939,7 +939,7 @@ def generate_report(result: AnalysisResult) -> str:
 
     # Namens-Matches
     if result.name_matches:
-        report.append("\n💡 ÄHNLICHE NAMEN (mögliche Tippfehler)\n")
+        report.append("\n[TIPP] ÄHNLICHE NAMEN (mögliche Tippfehler)\n")
         report.append("-" * 70 + "\n")
         for call, match in result.name_matches:
             report.append(f"  '{call}' → vielleicht '{match}'?\n")
@@ -958,7 +958,7 @@ def generate_report(result: AnalysisResult) -> str:
 
     # Optional: Zeige importierte Definitionen wenn gewünscht
     if result.imported_definitions:
-        report.append(f"\n📥 IMPORTIERTE DEFINITIONEN\n")
+        report.append(f"\n[IMPORTS] IMPORTIERTE DEFINITIONEN\n")
         report.append("-" * 70 + "\n")
         # Gruppiere nach Typ für bessere Lesbarkeit
         classes = [name for name in result.imported_definitions if name[0].isupper()]
@@ -978,7 +978,7 @@ def generate_report(result: AnalysisResult) -> str:
 
     # NEU: Zeige Modul-Attribut Usage
     if result.module_attribute_usage:
-        report.append(f"\n🔗 MODUL-ATTRIBUT VERWENDUNG\n")
+        report.append(f"\n[MODULE] MODUL-ATTRIBUT VERWENDUNG\n")
         report.append("-" * 70 + "\n")
         report.append("  Zeigt welche Attribute von importierten Modulen verwendet werden:\n\n")
         
@@ -1188,7 +1188,7 @@ def collect_python_files(folder_path: str, exclude_patterns: List[str] = None) -
     for py_file in folder.rglob("*.py"):
         skip = False
         for pattern in exclude_patterns:
-            if pattern in str(py_file):
+            if pattern in py_file.parts:
                 skip = True
                 break
         if not skip:
@@ -1687,7 +1687,12 @@ def _run_cli_project(path: str, json_output: Optional[str] = None) -> int:
         print(f"[FEHLER] Projektordner nicht gefunden: {path}", file=sys.stderr)
         return EXIT_ANALYSIS_ERROR
 
-    result = analyze_project(path)
+    try:
+        result = analyze_project(path)
+    except Exception as exc:
+        print(f"[FEHLER] Projektanalyse fehlgeschlagen: {exc}", file=sys.stderr)
+        return EXIT_ANALYSIS_ERROR
+
     _emit_cli_report(generate_project_report(result))
     json_report = build_json_report("project", result, source_name=path)
     if not _write_cli_json_if_requested(json_report, json_output):
