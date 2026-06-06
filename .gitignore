@@ -60,6 +60,7 @@ releases/
 *.msix
 *.appx
 *.spec
+!MethodenAnalyser.spec
 *.pfx
 *.p12
 *.cer
