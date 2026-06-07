@@ -7,28 +7,36 @@
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "display_override": ["standalone", "minimal-ui", "browser"],
+  "display_override": [
+    "standalone",
+    "minimal-ui",
+    "browser"
+  ],
   "orientation": "portrait-primary",
   "background_color": "#f6f7f4",
   "theme_color": "#156f5b",
   "icons": [
     {
-      "src": "/assets/Square44x44Logo.png",
-      "sizes": "44x44",
-      "type": "image/png",
-      "purpose": "any"
+      "src": "./icons/Icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
     },
     {
-      "src": "/assets/Square150x150Logo.png",
-      "sizes": "150x150",
-      "type": "image/png",
-      "purpose": "any"
+      "src": "./icons/Icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
     },
     {
-      "src": "/assets/Square310x310Logo.png",
-      "sizes": "310x310",
+      "src": "./icons/Icon-maskable-192.png",
+      "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any"
+      "purpose": "maskable"
+    },
+    {
+      "src": "./icons/Icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ]
 }
