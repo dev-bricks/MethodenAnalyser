@@ -16,7 +16,9 @@ Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 - **B-003** (`MethodenAnalyser3.py`): `scan_dynamic_usage()` gab Strings wie `"getattr("`, `"setattr("` als extrahierte Methodennamen zurück, weil Regex-Muster ohne Capture-Group den vollen Match liefern. Fix: Strings mit `(` werden ausgefiltert. Regressionstest ergänzt.
 
 ### Repository-Hygiene
-- `llms.txt` ergänzt mit kanonischen Links, Tool-Scope, lokalen Interfaces und Datenschutzgrenzen für Crawler, LLMs und Verzeichnisdienste.
+- `README.md` überarbeitet und auf ein strukturiertes, englischsprachiges Layout (English-first) mit Tabellen, Badges und Verweisen umgestellt.
+- Neue deutsche Übersetzung `README_de.md` für vollständige Lokalisierung erstellt.
+- `llms.txt` aktualisiert und mit `README_de.md` ergänzt.
 - Community-Workflows aktualisiert: `actions/stale@v10` und `actions/first-interaction@v3` mit aktuellen Input-Namen.
 
 ### Portierung / Platforms

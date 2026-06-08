@@ -33,6 +33,7 @@ All analysis runs locally. The tool does not include telemetry, cloud sync, exte
 ## Main Files
 
 - `README.md`: user-facing overview and quickstart.
+- `README_de.md`: German translation and localized documentation.
 - `EXPORTFORMAT.md`: `methodenanalyser-report-v1.json` schema.
 - `WEBAPP.md`: local browser helper details.
 - `PORTIERUNGSPLAN.md`: platform scope and non-goals.
