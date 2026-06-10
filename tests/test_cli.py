@@ -360,6 +360,182 @@ class RegressionTests(unittest.TestCase):
             "import os.path muss als entfernbar markiert werden wenn 'os' ungenutzt ist",
         )
 
+    def test_collect_unused_import_lines_keeps_future_imports(self) -> None:
+        """Regression (Bug D): from __future__ import annotations darf nicht entfernt
+        werden, auch wenn 'annotations' nicht explizit als Name genutzt wird."""
+        import ast as _ast
+        sys.path.insert(0, str(PROJECT_ROOT))
+        from MethodenAnalyser3 import _collect_unused_import_lines
+
+        code = "from __future__ import annotations\nimport os\nx = 1\n"
+        tree = _ast.parse(code)
+        lines_to_remove = _collect_unused_import_lines(tree, {"annotations", "os"})
+
+        self.assertNotIn(1, lines_to_remove, "__future__-Import darf nicht entfernt werden")
+        self.assertIn(2, lines_to_remove, "normaler unbenutzter Import muss markiert werden")
+
+
+class TestEncodingHandling(unittest.TestCase):
+    """Tests für Encoding-Fallback bei nicht-UTF-8-Dateien (Latin-1)."""
+
+    def setUp(self):
+        sys.path.insert(0, str(PROJECT_ROOT))
+        self.tmpdir = tempfile.mkdtemp()
+
+    def tearDown(self):
+        import shutil
+        shutil.rmtree(self.tmpdir, ignore_errors=True)
+
+    def test_analyze_project_latin1_file_not_in_errors(self) -> None:
+        """Regression (Bug B): analyze_project() darf latin-1-Dateien nicht in
+        files_with_errors listen, wenn die Analyse per Encoding-Fallback erfolgreich war."""
+        from MethodenAnalyser3 import analyze_project
+
+        latin1_code = b"# encoding: latin-1\nimport os\nx = 'caf\xe9'\n"
+        file_path = os.path.join(self.tmpdir, "latin1_file.py")
+        with open(file_path, "wb") as f:
+            f.write(latin1_code)
+
+        result = analyze_project(self.tmpdir)
+
+        error_paths = [e[0] for e in result.files_with_errors]
+        self.assertNotIn(
+            file_path,
+            error_paths,
+            "latin-1-Datei darf nicht in files_with_errors stehen wenn Analyse erfolgreich war",
+        )
+        self.assertEqual(result.files_analyzed, 1)
+
+    def _call_auto_fix(self, filepath, result):
+        """Setzt Globals, ruft auto_fix_unused_imports mit gemockter GUI auf."""
+        import unittest.mock
+        import MethodenAnalyser3 as m3
+        orig_path = m3._last_analysis_path
+        orig_result = m3._last_analysis_result
+        try:
+            m3._last_analysis_path = filepath
+            m3._last_analysis_result = result
+            with unittest.mock.patch("MethodenAnalyser3.messagebox") as mb:
+                mb.askyesno.return_value = True
+                m3.auto_fix_unused_imports(unittest.mock.MagicMock())
+        finally:
+            m3._last_analysis_path = orig_path
+            m3._last_analysis_result = orig_result
+
+    def test_auto_fix_works_on_latin1_file(self) -> None:
+        """Regression (Bug A): auto_fix_unused_imports() darf bei latin-1-Dateien
+        nicht mit UnicodeDecodeError abstuerzen und muss den Import korrekt entfernen."""
+        import MethodenAnalyser3 as m3
+
+        latin1_code = b"import os\nimport sys\nx = 'caf\xe9'\nprint(sys.argv)\n"
+        filepath = os.path.join(self.tmpdir, "latin1_autofix.py")
+        with open(filepath, "wb") as f:
+            f.write(latin1_code)
+
+        result = m3.analyze_file(filepath)
+        self.assertIn("os", result.unused_imports)
+
+        self._call_auto_fix(filepath, result)
+
+        with open(filepath, "r", encoding="latin-1") as f:
+            content = f.read()
+        self.assertNotIn("import os\n", content)
+        self.assertIn("import sys\n", content)
+
+    def test_auto_fix_form_feed_line_alignment(self) -> None:
+        """Regression (Fix A): Form-Feed \\x0c darf AST-Zeilennummern nicht verschieben
+        — splitlines() wuerde bei \\x0c extra Zeilen erzeugen, readlines() nicht."""
+        import MethodenAnalyser3 as m3
+
+        # \x0c vor import os: splitlines() wuerde Zeile 1=leer, 2=import os sehen,
+        # AST sieht aber lineno=1 fuer import os — readlines() bleibt konsistent.
+        code = b"\x0cimport os\nimport sys\nprint(os.getcwd())\n"
+        filepath = os.path.join(self.tmpdir, "formfeed_autofix.py")
+        with open(filepath, "wb") as f:
+            f.write(code)
+
+        result = m3.analyze_file(filepath)
+        self.assertIn("sys", result.unused_imports)
+        self.assertNotIn("os", result.unused_imports)
+
+        self._call_auto_fix(filepath, result)
+
+        with open(filepath, "r", encoding="utf-8") as f:
+            content = f.read()
+        self.assertNotIn("import sys", content)
+        self.assertIn("import os", content)
+
+    def test_auto_fix_preserves_latin1_encoding_for_non_ascii_content(self) -> None:
+        """Regression (Bug C): auto_fix darf bei latin-1-Dateien das Encoding nicht auf
+        UTF-8 aendern — wuerde Dateien mit '# coding: latin-1' und nicht-ASCII korrumpieren."""
+        import MethodenAnalyser3 as m3
+
+        # Datei mit latin-1 Nicht-ASCII-Zeichen (café = caf + \xe9)
+        latin1_code = b"import os\nimport sys\nx = 'caf\xe9'\nprint(sys.argv)\n"
+        filepath = os.path.join(self.tmpdir, "latin1_nonascii.py")
+        with open(filepath, "wb") as f:
+            f.write(latin1_code)
+
+        result = m3.analyze_file(filepath)
+        self.assertIn("os", result.unused_imports)
+
+        self._call_auto_fix(filepath, result)
+
+        # Datei muss weiterhin als latin-1 lesbar sein (kein UnicodeDecodeError)
+        with open(filepath, "rb") as f:
+            raw_bytes = f.read()
+        # Das nicht-ASCII-Byte \xe9 (é in latin-1) muss erhalten bleiben
+        self.assertIn(b"\xe9", raw_bytes, "latin-1 Byte \\xe9 darf nach auto_fix nicht fehlen")
+        # Darf NICHT als UTF-8-Sequenz \xc3\xa9 codiert worden sein
+        self.assertNotIn(b"\xc3\xa9", raw_bytes, "Encoding darf nicht von latin-1 auf UTF-8 geaendert worden sein")
+
+
+class TestExceptHandlerAndDunders(unittest.TestCase):
+    """Tests für Bug E (ExceptHandler-Binding) und Bug F (Module-Dunders)."""
+
+    def setUp(self):
+        sys.path.insert(0, str(PROJECT_ROOT))
+
+    def test_except_binding_not_in_missing_imports(self) -> None:
+        """Regression (Bug E): 'except Exception as e:' darf 'e' nicht als
+        missing_import ausweisen — ExceptHandler.name ist ein str, kein ast.Name-Knoten."""
+        from MethodenAnalyser3 import analyze_source
+
+        code = textwrap.dedent("""
+            import sys
+
+            def run():
+                try:
+                    pass
+                except Exception as e:
+                    print(e)
+        """).strip() + "\n"
+
+        result = analyze_source(code)
+        self.assertNotIn(
+            "e",
+            result.missing_imports,
+            "Exception-Binding 'e' darf nicht als missing_import erscheinen",
+        )
+
+    def test_module_dunders_not_in_missing_imports(self) -> None:
+        """Regression (Bug F): __file__, __name__, __doc__ sind implizit verfuegbar
+        und duerfen nicht als missing_imports erscheinen."""
+        from MethodenAnalyser3 import analyze_source
+
+        code = textwrap.dedent("""
+            def info():
+                print(__file__, __name__, __doc__)
+        """).strip() + "\n"
+
+        result = analyze_source(code)
+        for dunder in ("__file__", "__name__", "__doc__"):
+            self.assertNotIn(
+                dunder,
+                result.missing_imports,
+                f"{dunder} ist implizit verfuegbar und darf nicht in missing_imports stehen",
+            )
+
 
 class TranslatorIsGermanTests(unittest.TestCase):
     """Tests für TranslationSystem._is_german()."""

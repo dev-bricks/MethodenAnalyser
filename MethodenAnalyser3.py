@@ -391,6 +391,12 @@ class CodeAnalyzer(ast.NodeVisitor):
         self.local_names.add(node.arg)
         self.generic_visit(node)
 
+    def visit_ExceptHandler(self, node: ast.ExceptHandler) -> None:
+        """Erfasst Exception-Binding-Namen als lokale Namen."""
+        if node.name:
+            self.local_names.add(node.name)
+        self.generic_visit(node)
+
 
 # ============================================================================
 # HILFSFUNKTIONEN
@@ -697,6 +703,12 @@ def analyze_source(code: str, source_name: str = "<snippet>") -> AnalysisResult:
         analyzer.used_names - defs - imports_unique -
         calls - analyzer.local_names - BUILTINS - framework_and_widgets - module_provided_attrs
     )
+    # Module-level Dunders (__file__, __name__, __doc__ etc.) sind implizit
+    # verfügbar, aber nicht in dir(builtins) — Falsch-Positive herausfiltern
+    missing_imports = {
+        name for name in missing_imports
+        if not (name.startswith("__") and name.endswith("__"))
+    }
 
     return AnalysisResult(
         calls=sorted(calls),
@@ -1100,6 +1112,10 @@ def _collect_unused_import_lines(tree: ast.AST, unused_set: Set[str]) -> Set[int
     lines_to_remove: Set[int] = set()
     for node in ast.walk(tree):
         if isinstance(node, (ast.Import, ast.ImportFrom)):
+            # __future__-Imports niemals entfernen — sie aendern Python-Semantik
+            # (z.B. 'from __future__ import annotations' aktiviert PEP 563)
+            if isinstance(node, ast.ImportFrom) and node.module == "__future__":
+                continue
             names = [alias.asname or alias.name.split(".")[0] for alias in node.names
                      if alias.name != "*"]
             if names and all(name in unused_set for name in names):
@@ -1133,31 +1149,38 @@ def auto_fix_unused_imports(output_widget: scrolledtext.ScrolledText) -> None:
         return
     
     try:
-        # Datei lesen
-        with open(_last_analysis_path, "r", encoding="utf-8") as f:
-            lines = f.readlines()
-        
-        # AST parsen um Import-Zeilen zu finden
-        with open(_last_analysis_path, "r", encoding="utf-8") as f:
-            tree = ast.parse(f.read())
-        
+        # Datei lesen mit Encoding-Fallback — erkanntes Encoding für Schreibzugriff merken
+        detected_encoding = "utf-8"
+        try:
+            with open(_last_analysis_path, "r", encoding="utf-8") as f:
+                lines = f.readlines()
+        except UnicodeDecodeError:
+            detected_encoding = "latin-1"
+            with open(_last_analysis_path, "r", encoding="latin-1") as f:
+                lines = f.readlines()
+
+        # AST parsen (readlines() beibehalten — splitlines() würde bei \x0c
+        # Zeilennummern gegenüber AST-lineno verschieben und falsche Zeilen löschen)
+        tree = ast.parse("".join(lines))
+
         # Import-Zeilen markieren die entfernt werden sollen
         unused_set = set(_last_analysis_result.unused_imports)
         lines_to_remove = _collect_unused_import_lines(tree, unused_set)
-        
+
         if not lines_to_remove:
             messagebox.showinfo("Info", "Keine vollständig ungenutzten Import-Zeilen gefunden.\n(Teilweise genutzte Imports müssen manuell bearbeitet werden)")
             return
-        
-        # Backup erstellen
+
+        # Backup und Ausgabe im erkannten Encoding — verhindert Korrumpierung von
+        # latin-1-Dateien mit nicht-ASCII-Zeichen und # coding: latin-1 Deklaration
         backup_path = _last_analysis_path + ".bak"
-        with open(backup_path, "w", encoding="utf-8") as f:
+        with open(backup_path, "w", encoding=detected_encoding) as f:
             f.writelines(lines)
-        
+
         # Neue Datei ohne ungenutzte Imports
         new_lines = [line for i, line in enumerate(lines, 1) if i not in lines_to_remove]
-        
-        with open(_last_analysis_path, "w", encoding="utf-8") as f:
+
+        with open(_last_analysis_path, "w", encoding=detected_encoding) as f:
             f.writelines(new_lines)
         
         # Ausgabe
@@ -1235,7 +1258,7 @@ def analyze_project(folder_path: str, progress_callback=None) -> ProjectAnalysis
             try:
                 with open(file_path, 'r', encoding='utf-8') as f:
                     total_lines += len(f.readlines())
-            except (IOError, OSError):
+            except (IOError, OSError, UnicodeDecodeError):
                 pass
             rel_path = os.path.relpath(file_path, folder_path)
             if result.unused_imports:
