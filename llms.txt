@@ -36,5 +36,27 @@ All analysis runs locally. The tool does not include telemetry, cloud sync, exte
 - `README_de.md`: German translation and localized documentation.
 - `EXPORTFORMAT.md`: `methodenanalyser-report-v1.json` schema.
 - `WEBAPP.md`: local browser helper details.
-- `PORTIERUNGSPLAN.md`: platform scope and non-goals.
 - `.github/workflows/tests.yml`: Windows, Ubuntu and macOS smoke matrix.
+
+## Audience
+
+- Python developers who want a dependency-free, local static code analyzer with GUI
+- Windows developers looking for an offline-first code quality tool without cloud dependencies
+- Development teams using CI/CD pipelines that need structured JSON output for automated analysis
+- Developers preparing Python projects for refactoring or cleanup
+- Python beginners who want an accessible, readable AST-based tool to explore their own code
+
+## Search Phrases
+
+```
+dev-bricks MethodenAnalyser
+Python static code analyzer Tkinter GUI
+unused imports detector Python AST
+local Python code quality checker no dependencies
+Python dead code finder GUI Windows
+AST-based Python code analyzer portable
+Python import tracker unused definitions finder
+code similarity detector Python local
+```
+
+## Last-checked: 2026-06-11

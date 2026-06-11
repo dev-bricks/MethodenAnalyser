@@ -6,11 +6,17 @@ Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 ## [Unreleased]
 
 ### Build / Packaging
-- `build_exe.bat` ergänzt einen reproduzierbaren PyInstaller-Build mit lokalem Workpath unter `C:\_Local_DEV\codex_build\methodenanalyser`, zentralem Build-Exclude-Scanner und Kopie der fertigen EXE nach `dist\MethodenAnalyser.exe` sowie `MethodenAnalyser.exe`.
+- `build_exe.bat` ergänzt einen reproduzierbaren PyInstaller-Build mit lokalem Workpath (lokales Build-Verzeichnis), zentralem Build-Exclude-Scanner und Kopie der fertigen EXE nach `dist\MethodenAnalyser.exe` sowie `MethodenAnalyser.exe`.
 - `START.bat` startet unter Windows bevorzugt die gebaute EXE und fällt erst danach auf den Python-Start zurück.
 - `MethodenAnalyser.spec` nutzt relative Projektpfade, bündelt Icon und `locales/` und deaktiviert UPX.
 
 ### Fehlerbehebungen / Bug Fixes
+- **B-004** (`MethodenAnalyser3.py`): `auto_fix_unused_imports` las Dateien ausschließlich als UTF-8, was bei Latin-1-kodierten Quellcode-Dateien zu `UnicodeDecodeError` führte. Fix: UTF-8-First mit `latin-1`-Fallback via `readlines()` (Zeilennummern bleiben mit `ast.lineno` synchron). 9 Regressionstests in `tests/test_cli.py` ergänzt.
+- **B-005** (`MethodenAnalyser3.py`): `analyze_project` fing nur `IOError`/`OSError`, nicht `UnicodeDecodeError` — Latin-1-Dateien brachen den gesamten Projekt-Scan ab. Fix: `UnicodeDecodeError` in denselben `except`-Block aufgenommen.
+- **B-006** (`MethodenAnalyser3.py`): Backup- und Output-Schreibvorgänge nutzten immer UTF-8, was Latin-1-Dateien mit Non-ASCII-Zeichen korrumpierte. Fix: erkannte Encoding-Information wird beim Schreiben wiederverwendet.
+- **B-007** (`MethodenAnalyser3.py`): `_collect_unused_import_lines` entfernte `from __future__ import annotations` fälschlich als ungenutzt. Fix: `__future__`-Imports werden übersprungen (PEP-563-Semantik).
+- **B-008** (`MethodenAnalyser3.py`): `CodeAnalyzer.visit_ExceptHandler` trug Binding-Namen aus `except ... as e`-Blöcken nicht in `local_names` ein — `ExceptHandler.name` ist ein `str`, kein `ast.Name`-Knoten und wurde von `visit_Name` nicht erfasst. Fix: explizite Eintragung in `local_names`.
+- **B-009** (`MethodenAnalyser3.py`): `analyze_source` listete `__file__`, `__name__`, `__doc__` als fehlende Imports, weil Modul-Level-Dunders nicht in `builtins` enthalten sind. Fix: Dunders werden aus `missing_imports` herausgefiltert.
 - **B-001** (`translator.py`): `_is_german()` erkannte englische Wörter fälschlich als Deutsch, weil die Zeichenmenge `"aeoeueAeOeUess"` als einzelne ASCII-Zeichen iteriert wurde statt als echte Umlaute. Fix: Prüfung auf `"äöüÄÖÜß"` (Unicode). Regressionstest in `tests/test_cli.py` ergänzt.
 - **B-002** (`MethodenAnalyser3.py`): `_collect_unused_import_lines()` markierte `import os.path` nicht zur Entfernung, weil `alias.name` den Wert `"os.path"` liefert, während `unused_set` nur `"os"` enthält. Fix: `alias.name.split(".")[0]`. Regressionstest ergänzt.
 - **B-003** (`MethodenAnalyser3.py`): `scan_dynamic_usage()` gab Strings wie `"getattr("`, `"setattr("` als extrahierte Methodennamen zurück, weil Regex-Muster ohne Capture-Group den vollen Match liefern. Fix: Strings mit `(` werden ausgefiltert. Regressionstest ergänzt.
