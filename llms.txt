@@ -36,7 +36,7 @@ All analysis runs locally. The tool does not include telemetry, cloud sync, exte
 - `README_de.md`: German translation and localized documentation.
 - `EXPORTFORMAT.md`: `methodenanalyser-report-v1.json` schema.
 - `WEBAPP.md`: local browser helper details.
-- `.github/workflows/tests.yml`: Windows, Ubuntu and macOS smoke matrix.
+- `.github/workflows/tests.yml`: Windows 2025/VS 2026, Ubuntu and macOS 26 smoke matrix.
 
 ## Audience
 
@@ -59,4 +59,4 @@ Python import tracker unused definitions finder
 code similarity detector Python local
 ```
 
-## Last-checked: 2026-06-11
+## Last-checked: 2026-06-12

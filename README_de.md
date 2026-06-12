@@ -122,7 +122,7 @@ python -m py_compile MethodenAnalyser3.py manage_translations.py translator.py w
 python -m unittest discover -s tests -v
 ```
 
-Zusätzlich prüft die GitHub-Action denselben Stand automatisch auf Windows (Python 3.10 bis 3.12) sowie auf Ubuntu und macOS (jeweils Python 3.11). Damit bleiben Tkinter-Import, CLI und Web-Companion auch außerhalb von Windows im Blick, ohne bereits eine eigene Mac- oder Linux-Paketlinie zu versprechen.
+Zusätzlich prüft die GitHub-Action denselben Stand automatisch auf Windows Server 2025 mit Visual Studio 2026 (Python 3.10 bis 3.12) sowie auf Ubuntu (Python 3.11) und macOS 26 (Python 3.11). Damit bleiben Tkinter-Import, CLI und Web-Companion auch außerhalb von Windows im Blick, ohne bereits eine eigene Mac- oder Linux-Paketlinie zu versprechen.
 
 Exit-Codes:
 
@@ -190,7 +190,7 @@ python -m py_compile MethodenAnalyser3.py manage_translations.py translator.py w
 python -m unittest discover -s tests -v
 ```
 
-GitHub Actions führt denselben Smoke-Test jetzt auf Windows (Python 3.10 bis 3.12) sowie zusätzlich auf Ubuntu und macOS (Python 3.11) aus.
+GitHub Actions führt denselben Smoke-Test auf explizit gepinnten 2026-Migrations-Images aus: `windows-2025-vs2026` für Windows und `macos-26` für macOS. Damit hängt der Smoke-Test nicht mehr von der schrittweisen Umstellung der Labels `windows-latest` und `macos-latest` ab.
 
 Für Crawler, LLMs und Verzeichnisdienste liegt ein knapper maschinenlesbarer Projektkontext in [llms.txt](llms.txt). Die Community-Workflows verwenden aktuelle `actions/stale`- und `actions/first-interaction`-Versionen.
 

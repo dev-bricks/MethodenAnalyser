@@ -120,7 +120,7 @@ python -m py_compile MethodenAnalyser3.py manage_translations.py translator.py w
 python -m unittest discover -s tests -v
 ```
 
-The repository includes a GitHub Actions workflow that executes this test suite across a matrix of Windows (Python 3.10-3.12), Ubuntu (Python 3.11), and macOS (Python 3.11).
+The repository includes a GitHub Actions workflow that executes this test suite across a matrix of Windows Server 2025 with Visual Studio 2026 (Python 3.10-3.12), Ubuntu (Python 3.11), and macOS 26 (Python 3.11).
 
 ---
 
@@ -191,7 +191,7 @@ python -m py_compile MethodenAnalyser3.py manage_translations.py translator.py w
 python -m unittest discover -s tests -v
 ```
 
-GitHub Actions runs these smoke tests on every push. For LLM agents and crawlers, a lightweight machine-readable context file is provided in [llms.txt](llms.txt).
+GitHub Actions runs these smoke tests on every push. The runner labels are pinned to the current 2026 migration targets (`windows-2025-vs2026` and `macos-26`) so the smoke matrix validates the same images that GitHub is moving `windows-latest` and `macos-latest` toward. For LLM agents and crawlers, a lightweight machine-readable context file is provided in [llms.txt](llms.txt).
 
 ---
 
