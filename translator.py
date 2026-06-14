@@ -28,12 +28,12 @@ class TranslationSystem:
 
         Args:
             default_lang: Standard-Sprache ('de' oder 'en')
-            app_dir: Verzeichnis der Anwendung (default: aktuelles Verzeichnis)
+            app_dir: Verzeichnis der Anwendung (default: Verzeichnis dieser Datei)
         """
         self.current_lang = default_lang
 
         if app_dir is None:
-            app_dir = Path.cwd()
+            app_dir = Path(__file__).parent
         self.app_dir = Path(app_dir)
 
         self.translations_file = self.app_dir / "locales" / "translations.json"
