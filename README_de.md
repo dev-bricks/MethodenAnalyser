@@ -1,4 +1,8 @@
 <p align="center">
+  <img src="assets/banner.svg" width="100%" alt="MethodenAnalyser — Statische Python-Analyse über ein Spektrum von Methoden">
+</p>
+
+<p align="center">
   <img src="https://img.shields.io/badge/Version-3.0-blue?style=for-the-badge" alt="Version">
   <img src="https://img.shields.io/badge/Python-3.10+-yellow?style=for-the-badge" alt="Python">
   <img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" alt="License">
