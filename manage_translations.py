@@ -23,10 +23,10 @@ STRING_PATTERNS = [
 ]
 
 GERMAN_HINTS = [
-    "datei", "filter", "fehler", "laden", "speichern",
-    "ansicht", "optionen", "zurueck", "anzeigen", "export",
-    "import", "einstellungen", "abbrechen", "hilfe", "bearbeiten",
-    "oeffnen", "schliessen", "start", "aktualisieren",
+    "datei", "fehler", "laden", "speichern",
+    "ansicht", "optionen", "anzeigen",
+    "einstellungen", "abbrechen", "hilfe", "bearbeiten",
+    "aktualisieren",
 ]
 
 
@@ -62,8 +62,11 @@ def manage_translations(source_dir="."):
     trans_file = os.path.join(source_dir, TRANSLATION_FILE)
 
     if os.path.exists(trans_file):
-        with open(trans_file, "r", encoding="utf-8") as f:
-            translations = json.load(f)
+        try:
+            with open(trans_file, "r", encoding="utf-8") as f:
+                translations = json.load(f)
+        except (OSError, json.JSONDecodeError):
+            translations = {}
     else:
         translations = {}
 
@@ -75,9 +78,12 @@ def manage_translations(source_dir="."):
             translations[s] = {"de": s, "en": ""}
             added.append(s)
 
-    os.makedirs(os.path.dirname(trans_file), exist_ok=True)
-    with open(trans_file, "w", encoding="utf-8") as f:
-        json.dump(translations, f, indent=2, ensure_ascii=False)
+    try:
+        os.makedirs(os.path.dirname(trans_file), exist_ok=True)
+        with open(trans_file, "w", encoding="utf-8") as f:
+            json.dump(translations, f, indent=2, ensure_ascii=False)
+    except OSError as e:
+        print(f"[FEHLER] translations.json konnte nicht geschrieben werden: {e}", file=sys.stderr)
 
     if added:
         print(f"[+] {len(added)} neue Eintraege hinzugefuegt:")

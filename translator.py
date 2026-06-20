@@ -49,10 +49,10 @@ class TranslationSystem:
         ]
 
         self.german_hints = [
-            "datei", "bearbeiten", "ansicht", "hilfe", "oeffnen", "speichern",
-            "schliessen", "einstellungen", "abbrechen", "ok", "ja", "nein",
-            "start", "stop", "pause", "fortsetzen", "laden", "aktualisieren",
-            "filter", "fehler", "export", "import", "optionen", "anzeigen",
+            "datei", "bearbeiten", "ansicht", "hilfe", "speichern",
+            "einstellungen", "abbrechen", "nein", "ja",
+            "fortsetzen", "laden", "aktualisieren",
+            "fehler", "optionen", "anzeigen",
         ]
 
         self.translations = {}
@@ -69,9 +69,12 @@ class TranslationSystem:
             self.translations = {}
 
     def _save_translations(self):
-        self.translations_file.parent.mkdir(parents=True, exist_ok=True)
-        with open(self.translations_file, 'w', encoding='utf-8') as f:
-            json.dump(self.translations, f, indent=2, ensure_ascii=False)
+        try:
+            self.translations_file.parent.mkdir(parents=True, exist_ok=True)
+            with open(self.translations_file, 'w', encoding='utf-8') as f:
+                json.dump(self.translations, f, indent=2, ensure_ascii=False)
+        except OSError:
+            pass
 
     def t(self, key: str) -> str:
         """

@@ -30,6 +30,7 @@ class MethodenAnalyserCliTests(unittest.TestCase):
             encoding="utf-8",
             env=env,
             check=False,
+            timeout=30,
         )
 
     def test_file_mode_returns_zero_for_clean_file(self) -> None:
@@ -215,6 +216,7 @@ class RegressionTests(unittest.TestCase):
             encoding="utf-8",
             env=env,
             check=False,
+            timeout=30,
         )
 
     def test_report_text_contains_no_emojis(self) -> None:
@@ -545,8 +547,8 @@ class TranslatorIsGermanTests(unittest.TestCase):
         from translator import TranslationSystem
         self.tr = TranslationSystem.__new__(TranslationSystem)
         self.tr.german_hints = [
-            "datei", "bearbeiten", "ansicht", "hilfe", "oeffnen", "speichern",
-            "schliessen", "einstellungen", "abbrechen", "ok", "ja", "nein",
+            "datei", "bearbeiten", "ansicht", "hilfe", "speichern",
+            "einstellungen", "abbrechen", "ja", "nein",
         ]
 
     def test_english_words_not_classified_as_german(self) -> None:
@@ -567,6 +569,56 @@ class TranslatorIsGermanTests(unittest.TestCase):
                     self.tr._is_german(word),
                     f"'{word}' enthaelt Umlaute und muss als deutsch erkannt werden",
                 )
+
+
+class GuiShortcutTests(unittest.TestCase):
+    def test_keyboard_shortcut_hint_mentions_primary_actions(self) -> None:
+        sys.path.insert(0, str(PROJECT_ROOT))
+        from MethodenAnalyser3 import _get_keyboard_shortcut_hint
+
+        hint = _get_keyboard_shortcut_hint()
+
+        self.assertIn("Alt+D", hint)
+        self.assertIn("Alt+P", hint)
+        self.assertIn("Alt+F", hint)
+        self.assertIn("F1", hint)
+
+    def test_register_gui_shortcuts_binds_and_invokes_callbacks(self) -> None:
+        sys.path.insert(0, str(PROJECT_ROOT))
+        from MethodenAnalyser3 import _register_gui_shortcuts
+
+        class FakeRoot:
+            def __init__(self) -> None:
+                self.bindings = {}
+
+            def bind_all(self, sequence, handler) -> None:
+                self.bindings[sequence] = handler
+
+        calls = []
+
+        def mark(name: str):
+            def _callback() -> None:
+                calls.append(name)
+
+            return _callback
+
+        root = FakeRoot()
+        _register_gui_shortcuts(
+            root,
+            analyze_file_cb=mark("file"),
+            info_cb=mark("info"),
+            auto_fix_cb=mark("fix"),
+            analyze_project_cb=mark("project"),
+        )
+
+        for sequence in ("<Alt-d>", "<Alt-D>", "<Alt-p>", "<Alt-P>", "<Alt-f>", "<Alt-F>", "<F1>"):
+            self.assertIn(sequence, root.bindings)
+
+        self.assertEqual(root.bindings["<Alt-d>"](None), "break")
+        self.assertEqual(root.bindings["<Alt-P>"](None), "break")
+        self.assertEqual(root.bindings["<Alt-f>"](None), "break")
+        self.assertEqual(root.bindings["<F1>"](None), "break")
+        self.assertEqual(calls, ["file", "project", "fix", "info"])
 
 
 if __name__ == "__main__":
