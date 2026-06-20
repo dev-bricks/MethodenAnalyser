@@ -15,7 +15,7 @@ import datetime
 import sqlite3
 import threading
 import warnings
-from typing import Set, Dict, List, Tuple, Any, Optional
+from typing import Set, Dict, List, Tuple, Any, Optional, Callable
 from dataclasses import dataclass, field
 from functools import lru_cache
 
@@ -771,7 +771,7 @@ def analyze_file(path: str) -> AnalysisResult:
                 code = f.read()
             warnings.warn(
                 f"Datei '{path}' konnte nicht als UTF-8 gelesen werden. "
-                "latin-1 Fallback wurde verwendet -- Analyse-Ergebnisse koennen Artefakte enthalten.",
+                "latin-1 Fallback wurde verwendet -- Analyse-Ergebnisse können Artefakte enthalten.",
                 UnicodeWarning,
                 stacklevel=2,
             )
@@ -1098,7 +1098,7 @@ def run_analysis(output_widget: scrolledtext.ScrolledText) -> None:
         output_widget.insert(tk.END, f"\n[OK] Report gespeichert: {export_path}")
 
     except PermissionError:
-        output_widget.insert(tk.END, f"\n[WARNUNG] Keine Schreibberechtigung fuer Export")
+        output_widget.insert(tk.END, f"\n[WARNUNG] Keine Schreibberechtigung für Export")
         messagebox.showwarning("Export-Fehler", "Keine Schreibberechtigung")
     except Exception as e:
         output_widget.insert(tk.END, f"\n[WARNUNG] Export-Fehler: {e}")
@@ -1511,7 +1511,7 @@ def write_json_report(report: Dict[str, Any], output_path: str) -> str:
 
 def run_project_analysis(output_widget: scrolledtext.ScrolledText) -> None:
     """Ordner-Dialog und Projekt-Analyse."""
-    folder_path = filedialog.askdirectory(title="Projektordner auswaehlen")
+    folder_path = filedialog.askdirectory(title="Projektordner auswählen")
     if not folder_path:
         return
     
@@ -1552,6 +1552,19 @@ def create_gui() -> None:
     button_frame = tk.Frame(root)
     button_frame.pack(pady=10)
     
+    def show_info_dialog() -> None:
+        messagebox.showinfo(
+            "Python Code Analyzer",
+            f"Python Code Analyzer v{TOOL_VERSION}\n\n"
+            "Analysiert Python-Dateien auf:\n"
+            "• Fehlende Definitionen\n"
+            "• Ungenutzte Definitionen\n"
+            "• Ungenutzte Imports\n"
+            "• Dynamische Aufrufe\n"
+            "• Import-Scope-Probleme\n\n"
+            "© 2026 - Optimierte Version"
+        )
+
     # Analyse-Button
     btn = tk.Button(
         button_frame,
@@ -1570,17 +1583,7 @@ def create_gui() -> None:
     info_btn = tk.Button(
         button_frame,
         text="ℹ️  Info",
-        command=lambda: messagebox.showinfo(
-            "Python Code Analyzer",
-            f"Python Code Analyzer v{TOOL_VERSION}\n\n"
-            "Analysiert Python-Dateien auf:\n"
-            "• Fehlende Definitionen\n"
-            "• Ungenutzte Definitionen\n"
-            "• Ungenutzte Imports\n"
-            "• Dynamische Aufrufe\n"
-            "• Import-Scope-Probleme\n\n"
-            "© 2026 - Optimierte Version"
-        ),
+        command=show_info_dialog,
         bg="#2196F3",
         fg="white",
         font=("Arial", 10),
@@ -1618,8 +1621,15 @@ def create_gui() -> None:
     )
     project_btn.pack(side=tk.LEFT, padx=5)
 
+    shortcut_hint = tk.Label(
+        root,
+        text=_get_keyboard_shortcut_hint(),
+        anchor="w",
+        fg="#555555",
+        font=("Arial", 9),
+    )
+    shortcut_hint.pack(fill=tk.X, padx=12, pady=(0, 8))
 
-    
     # Output-Widget als globale Referenz
     output = scrolledtext.ScrolledText(
         root,
@@ -1635,6 +1645,7 @@ def create_gui() -> None:
     # Willkommensnachricht
     welcome_text = (
         "Willkommen beim Python Code Analyzer!\n\n"
+        f"{_get_keyboard_shortcut_hint()}\n\n"
         "Klicken Sie auf 'Datei analysieren', um eine Python-Datei zu untersuchen.\n\n"
         "Die Analyse umfasst:\n"
         "• Fehlende und ungenutzte Definitionen\n"
@@ -1643,8 +1654,47 @@ def create_gui() -> None:
         "• Mögliche Tippfehler\n"
     )
     output.insert(tk.END, welcome_text)
+    _register_gui_shortcuts(
+        root,
+        analyze_file_cb=lambda: run_analysis(output),
+        info_cb=show_info_dialog,
+        auto_fix_cb=lambda: auto_fix_unused_imports(output),
+        analyze_project_cb=lambda: run_project_analysis(output),
+    )
+    output.focus_set()
 
     root.mainloop()
+
+
+def _get_keyboard_shortcut_hint() -> str:
+    """Liefert den sichtbaren Kurzhinweis für die Hauptaktionen der GUI."""
+    return "Tastatur: Alt+D Datei | Alt+P Projekt | Alt+F Auto-Fix | F1 Info"
+
+
+def _register_gui_shortcuts(
+    root: Any,
+    analyze_file_cb: Callable[[], None],
+    info_cb: Callable[[], None],
+    auto_fix_cb: Callable[[], None],
+    analyze_project_cb: Callable[[], None],
+) -> None:
+    """Bindet globale Tastaturkürzel für die primären GUI-Aktionen."""
+    shortcuts = {
+        "<Alt-d>": analyze_file_cb,
+        "<Alt-D>": analyze_file_cb,
+        "<Alt-p>": analyze_project_cb,
+        "<Alt-P>": analyze_project_cb,
+        "<Alt-f>": auto_fix_cb,
+        "<Alt-F>": auto_fix_cb,
+        "<F1>": info_cb,
+    }
+
+    for sequence, callback in shortcuts.items():
+        def _handler(_event: Any, cb: Callable[[], None] = callback) -> str:
+            cb()
+            return "break"
+
+        root.bind_all(sequence, _handler)
 
 
 def _file_has_findings(result: AnalysisResult) -> bool:
