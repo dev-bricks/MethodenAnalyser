@@ -12,6 +12,7 @@ Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 - GitHub-Actions-Smoke-Matrix pinnt Windows auf `windows-2025-vs2026` und macOS auf `macos-26`, damit die 2026-Runner-Migration vor dem Stichtag validiert wird.
 
 ### Fehlerbehebungen / Bug Fixes
+- **UX-001** (`MethodenAnalyser3.py`): Die Hauptaktionen der Tkinter-GUI hatten keine sichtbaren Tastaturhinweise und keine direkten Shortcuts. Fix: kompakte Shortcut-Zeile (`Alt+D`, `Alt+P`, `Alt+F`, `F1`) ergänzt, globale Tastaturkürzel gebunden und die Initialansicht auf Tastaturnutzung vorbereitet. Regressionstests in `tests/test_cli.py` sichern Hinweistext und Shortcut-Bindings ab.
 - **B-004** (`MethodenAnalyser3.py`): `auto_fix_unused_imports` las Dateien ausschließlich als UTF-8, was bei Latin-1-kodierten Quellcode-Dateien zu `UnicodeDecodeError` führte. Fix: UTF-8-First mit `latin-1`-Fallback via `readlines()` (Zeilennummern bleiben mit `ast.lineno` synchron). 9 Regressionstests in `tests/test_cli.py` ergänzt.
 - **B-005** (`MethodenAnalyser3.py`): `analyze_project` fing nur `IOError`/`OSError`, nicht `UnicodeDecodeError` — Latin-1-Dateien brachen den gesamten Projekt-Scan ab. Fix: `UnicodeDecodeError` in denselben `except`-Block aufgenommen.
 - **B-006** (`MethodenAnalyser3.py`): Backup- und Output-Schreibvorgänge nutzten immer UTF-8, was Latin-1-Dateien mit Non-ASCII-Zeichen korrumpierte. Fix: erkannte Encoding-Information wird beim Schreiben wiederverwendet.
