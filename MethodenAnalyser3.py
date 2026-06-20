@@ -562,7 +562,7 @@ def scan_todo_comments(code: str) -> List[Tuple[int, str, str]]:
 
     Returns:
         Liste von Tupeln (Zeilennummer, Typ, Text).
-        Text wird nur gekuerzt wenn er laenger als 50 Zeichen ist.
+        Text wird nur gekürzt wenn er länger als 50 Zeichen ist.
     """
     results = []
     for lineno, line in enumerate(code.splitlines(), start=1):
