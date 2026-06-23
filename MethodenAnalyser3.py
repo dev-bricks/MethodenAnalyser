@@ -668,7 +668,16 @@ def analyze_source(code: str, source_name: str = "<snippet>") -> AnalysisResult:
     unused_defs = analyzer.defs - calls  # Nur echte Definitionen, nicht Imports
 
     # VERBESSERT: Nur tatsächliche Import-Namen vergleichen
-    unused_imports = analyzer.import_names - analyzer.used_names
+    # FIX: Namen, die NUR als String-Literal vorkommen (z.B. __all__ = ["Foo"] oder
+    # String-/Forward-Ref-Annotationen "Bar" / "List[Bar]"), erfasst die AST-Name-Analyse
+    # NICHT als 'used' -> sie wuerden faelschlich als ungenutzt gemeldet und vom Auto-Fix
+    # aus der echten Datei geloescht (NameError / fehlendes __all__-Public-API). Daher
+    # alle in String-Literalen vorkommenden Bezeichner als genutzt behandeln (konservativ).
+    _string_refs: Set[str] = set()
+    for _n in ast.walk(tree):
+        if isinstance(_n, ast.Constant) and isinstance(_n.value, str):
+            _string_refs.update(re.findall(r"[A-Za-z_][A-Za-z0-9_]*", _n.value))
+    unused_imports = analyzer.import_names - analyzer.used_names - _string_refs
 
     # Whitelist und False-Positive-Checks
     whitelist = build_stdlib_whitelist()
