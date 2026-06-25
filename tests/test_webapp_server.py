@@ -7,9 +7,16 @@ import urllib.error
 import urllib.request
 import zipfile
 from http.server import ThreadingHTTPServer
+from pathlib import Path
 from urllib.request import urlopen
 
-from webapp.server import MethodenAnalyserPwaHandler, analyze_payload, build_runtime_info
+from webapp.server import (
+    MethodenAnalyserPwaHandler,
+    _content_type_for_path,
+    _resolve_under,
+    analyze_payload,
+    build_runtime_info,
+)
 
 
 class MethodenAnalyserWebappServerTests(unittest.TestCase):
@@ -110,6 +117,26 @@ class MethodenAnalyserWebappServerTests(unittest.TestCase):
         self.assertEqual(
             info["candidate_urls"],
             ["http://10.0.0.8:8765/", "http://192.168.0.5:8765/"],
+        )
+
+    def test_resolve_under_blocks_traversal(self) -> None:
+        root = Path(__file__).resolve().parent
+        self.assertIsNone(_resolve_under(root, "../test_cli.py"))
+        self.assertIsNone(_resolve_under(root, "/tmp/test_cli.py"))
+
+    def test_resolve_under_allows_existing_child_file(self) -> None:
+        root = Path(__file__).resolve().parent
+        expected = (root / "test_webapp_server.py").resolve()
+        self.assertEqual(_resolve_under(root, "test_webapp_server.py"), expected)
+
+    def test_content_type_uses_fixed_suffix_map(self) -> None:
+        self.assertEqual(
+            _content_type_for_path(Path("app.webmanifest")),
+            "application/manifest+json; charset=utf-8",
+        )
+        self.assertEqual(
+            _content_type_for_path(Path("payload.bad\r\nX-Test: 1")),
+            "application/octet-stream",
         )
 
 

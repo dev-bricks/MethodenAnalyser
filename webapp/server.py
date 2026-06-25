@@ -6,8 +6,6 @@ import binascii
 import io
 import ipaddress
 import json
-import mimetypes
-import os
 import socket
 import sys
 import tempfile
@@ -40,12 +38,16 @@ from MethodenAnalyser3 import (  # noqa: E402
 )
 
 
-mimetypes.add_type("application/manifest+json", ".webmanifest")
-mimetypes.add_type("text/javascript", ".js")
-mimetypes.add_type("text/css", ".css")
-
 LOCAL_ONLY_HOSTS = {"127.0.0.1", "::1", "localhost"}
 WILDCARD_HOSTS = {"0.0.0.0", "::"}
+CONTENT_TYPES_BY_SUFFIX = {
+    ".css": "text/css; charset=utf-8",
+    ".html": "text/html; charset=utf-8",
+    ".js": "text/javascript; charset=utf-8",
+    ".json": "application/json; charset=utf-8",
+    ".png": "image/png",
+    ".webmanifest": "application/manifest+json; charset=utf-8",
+}
 
 
 def _clean_filename(filename: Any, source_kind: str) -> str:
@@ -172,13 +174,29 @@ def analyze_payload(payload: dict[str, Any]) -> dict[str, Any]:
 
 
 def _resolve_under(root: Path, relative_path: str) -> Path | None:
-    root = root.resolve()
-    target = (root / relative_path).resolve()
-    if target == root or root not in target.parents:
+    resolved_root = root.resolve()
+    normalized_path = relative_path.replace("\\", "/").strip()
+    if not normalized_path:
+        return None
+    relative = PurePosixPath(normalized_path)
+    if relative.is_absolute():
+        return None
+    if any(part in {"", ".", ".."} for part in relative.parts):
+        return None
+    target = root.joinpath(*relative.parts).resolve()
+    try:
+        target.relative_to(resolved_root)
+    except ValueError:
+        return None
+    if target == resolved_root:
         return None
     if not target.is_file():
         return None
     return target
+
+
+def _content_type_for_path(target: Path) -> str:
+    return CONTENT_TYPES_BY_SUFFIX.get(target.suffix.lower(), "application/octet-stream")
 
 
 def _discover_candidate_ipv4_addresses() -> list[str]:
@@ -334,7 +352,7 @@ class MethodenAnalyserPwaHandler(BaseHTTPRequestHandler):
             self._send_json({"ok": False, "error": "Datei nicht gefunden."}, status=404)
             return
 
-        content_type = mimetypes.guess_type(str(target))[0] or "application/octet-stream"
+        content_type = _content_type_for_path(target)
         try:
             body = target.read_bytes()
         except OSError as exc:
