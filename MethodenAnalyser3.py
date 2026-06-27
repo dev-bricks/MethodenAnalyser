@@ -1092,7 +1092,7 @@ def run_analysis(output_widget: scrolledtext.ScrolledText) -> None:
 
     # Ergebnisse anzeigen
     output_widget.delete("1.0", tk.END)
-    output_widget.insert(tk.END, f"📄 Analysierte Datei: {os.path.basename(path)}\n\n")
+    output_widget.insert(tk.END, f"[DATEI] Analysierte Datei: {os.path.basename(path)}\n\n")
     output_widget.insert(tk.END, generate_report(result))
 
     # Export mit Bestätigung
@@ -1267,7 +1267,13 @@ def analyze_project(folder_path: str, progress_callback=None) -> ProjectAnalysis
             try:
                 with open(file_path, 'r', encoding='utf-8') as f:
                     total_lines += len(f.readlines())
-            except (IOError, OSError, UnicodeDecodeError):
+            except UnicodeDecodeError:
+                try:
+                    with open(file_path, 'r', encoding='latin-1') as f:
+                        total_lines += len(f.readlines())
+                except (IOError, OSError):
+                    pass
+            except (IOError, OSError):
                 pass
             rel_path = os.path.relpath(file_path, folder_path)
             if result.unused_imports:
@@ -1526,12 +1532,12 @@ def run_project_analysis(output_widget: scrolledtext.ScrolledText) -> None:
     
     output_widget.delete("1.0", tk.END)
     output_widget.insert(tk.END, f"Analysiere: {folder_path}\n\n")
-    output_widget.update()
-    
+    output_widget.update_idletasks()  # nur Render-Jobs, keine User-Events (Re-entranz-Schutz)
+
     def progress_cb(cur, tot, fp):
         output_widget.insert(tk.END, f"[{cur}/{tot}] {os.path.basename(fp)}\n")
         output_widget.see(tk.END)
-        output_widget.update()
+        output_widget.update_idletasks()  # nur Render-Jobs, keine User-Events (Re-entranz-Schutz)
     
     try:
         result = analyze_project(folder_path, progress_cb)
