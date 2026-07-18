@@ -7,9 +7,13 @@ import urllib.error
 import urllib.request
 import zipfile
 from http.server import ThreadingHTTPServer
+from pathlib import Path
 from urllib.request import urlopen
 
 from webapp.server import MethodenAnalyserPwaHandler, analyze_payload, build_runtime_info
+
+
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
 
 class MethodenAnalyserWebappServerTests(unittest.TestCase):
@@ -207,6 +211,18 @@ class MethodenAnalyserStaticHttpTests(unittest.TestCase):
         self.assertIn('id="refreshPwaStatus"', body)
         self.assertIn('id="copyPwaStatus"', body)
         self.assertIn('id="pwaServerValue"', body)
+
+    def test_source_mode_buttons_expose_pressed_state(self) -> None:
+        with urlopen(self.build_url("/")) as response:
+            body = response.read().decode("utf-8")
+
+        self.assertIn('id="snippetMode" class="mode-button active" type="button" aria-pressed="true"', body)
+        self.assertIn('id="fileMode" class="mode-button" type="button" aria-pressed="false"', body)
+        self.assertIn('id="zipMode" class="mode-button" type="button" aria-pressed="false"', body)
+        script = (PROJECT_ROOT / "webapp" / "static" / "app.js").read_text(encoding="utf-8")
+        self.assertIn('elements.snippetMode.setAttribute("aria-pressed"', script)
+        self.assertIn('elements.fileMode.setAttribute("aria-pressed"', script)
+        self.assertIn('elements.zipMode.setAttribute("aria-pressed"', script)
 
     def test_runtime_endpoint_returns_mobile_metadata(self) -> None:
         with urlopen(self.build_url("/api/runtime")) as response:
