@@ -229,11 +229,12 @@ def build_runtime_info(
         "bind_port": bind_port,
         "local_url": local_url,
         "local_only": host in LOCAL_ONLY_HOSTS,
+        "lan_enabled": host not in LOCAL_ONLY_HOSTS,
         "mobile_ready": host not in LOCAL_ONLY_HOSTS,
         "candidate_urls": [],
         "mobile_command": f"python webapp/server.py --host 0.0.0.0 --port {bind_port}",
         "mobile_notes": {
-            "network": "Geräte müssen im selben WLAN sein; Browser-Analyse bleibt lokal ohne Cloud.",
+            "network": "Nur im vertrauenswürdigen WLAN testen: Der lokale HTTP-Server hat keine Authentifizierung und kein TLS. Browser-Analyse bleibt lokal ohne Cloud.",
             "android": "Android: URL in Chrome oder Edge öffnen und bei Bedarf über das Menü als App installieren.",
             "ios": "iPhone/iPad: URL in Safari öffnen und über Teilen > Zum Home-Bildschirm sichern.",
         },
@@ -382,6 +383,7 @@ def main(argv: list[str] | None = None) -> int:
         print("Mobile/WLAN-Testpfade:")
         for candidate in server.runtime_info["candidate_urls"]:
             print(f"  - {candidate}")
+        print("Hinweis: LAN-Testmodus nutzt lokales HTTP ohne Authentifizierung oder TLS; nur im vertrauenswürdigen Netz verwenden.")
     elif server.runtime_info["local_only"]:
         print(f"Für Android/iOS im selben WLAN neu starten mit: {server.runtime_info['mobile_command']}")
     print("Beenden mit Strg+C.")

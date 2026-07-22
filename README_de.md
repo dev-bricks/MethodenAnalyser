@@ -115,6 +115,7 @@ python webapp/server.py --host 0.0.0.0 --port 8765
 ```
 
 Die lokale Weboberfläche kann LAN-URLs anzeigen, falls der Server bewusst im Netzwerk freigegeben wird. Das bleibt ein technischer Testpfad, kein geplantes Android-/iOS-Produkt.
+Dieser bewusste LAN-Testmodus nutzt lokales HTTP ohne Authentifizierung oder TLS und gehört ausschließlich in ein vertrauenswürdiges privates Netz. Er ist weder ein Cloud-Dienst noch eine Mobile-Produktlinie. Details stehen in [WEBAPP.md](WEBAPP.md).
 Zusätzlich bündelt die **PWA-Testkarte** Install-Status, Service-Worker-, Speicher- und Viewport-Diagnostik in einer kopierbaren Kurzfassung für lokale Browser-Smokes.
 
 ### macOS- und Linux-Smoke
@@ -171,7 +172,7 @@ WINDOW_GEOMETRY = "1200x700"  # Fenstergröße
 
 ## Datenschutz / Privacy
 
-MethodenAnalyser arbeitet vollständig lokal. Der ausgewählte Python-Code, Dateipfade und Analyseergebnisse werden nicht an den Entwickler oder externe Dienste übertragen.
+MethodenAnalyser arbeitet vollständig lokal. Der ausgewählte Python-Code, Dateipfade und Analyseergebnisse werden nicht an den Entwickler oder externe Dienste übertragen. Der optionale Web-Hilfsmodus bindet standardmäßig an `127.0.0.1`; sein expliziter LAN-Testmodus `--host 0.0.0.0` hat keine Authentifizierung und kein TLS und darf nur in einem vertrauenswürdigen privaten Netz verwendet werden.
 
 Release-Artefakte wie EXE-Dateien, lokale Builds und Store-Pakete bleiben außerhalb des Git-Repositorys und gehören in lokale `releases/`-Ordner oder GitHub Releases.
 

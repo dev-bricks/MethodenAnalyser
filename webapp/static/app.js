@@ -777,7 +777,7 @@ async function loadRuntimeInfo() {
       mobile_command: "python webapp/server.py --host 0.0.0.0 --port 8765",
       candidate_urls: [],
       mobile_notes: {
-        network: "Geräte müssen im selben WLAN sein; Browser-Analyse bleibt lokal ohne Cloud.",
+        network: "Nur im vertrauenswürdigen WLAN testen: Der lokale HTTP-Server hat keine Authentifizierung und kein TLS. Browser-Analyse bleibt lokal ohne Cloud.",
         android: "Chrome oder Edge im selben WLAN öffnen und die URL bei Bedarf als App installieren.",
         ios: "Safari im selben WLAN öffnen und die Seite über Teilen zum Home-Bildschirm sichern.",
       },
