@@ -5,6 +5,9 @@ Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
 ## [Unreleased]
 
+### Neue Funktionen / Features
+- **UX-002 / Welle-1 U1** (`MethodenAnalyser3.py`, `locales/translations.json`): Sichtbarer Sprachschalter in der Menüleiste („Sprache / Language" → „Deutsch" / „English"). Menü, Schaltflächen, Tastaturhinweis und Willkommenstext stellen sich sofort um; die Auswahl wird pro Benutzer in `%APPDATA%\MethodenAnalyser\config.json` (bzw. `~/.config/MethodenAnalyser/config.json`) persistiert und beim nächsten Start wiederhergestellt. Das bisher ungenutzte `translator.py` / `locales/translations.json` ist damit im UI erreichbar. Regressionstests in `tests/test_language_switch.py`.
+
 ### Build / Packaging
 - `build_exe.bat` ergänzt einen reproduzierbaren PyInstaller-Build mit lokalem Workpath (lokales Build-Verzeichnis), zentralem Build-Exclude-Scanner und Kopie der fertigen EXE nach `dist\MethodenAnalyser.exe` sowie `MethodenAnalyser.exe`.
 - `START.bat` startet unter Windows bevorzugt die gebaute EXE und fällt erst danach auf den Python-Start zurück.

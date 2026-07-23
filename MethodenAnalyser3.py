@@ -19,6 +19,11 @@ from typing import Set, Dict, List, Tuple, Any, Optional, Callable
 from dataclasses import dataclass, field
 from functools import lru_cache
 
+try:
+    from translator import TranslationSystem
+except Exception:  # pragma: no cover - Uebersetzung ist optional
+    TranslationSystem = None
+
 # ============================================================================
 # KONSTANTEN
 # ============================================================================
@@ -42,6 +47,88 @@ EXIT_OK = 0
 EXIT_ANALYSIS_ERROR = 1
 EXIT_FINDINGS = 2
 EXIT_PARTIAL_ERROR = 3
+
+# ============================================================================
+# SPRACHE / KONFIGURATION (Welle-1 U1: sichtbarer DE/EN-Sprachschalter)
+# ============================================================================
+
+SUPPORTED_LANGUAGES = ("de", "en")
+DEFAULT_LANGUAGE = "de"
+
+# Erste Zeile der Willkommensnachricht je Sprache (fuer Live-Neurendern beim Sprachwechsel)
+_WELCOME_HEADS = (
+    "Willkommen beim Python Code Analyzer!",
+    "Welcome to Python Code Analyzer!",
+)
+
+
+def _config_dir() -> pathlib.Path:
+    """Per-User-Konfigverzeichnis (auch bei read-only Store-Installation schreibbar)."""
+    if sys.platform.startswith("win"):
+        base = os.environ.get("APPDATA") or os.path.expanduser("~")
+    else:
+        base = os.environ.get("XDG_CONFIG_HOME") or os.path.join(
+            os.path.expanduser("~"), ".config"
+        )
+    return pathlib.Path(base) / "MethodenAnalyser"
+
+
+def _config_path() -> pathlib.Path:
+    return _config_dir() / "config.json"
+
+
+def load_app_config() -> Dict[str, Any]:
+    """Liest die persistente App-Konfiguration (leer bei Fehlen/Korruption)."""
+    try:
+        with open(_config_path(), "r", encoding="utf-8") as handle:
+            data = json.load(handle)
+        return data if isinstance(data, dict) else {}
+    except (OSError, ValueError):
+        return {}
+
+
+def save_app_config(config: Dict[str, Any]) -> bool:
+    """Speichert die App-Konfiguration; True bei Erfolg."""
+    try:
+        _config_dir().mkdir(parents=True, exist_ok=True)
+        with open(_config_path(), "w", encoding="utf-8") as handle:
+            json.dump(config, handle, indent=2, ensure_ascii=False)
+        return True
+    except OSError:
+        return False
+
+
+def get_saved_language() -> str:
+    """Gespeicherte Sprache oder Default, validiert gegen SUPPORTED_LANGUAGES."""
+    lang = load_app_config().get("language", DEFAULT_LANGUAGE)
+    return lang if lang in SUPPORTED_LANGUAGES else DEFAULT_LANGUAGE
+
+
+def set_saved_language(lang: str) -> bool:
+    """Persistiert die gewaehlte Sprache in der App-Konfiguration."""
+    if lang not in SUPPORTED_LANGUAGES:
+        return False
+    config = load_app_config()
+    config["language"] = lang
+    return save_app_config(config)
+
+
+_TRANSLATOR = None
+
+
+def get_translator():
+    """Lazy-Singleton des TranslationSystem, mit gespeicherter Sprache initialisiert."""
+    global _TRANSLATOR
+    if _TRANSLATOR is None and TranslationSystem is not None:
+        _TRANSLATOR = TranslationSystem(get_saved_language())
+    return _TRANSLATOR
+
+
+def _t(key: str) -> str:
+    """Uebersetzt key in die aktuelle Sprache (Fallback: key selbst)."""
+    translator = get_translator()
+    return translator.t(key) if translator is not None else key
+
 
 # Analyse Konfiguration
 SIMILARITY_THRESHOLD = 0.8
@@ -1537,6 +1624,11 @@ def run_project_analysis(output_widget: scrolledtext.ScrolledText) -> None:
         messagebox.showerror("Fehler", str(e))
 
 
+def _build_welcome_text() -> str:
+    """Baut die uebersetzte Willkommensnachricht inkl. eingesetztem Shortcut-Hinweis."""
+    return _t("welcome_body").replace("{shortcut}", _get_keyboard_shortcut_hint())
+
+
 def create_gui() -> None:
     """Erstellt und startet die GUI-Anwendung."""
     root = tk.Tk()
@@ -1555,20 +1647,13 @@ def create_gui() -> None:
     def show_info_dialog() -> None:
         messagebox.showinfo(
             "Python Code Analyzer",
-            f"Python Code Analyzer v{TOOL_VERSION}\n\n"
-            "Analysiert Python-Dateien auf:\n"
-            "• Fehlende Definitionen\n"
-            "• Ungenutzte Definitionen\n"
-            "• Ungenutzte Imports\n"
-            "• Dynamische Aufrufe\n"
-            "• Import-Scope-Probleme\n\n"
-            "© 2026 - Optimierte Version"
+            _t("info_body").replace("{version}", TOOL_VERSION),
         )
 
     # Analyse-Button
     btn = tk.Button(
         button_frame,
-        text="📂 Datei analysieren",
+        text=_t("btn_analyze_file"),
         command=lambda: run_analysis(output),
         bg="#4CAF50",
         fg="white",
@@ -1582,7 +1667,7 @@ def create_gui() -> None:
     # Info-Button
     info_btn = tk.Button(
         button_frame,
-        text="ℹ️  Info",
+        text=_t("btn_info"),
         command=show_info_dialog,
         bg="#2196F3",
         fg="white",
@@ -1596,7 +1681,7 @@ def create_gui() -> None:
     # Auto-Fix Button
     fix_btn = tk.Button(
         button_frame,
-        text="🔧 Auto-Fix Imports",
+        text=_t("btn_autofix"),
         command=lambda: auto_fix_unused_imports(output),
         bg="#FF9800",
         fg="white",
@@ -1610,7 +1695,7 @@ def create_gui() -> None:
     # NEU: Projekt-Analyse Button
     project_btn = tk.Button(
         button_frame,
-        text="Projekt analysieren",
+        text=_t("btn_analyze_project"),
         command=lambda: run_project_analysis(output),
         bg="#9C27B0",
         fg="white",
@@ -1643,17 +1728,43 @@ def create_gui() -> None:
     output.pack(fill=tk.BOTH, expand=True, padx=10, pady=(0, 10))
     
     # Willkommensnachricht
-    welcome_text = (
-        "Willkommen beim Python Code Analyzer!\n\n"
-        f"{_get_keyboard_shortcut_hint()}\n\n"
-        "Klicken Sie auf 'Datei analysieren', um eine Python-Datei zu untersuchen.\n\n"
-        "Die Analyse umfasst:\n"
-        "• Fehlende und ungenutzte Definitionen\n"
-        "• Import-Analyse und -Optimierung\n"
-        "• Dynamische Methodenaufrufe\n"
-        "• Mögliche Tippfehler\n"
+    output.insert(tk.END, _build_welcome_text())
+
+    # --- Menue "Sprache / Language" (Welle-1 U1: sichtbarer DE/EN-Schalter) ---
+    translator = get_translator()
+    current_lang = translator.get_language() if translator is not None else get_saved_language()
+    lang_var = tk.StringVar(value=current_lang)
+
+    def apply_language(lang: str) -> None:
+        """Wechselt Sprache, persistiert sie und stellt die Oberflaeche live um."""
+        if translator is not None:
+            translator.set_language(lang)
+        set_saved_language(lang)
+        lang_var.set(lang)
+        btn.config(text=_t("btn_analyze_file"))
+        info_btn.config(text=_t("btn_info"))
+        fix_btn.config(text=_t("btn_autofix"))
+        project_btn.config(text=_t("btn_analyze_project"))
+        shortcut_hint.config(text=_get_keyboard_shortcut_hint())
+        # Willkommenstext nur neu rendern, solange keine Analyse-Ausgabe angezeigt wird.
+        if output.get("1.0", "1.end").strip() in _WELCOME_HEADS:
+            output.delete("1.0", tk.END)
+            output.insert(tk.END, _build_welcome_text())
+        messagebox.showinfo("Sprache / Language", _t("lang_switched_msg"))
+
+    menubar = tk.Menu(root)
+    lang_menu = tk.Menu(menubar, tearoff=0)
+    lang_menu.add_radiobutton(
+        label="Deutsch", value="de", variable=lang_var,
+        command=lambda: apply_language("de"),
     )
-    output.insert(tk.END, welcome_text)
+    lang_menu.add_radiobutton(
+        label="English", value="en", variable=lang_var,
+        command=lambda: apply_language("en"),
+    )
+    menubar.add_cascade(label=_t("menu_language"), menu=lang_menu)
+    root.config(menu=menubar)
+
     _register_gui_shortcuts(
         root,
         analyze_file_cb=lambda: run_analysis(output),
@@ -1668,7 +1779,7 @@ def create_gui() -> None:
 
 def _get_keyboard_shortcut_hint() -> str:
     """Liefert den sichtbaren Kurzhinweis für die Hauptaktionen der GUI."""
-    return "Tastatur: Alt+D Datei | Alt+P Projekt | Alt+F Auto-Fix | F1 Info"
+    return _t("shortcut_hint")
 
 
 def _register_gui_shortcuts(
