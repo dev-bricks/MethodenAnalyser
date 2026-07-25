@@ -1,6 +1,6 @@
 # MethodenAnalyser Lokale Weboberfläche
 
-Stand: 2026-05-24
+Stand: 2026-07-22
 
 Die lokale Weboberfläche ist ein Hilfs-/Demo-Modus für schnelle Snippet-, Einzeldatei- und kleine ZIP-Analysen auf demselben Rechner. Sie ersetzt nicht die Desktop-App für ganze Projektordner, ist keine Companion-App und keine eigene Mobile-Produktlinie. Sie nutzt denselben Analysekern und dasselbe JSON-Format wie CLI und GUI.
 
@@ -30,7 +30,7 @@ Für Android-/iOS-Tests im selben WLAN:
 python webapp/server.py --host 0.0.0.0 --port 8765
 ```
 
-Die Oberfläche kann dann erkannte LAN-URLs anzeigen. Das ist nur ein technischer Testpfad für lokale Browser-Smokes, kein geplanter Android-/iOS-Releasepfad.
+Die Oberfläche kann dann erkannte LAN-URLs anzeigen. Das ist nur ein technischer Testpfad für lokale Browser-Smokes, kein geplanter Android-/iOS-Releasepfad. Der LAN-Modus nutzt bewusst nur lokales HTTP: Es gibt keine Authentifizierung und kein TLS. Deshalb nur in einem vertrauenswürdigen, eigenen Netz starten und keinen Quellcode oder Bericht über fremde/offene Netze senden.
 
 ## Funktionen
 
@@ -83,12 +83,14 @@ Response:
 }
 ```
 
-## Datenschutz
+## Datenschutz und LAN-Grenze
 
-Der Web Companion läuft auf `127.0.0.1`. Code wird an den lokalen Python-Prozess gesendet, nicht an externe Dienste. Es gibt keine Telemetrie, keine Cloud-Synchronisierung und keine externen CDN-Abhängigkeiten.
+Der Standardstart bindet ausschließlich an `127.0.0.1`; damit ist die Oberfläche nur auf diesem Rechner erreichbar. Code wird an den lokalen Python-Prozess gesendet, nicht an externe Dienste. Es gibt keine Telemetrie, keine Cloud-Synchronisierung und keine externen CDN-Abhängigkeiten.
+
+`--host 0.0.0.0` oder eine andere LAN-Adresse ist eine bewusste Ausnahme für einen technischen Test im selben vertrauenswürdigen Netz. Der Server bietet dabei weder Authentifizierung noch TLS und ist kein Internet-Deployment. Alle Clients, die die LAN-URL erreichen, können die lokale Analyse-API verwenden; keine sensitiven Dateien oder Berichte über ein fremdes/offenes Netz übertragen.
 
 ## Grenzen
 
 - Große Projektordner bleiben Aufgabe der Desktop-/CLI-Version.
 - ZIP-Uploads sind bewusst klein gehalten: nur `.py`-Dateien, begrenzte Archivgröße und keine beliebigen Binärdateien.
-- Android und iOS sollen über dieselbe PWA-Linie getestet werden; native Apps sind weiterhin kein Ziel.
+- Android und iOS können nur über diesen technischen PWA-/Browser-Smoke im selben WLAN geprüft werden; native Apps und eine Mobile-Produktlinie sind weiterhin Nicht-Ziele.

@@ -114,7 +114,7 @@ Or double-click `START_WEBAPP.bat` on Windows. The server runs at `http://127.0.
     ```bash
     python webapp/server.py --host 0.0.0.0 --port 8765
     ```
-    For further details, consult [WEBAPP.md](WEBAPP.md).
+    This deliberate LAN test mode uses local HTTP without authentication or TLS. Use it only on a trusted private network; it is neither a cloud service nor a mobile product line. For further details, consult [WEBAPP.md](WEBAPP.md).
 
 ### 5. macOS and Linux Source Verification
 While the GUI is optimized for Windows (using Tkinter), the codebase is fully verified to run from source on macOS and Linux. You can run unit tests and compile checks with:
@@ -172,7 +172,7 @@ WINDOW_GEOMETRY = "1200x700"  # Desktop window dimensions
 
 ## Data & Privacy
 
-MethodenAnalyser operates 100% locally. Your Python code, local file paths, and analysis results are never sent over the internet. There are no analytics, cloud integrations, telemetry features, or third-party tracking scripts.
+MethodenAnalyser operates 100% locally. Your Python code, local file paths, and analysis results are never sent over the internet. There are no analytics, cloud integrations, telemetry features, or third-party tracking scripts. The optional web helper binds to `127.0.0.1` by default. Its explicit `--host 0.0.0.0` LAN test mode has no authentication or TLS and must be used only in a trusted private network.
 
 Build, packaging, and sign-related files are configured in `.gitignore` to stay outside of the version control system.
 

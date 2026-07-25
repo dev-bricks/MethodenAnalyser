@@ -755,7 +755,16 @@ def analyze_source(code: str, source_name: str = "<snippet>") -> AnalysisResult:
     unused_defs = analyzer.defs - calls  # Nur echte Definitionen, nicht Imports
 
     # VERBESSERT: Nur tatsächliche Import-Namen vergleichen
-    unused_imports = analyzer.import_names - analyzer.used_names
+    # FIX: Namen, die NUR als String-Literal vorkommen (z.B. __all__ = ["Foo"] oder
+    # String-/Forward-Ref-Annotationen "Bar" / "List[Bar]"), erfasst die AST-Name-Analyse
+    # NICHT als 'used' -> sie wuerden faelschlich als ungenutzt gemeldet und vom Auto-Fix
+    # aus der echten Datei geloescht (NameError / fehlendes __all__-Public-API). Daher
+    # alle in String-Literalen vorkommenden Bezeichner als genutzt behandeln (konservativ).
+    _string_refs: Set[str] = set()
+    for _n in ast.walk(tree):
+        if isinstance(_n, ast.Constant) and isinstance(_n.value, str):
+            _string_refs.update(re.findall(r"[A-Za-z_][A-Za-z0-9_]*", _n.value))
+    unused_imports = analyzer.import_names - analyzer.used_names - _string_refs
 
     # Whitelist und False-Positive-Checks
     whitelist = build_stdlib_whitelist()
@@ -1170,7 +1179,7 @@ def run_analysis(output_widget: scrolledtext.ScrolledText) -> None:
 
     # Ergebnisse anzeigen
     output_widget.delete("1.0", tk.END)
-    output_widget.insert(tk.END, f"📄 Analysierte Datei: {os.path.basename(path)}\n\n")
+    output_widget.insert(tk.END, f"[DATEI] Analysierte Datei: {os.path.basename(path)}\n\n")
     output_widget.insert(tk.END, generate_report(result))
 
     # Export mit Bestätigung
@@ -1345,7 +1354,13 @@ def analyze_project(folder_path: str, progress_callback=None) -> ProjectAnalysis
             try:
                 with open(file_path, 'r', encoding='utf-8') as f:
                     total_lines += len(f.readlines())
-            except (IOError, OSError, UnicodeDecodeError):
+            except UnicodeDecodeError:
+                try:
+                    with open(file_path, 'r', encoding='latin-1') as f:
+                        total_lines += len(f.readlines())
+                except (IOError, OSError):
+                    pass
+            except (IOError, OSError):
                 pass
             rel_path = os.path.relpath(file_path, folder_path)
             if result.unused_imports:
@@ -1604,12 +1619,12 @@ def run_project_analysis(output_widget: scrolledtext.ScrolledText) -> None:
     
     output_widget.delete("1.0", tk.END)
     output_widget.insert(tk.END, f"Analysiere: {folder_path}\n\n")
-    output_widget.update()
-    
+    output_widget.update_idletasks()  # nur Render-Jobs, keine User-Events (Re-entranz-Schutz)
+
     def progress_cb(cur, tot, fp):
         output_widget.insert(tk.END, f"[{cur}/{tot}] {os.path.basename(fp)}\n")
         output_widget.see(tk.END)
-        output_widget.update()
+        output_widget.update_idletasks()  # nur Render-Jobs, keine User-Events (Re-entranz-Schutz)
     
     try:
         result = analyze_project(folder_path, progress_cb)

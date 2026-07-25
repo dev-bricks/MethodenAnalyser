@@ -1,6 +1,7 @@
 import base64
 import io
 import json
+import tempfile
 import threading
 import unittest
 import urllib.error
@@ -11,26 +12,33 @@ from pathlib import Path
 from urllib.request import urlopen
 
 from webapp.server import (
+    MAX_REQUEST_SIZE,
+    MAX_ZIP_FILE_COUNT,
+    MAX_ZIP_MEMBER_SIZE,
     MethodenAnalyserPwaHandler,
     _content_type_for_path,
+    _extract_python_zip,
     _resolve_under,
     analyze_payload,
     build_runtime_info,
 )
 
 
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+
+
+def make_zip_payload(files: dict[str, str | bytes], filename: str = "sample.zip") -> dict[str, str]:
+    buffer = io.BytesIO()
+    with zipfile.ZipFile(buffer, "w", compression=zipfile.ZIP_DEFLATED) as archive:
+        for path, content in files.items():
+            archive.writestr(path, content)
+    encoded = base64.b64encode(buffer.getvalue()).decode("ascii")
+    return {"source_kind": "zip", "filename": filename, "zip_base64": encoded}
+
+
 class MethodenAnalyserWebappServerTests(unittest.TestCase):
     def make_zip_payload(self, files: dict[str, str], filename: str = "sample.zip") -> dict[str, str]:
-        buffer = io.BytesIO()
-        with zipfile.ZipFile(buffer, "w", compression=zipfile.ZIP_DEFLATED) as archive:
-            for path, content in files.items():
-                archive.writestr(path, content)
-        encoded = base64.b64encode(buffer.getvalue()).decode("ascii")
-        return {
-            "source_kind": "zip",
-            "filename": filename,
-            "zip_base64": encoded,
-        }
+        return make_zip_payload(files, filename)
 
     def test_snippet_payload_returns_json_report(self) -> None:
         payload = analyze_payload(
@@ -102,6 +110,7 @@ class MethodenAnalyserWebappServerTests(unittest.TestCase):
         info = build_runtime_info("127.0.0.1", 8765, address_supplier=lambda: ["192.168.0.5"])
 
         self.assertTrue(info["local_only"])
+        self.assertFalse(info["lan_enabled"])
         self.assertFalse(info["candidate_urls"])
         self.assertEqual(info["mobile_command"], "python webapp/server.py --host 0.0.0.0 --port 8765")
 
@@ -113,7 +122,9 @@ class MethodenAnalyserWebappServerTests(unittest.TestCase):
         )
 
         self.assertFalse(info["local_only"])
+        self.assertTrue(info["lan_enabled"])
         self.assertTrue(info["mobile_ready"])
+        self.assertIn("keine Authentifizierung", info["mobile_notes"]["network"])
         self.assertEqual(
             info["candidate_urls"],
             ["http://10.0.0.8:8765/", "http://192.168.0.5:8765/"],
@@ -138,6 +149,40 @@ class MethodenAnalyserWebappServerTests(unittest.TestCase):
             _content_type_for_path(Path("payload.bad\r\nX-Test: 1")),
             "application/octet-stream",
         )
+
+
+class MethodenAnalyserZipBoundaryTests(unittest.TestCase):
+    def test_rejects_invalid_base64_and_corrupt_zip(self) -> None:
+        with self.assertRaisesRegex(ValueError, "gültiges Base64"):
+            analyze_payload({"source_kind": "zip", "zip_base64": "%%%"})
+        with self.assertRaises(zipfile.BadZipFile):
+            analyze_payload({"source_kind": "zip", "zip_base64": base64.b64encode(b"not-a-zip").decode("ascii")})
+
+    def test_rejects_archive_without_python_files(self) -> None:
+        with self.assertRaisesRegex(ValueError, "keine Python-Dateien"):
+            analyze_payload(make_zip_payload({"README.txt": "keine Quelle"}))
+
+    def test_rejects_member_total_and_file_count_limits(self) -> None:
+        with self.assertRaisesRegex(ValueError, "größer als 512 KB"):
+            analyze_payload(make_zip_payload({"large.py": b"x" * (MAX_ZIP_MEMBER_SIZE + 1)}))
+
+        total_files = {f"part_{index}.py": b"x" * MAX_ZIP_MEMBER_SIZE for index in range(4)}
+        total_files["tail.py"] = b"x"
+        with self.assertRaisesRegex(ValueError, "mehr als 2048 KB"):
+            analyze_payload(make_zip_payload(total_files))
+
+        too_many_files = {f"module_{index}.py": "pass\n" for index in range(MAX_ZIP_FILE_COUNT + 1)}
+        with self.assertRaisesRegex(ValueError, "mehr als 64 Python-Dateien"):
+            analyze_payload(make_zip_payload(too_many_files))
+
+    def test_rejects_windows_traversal_without_extracting_outside_root(self) -> None:
+        payload = make_zip_payload({r"..\escape.py": "print('no')\n"})
+        zip_bytes = base64.b64decode(payload["zip_base64"])
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_root = Path(temp_dir) / "extract-root"
+            with self.assertRaisesRegex(ValueError, "Unsicherer ZIP-Pfad"):
+                _extract_python_zip(zip_bytes, temp_root)
+            self.assertFalse((Path(temp_dir) / "escape.py").exists())
 
 
 class MethodenAnalyserInvalidBodyTests(unittest.TestCase):
@@ -182,6 +227,12 @@ class MethodenAnalyserInvalidBodyTests(unittest.TestCase):
         status, payload = self.post_raw(body)
         self.assertEqual(status, 400)
         self.assertFalse(payload["ok"])
+
+    def test_request_larger_than_limit_returns_413(self) -> None:
+        status, payload = self.post_raw(b"x" * (MAX_REQUEST_SIZE + 1))
+        self.assertEqual(status, 413)
+        self.assertFalse(payload["ok"])
+        self.assertIn("2 MB", payload["error"])
 
 
 class MethodenAnalyserStaticHttpTests(unittest.TestCase):
@@ -235,6 +286,18 @@ class MethodenAnalyserStaticHttpTests(unittest.TestCase):
         self.assertIn('id="copyPwaStatus"', body)
         self.assertIn('id="pwaServerValue"', body)
 
+    def test_source_mode_buttons_expose_pressed_state(self) -> None:
+        with urlopen(self.build_url("/")) as response:
+            body = response.read().decode("utf-8")
+
+        self.assertIn('id="snippetMode" class="mode-button active" type="button" aria-pressed="true"', body)
+        self.assertIn('id="fileMode" class="mode-button" type="button" aria-pressed="false"', body)
+        self.assertIn('id="zipMode" class="mode-button" type="button" aria-pressed="false"', body)
+        script = (PROJECT_ROOT / "webapp" / "static" / "app.js").read_text(encoding="utf-8")
+        self.assertIn('elements.snippetMode.setAttribute("aria-pressed"', script)
+        self.assertIn('elements.fileMode.setAttribute("aria-pressed"', script)
+        self.assertIn('elements.zipMode.setAttribute("aria-pressed"', script)
+
     def test_runtime_endpoint_returns_mobile_metadata(self) -> None:
         with urlopen(self.build_url("/api/runtime")) as response:
             payload = response.read().decode("utf-8")
@@ -243,6 +306,21 @@ class MethodenAnalyserStaticHttpTests(unittest.TestCase):
         self.assertIn('"local_only": true', payload)
         self.assertIn('"local_url": "http://127.0.0.1:', payload)
         self.assertIn('"mobile_command": "python webapp/server.py --host 0.0.0.0 --port', payload)
+        self.assertIn('"lan_enabled": false', payload)
+
+    def test_documentation_matches_the_lan_security_boundary(self) -> None:
+        webapp_doc = (PROJECT_ROOT / "WEBAPP.md").read_text(encoding="utf-8")
+        privacy_doc = (PROJECT_ROOT / "PRIVACY_POLICY.md").read_text(encoding="utf-8")
+        readme_en = (PROJECT_ROOT / "README.md").read_text(encoding="utf-8")
+        readme_de = (PROJECT_ROOT / "README_de.md").read_text(encoding="utf-8")
+
+        self.assertIn("127.0.0.1", webapp_doc)
+        self.assertIn("0.0.0.0", webapp_doc)
+        self.assertIn("keine Authentifizierung und kein TLS", webapp_doc)
+        self.assertIn("vertrauenswürdigen", webapp_doc)
+        self.assertIn("ohne Authentifizierung oder TLS", privacy_doc)
+        self.assertIn("authentication or TLS", readme_en)
+        self.assertIn("Authentifizierung oder TLS", readme_de)
 
 
 if __name__ == "__main__":

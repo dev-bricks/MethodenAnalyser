@@ -9,15 +9,18 @@ Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 - **UX-002 / Welle-1 U1** (`MethodenAnalyser3.py`, `locales/translations.json`): Sichtbarer Sprachschalter in der Menüleiste („Sprache / Language" → „Deutsch" / „English"). Menü, Schaltflächen, Tastaturhinweis und Willkommenstext stellen sich sofort um; die Auswahl wird pro Benutzer in `%APPDATA%\MethodenAnalyser\config.json` (bzw. `~/.config/MethodenAnalyser/config.json`) persistiert und beim nächsten Start wiederhergestellt. Das bisher ungenutzte `translator.py` / `locales/translations.json` ist damit im UI erreichbar. Regressionstests in `tests/test_language_switch.py`.
 
 ### Build / Packaging
+- `releases/v3.0.0/PROVENANCE.md` dokumentiert den tatsächlichen lokalen Artefaktstand. Das historische v3.0.0-Bundle ist wegen fehlender Commitkette und einer vom gespeicherten Wert abweichenden EXE-SHA-256 bis zu einem reproduzierbaren Neubuild gesperrt; es wurde weder gelöscht noch durch eine neue Version ersetzt.
 - `build_exe.bat` ergänzt einen reproduzierbaren PyInstaller-Build mit lokalem Workpath (lokales Build-Verzeichnis), zentralem Build-Exclude-Scanner und Kopie der fertigen EXE nach `dist\MethodenAnalyser.exe` sowie `MethodenAnalyser.exe`.
 - `START.bat` startet unter Windows bevorzugt die gebaute EXE und fällt erst danach auf den Python-Start zurück.
 - `MethodenAnalyser.spec` nutzt relative Projektpfade, bündelt Icon und `locales/` und deaktiviert UPX.
 - GitHub-Actions-Smoke-Matrix pinnt Windows auf `windows-2025-vs2026` und macOS auf `macos-26`, damit die 2026-Runner-Migration vor dem Stichtag validiert wird.
 
 ### Fehlerbehebungen / Bug Fixes
-- `webapp/server.py`: Statische Dateien werden nur noch über strikt normalisierte
-  Pfade unterhalb der erlaubten Roots ausgeliefert; Content-Types kommen aus
-  einer festen Endungs-Whitelist statt aus frei abgeleiteten Pfadwerten.
+- `webapp/server.py`: Statische Dateien werden nur noch über strikt normalisierte Pfade unterhalb der erlaubten Roots ausgeliefert; Content-Types kommen aus einer festen Endungs-Whitelist statt aus frei abgeleiteten Pfadwerten.
+- **A11Y-002** (`webapp/static/index.html`, `webapp/static/app.js`): Die Quelltyp-Umschaltung im Web Companion (`Snippet`, `Datei`, `ZIP`) markiert den aktiven Modus jetzt zusätzlich mit `aria-pressed`; Screenreader können den Segmentzustand damit erkennen, ohne dass die kompakte Oberfläche sichtbare Zusatzbeschriftungen braucht. Regressionstest in `tests/test_webapp_server.py`.
+- **BS27-1** (`MethodenAnalyser3.py`): `run_project_analysis()` rief `output_widget.update()` auf (Zeilen 1529 + 1534), wodurch User-Events (z. B. Button-Klicks) während der laufenden Projektanalyse verarbeitet wurden — re-entranter Aufruf der Funktion war möglich. Fix: beide Aufrufe auf `update_idletasks()` geändert (verarbeitet nur Render-/Layout-Jobs, keine User-Events). Regressionstests in `tests/test_bugsweep_gui_threading_export_20260627.py`.
+- **BS27-2** (`MethodenAnalyser3.py`): `analyze_project()` ignorierte `UnicodeDecodeError` in der `total_lines`-Zählschleife kommentarlos (kein Latin-1-Fallback) — Zeilenzahl für Latin-1-kodierte `.py`-Dateien wurde als 0 gezählt. Fix: Latin-1-Fallback konsistent mit `analyze_file()` ergänzt. Regressionstest in `tests/test_bugsweep_gui_threading_export_20260627.py`.
+- **BS27-3** (`MethodenAnalyser3.py`): `run_analysis()` verwendete das Emoji `📄` im Widget-Insert für den Datei-Header (Zeile 1095) — inkonsistent mit dem vorherigen Emoji-Cleanup in `get_summary()`. Fix: `📄` durch `[DATEI]` ersetzt.
 - **UX-001** (`MethodenAnalyser3.py`): Die Hauptaktionen der Tkinter-GUI hatten keine sichtbaren Tastaturhinweise und keine direkten Shortcuts. Fix: kompakte Shortcut-Zeile (`Alt+D`, `Alt+P`, `Alt+F`, `F1`) ergänzt, globale Tastaturkürzel gebunden und die Initialansicht auf Tastaturnutzung vorbereitet. Regressionstests in `tests/test_cli.py` sichern Hinweistext und Shortcut-Bindings ab.
 - **B-004** (`MethodenAnalyser3.py`): `auto_fix_unused_imports` las Dateien ausschließlich als UTF-8, was bei Latin-1-kodierten Quellcode-Dateien zu `UnicodeDecodeError` führte. Fix: UTF-8-First mit `latin-1`-Fallback via `readlines()` (Zeilennummern bleiben mit `ast.lineno` synchron). 9 Regressionstests in `tests/test_cli.py` ergänzt.
 - **B-005** (`MethodenAnalyser3.py`): `analyze_project` fing nur `IOError`/`OSError`, nicht `UnicodeDecodeError` — Latin-1-Dateien brachen den gesamten Projekt-Scan ab. Fix: `UnicodeDecodeError` in denselben `except`-Block aufgenommen.
@@ -44,6 +47,8 @@ Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 - `releases/windowsstore/store_settings.json`, `BUILD.md` und die DE/EN-Store-Listings sind auf den realen Projektstand, aktuelle GitHub-URLs und den dokumentierten Pretest-Workflow synchronisiert.
 
 ### Hinzugefügt / Added
+- `tests/test_webapp_server.py` sichert jetzt die HTTP-Request-Grenze (413), ungültiges Base64, beschädigte und Python-lose ZIPs, Einzeldatei-/Gesamtgrößen, Dateianzahl sowie Windows-Backslash-Traversal ab.
+- Die lokale Web-Runtime weist für den bewussten LAN-Testmodus auf lokales HTTP ohne Authentifizierung/TLS hin. WEBAPP, README-Paar, Portierungsplan und Privacy-Policy halten den Loopback-Standard, die vertrauenswürdige-LAN-Grenze und den Nicht-Ziel-Status der Mobile-Produktlinie konsistent fest.
 - GitHub-Actions-Smoke-Matrix prüft den Quellstand jetzt auf Windows (Python 3.10-3.12) sowie zusätzlich auf Ubuntu und macOS (Python 3.11), inklusive Compile-, Tkinter-Import- und `unittest`-Smoke.
 - Lokaler Web/PWA-Companion unter `webapp/` mit Snippet-/Einzeldatei-Analyse über den bestehenden Python-Analyse-Kern.
 - Web/PWA-Companion kann jetzt auch kleine ZIP-Archive mit `.py`-Dateien lokal hochladen, temporär entpacken und als Mini-Projekt analysieren.
