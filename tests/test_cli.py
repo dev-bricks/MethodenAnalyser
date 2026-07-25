@@ -173,12 +173,12 @@ class MethodenAnalyserCliTests(unittest.TestCase):
         self.assertIn("[FEHLER]", result.stderr)
 
     def test_info_dialog_version_matches_tool_version(self) -> None:
-        """TOOL_VERSION muss mit der Versionsangabe im Info-Dialog übereinstimmen."""
+        """Der Info-Dialog muss seine Versionsangabe aus TOOL_VERSION ableiten."""
         source = SCRIPT_PATH.read_text(encoding="utf-8")
         tree = ast.parse(source)
 
         tool_version = None
-        info_dialog_version = None
+        version_from_tool_version = False
 
         for node in ast.walk(tree):
             if isinstance(node, ast.Assign):
@@ -187,18 +187,43 @@ class MethodenAnalyserCliTests(unittest.TestCase):
                         if isinstance(node.value, ast.Constant):
                             tool_version = node.value.value
 
-            # f-string: f"Python Code Analyzer v{TOOL_VERSION}\n\n"
+            # Variante A (f-string): f"Python Code Analyzer v{TOOL_VERSION}\n\n"
             if isinstance(node, ast.JoinedStr):
                 for part in node.values:
                     if isinstance(part, ast.FormattedValue):
                         if isinstance(part.value, ast.Name) and part.value.id == "TOOL_VERSION":
-                            info_dialog_version = "TOOL_VERSION_ref"
+                            version_from_tool_version = True
+
+            # Variante B (i18n): _t("info_body").replace("{version}", TOOL_VERSION)
+            if (
+                isinstance(node, ast.Call)
+                and isinstance(node.func, ast.Attribute)
+                and node.func.attr == "replace"
+                and any(
+                    isinstance(arg, ast.Name) and arg.id == "TOOL_VERSION"
+                    for arg in node.args
+                )
+            ):
+                version_from_tool_version = True
 
         self.assertIsNotNone(tool_version, "TOOL_VERSION nicht gefunden")
-        self.assertIsNotNone(
-            info_dialog_version,
-            "Info-Dialog referenziert TOOL_VERSION nicht als f-string — Versions-Mismatch möglich",
+        self.assertTrue(
+            version_from_tool_version,
+            "Info-Dialog leitet die Version nicht aus TOOL_VERSION ab — Versions-Mismatch möglich",
         )
+
+        # i18n-Absicherung: die info_body-Uebersetzungen muessen den {version}-Platzhalter
+        # tragen, sonst liefe die TOOL_VERSION-Ersetzung ins Leere.
+        translations = json.loads(
+            (PROJECT_ROOT / "locales" / "translations.json").read_text(encoding="utf-8")
+        )
+        info_body = translations.get("info_body", {})
+        for lang in ("de", "en"):
+            self.assertIn(
+                "{version}",
+                info_body.get(lang, ""),
+                f"info_body[{lang}] muss den Platzhalter {{version}} enthalten",
+            )
 
 
 class RegressionTests(unittest.TestCase):
