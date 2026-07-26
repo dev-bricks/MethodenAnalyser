@@ -94,6 +94,7 @@ class MethodenAnalyserWebappServerTests(unittest.TestCase):
         self.assertEqual(payload["report"]["source"]["archive_entries"], 2)
         self.assertEqual(payload["report"]["summary"]["files_analyzed"], 2)
         self.assertIn("PROJEKT CODE ANALYSE", payload["text_report"])
+        self.assertIn("Projekt: demo_bundle.zip", payload["text_report"])
         self.assertEqual(sorted(entry["path"] for entry in payload["report"]["files"]), ["pkg/helper.py", "pkg/main.py"])
 
     def test_zip_payload_rejects_path_traversal(self) -> None:

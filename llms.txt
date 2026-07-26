@@ -59,7 +59,4 @@ Python import tracker unused definitions finder
 code similarity detector Python local
 ```
 
-## Verification
-
-- Test suite: 85 passing tests (`pytest`)
-- Last-checked: 2026-07-25
+## Last-checked: 2026-06-12

@@ -1387,10 +1387,11 @@ def analyze_project(folder_path: str, progress_callback=None) -> ProjectAnalysis
     )
 
 
-def generate_project_report(result: ProjectAnalysisResult) -> str:
+def generate_project_report(result: ProjectAnalysisResult, project_name: Optional[str] = None) -> str:
     """Generiert einen formatierten Projekt-Report."""
+    proj_label = project_name or os.path.basename(result.folder_path)
     report = ["=" * 70 + "\n", "PROJEKT CODE ANALYSE\n", "=" * 70 + "\n\n"]
-    report.append(f"Projekt: {os.path.basename(result.folder_path)}\n\n")
+    report.append(f"Projekt: {proj_label}\n\n")
     report.append(f"Dateien: {result.files_analyzed} | Zeilen: {result.total_lines:,}\n")
     report.append(f"Definitionen: {result.total_defs:,} | Imports: {result.total_imports:,}\n\n")
     

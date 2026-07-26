@@ -144,7 +144,7 @@ def _analyze_zip_payload(payload: dict[str, Any], source_kind: str) -> dict[str,
         return {
             "ok": True,
             "has_findings": _project_has_findings(result),
-            "text_report": generate_project_report(result),
+            "text_report": generate_project_report(result, project_name=filename),
             "report": report,
         }
 

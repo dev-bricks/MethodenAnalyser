@@ -1,38 +1,10 @@
 {
-  "btn_analyze_file": {
+  "📂 Datei analysieren": {
     "de": "📂 Datei analysieren",
     "en": "📂 Analyze File"
   },
-  "btn_info": {
-    "de": "ℹ️  Info",
-    "en": "ℹ️  Info"
-  },
-  "btn_autofix": {
+  "🔧 Auto-Fix Imports": {
     "de": "🔧 Auto-Fix Imports",
     "en": "🔧 Auto-Fix Imports"
-  },
-  "btn_analyze_project": {
-    "de": "Projekt analysieren",
-    "en": "Analyze Project"
-  },
-  "shortcut_hint": {
-    "de": "Tastatur: Alt+D Datei | Alt+P Projekt | Alt+F Auto-Fix | F1 Info",
-    "en": "Keyboard: Alt+D File | Alt+P Project | Alt+F Auto-Fix | F1 Info"
-  },
-  "menu_language": {
-    "de": "Sprache / Language",
-    "en": "Sprache / Language"
-  },
-  "welcome_body": {
-    "de": "Willkommen beim Python Code Analyzer!\n\n{shortcut}\n\nKlicken Sie auf 'Datei analysieren', um eine Python-Datei zu untersuchen.\n\nDie Analyse umfasst:\n• Fehlende und ungenutzte Definitionen\n• Import-Analyse und -Optimierung\n• Dynamische Methodenaufrufe\n• Mögliche Tippfehler\n",
-    "en": "Welcome to Python Code Analyzer!\n\n{shortcut}\n\nClick 'Analyze File' to inspect a Python file.\n\nThe analysis covers:\n• Missing and unused definitions\n• Import analysis and optimization\n• Dynamic method calls\n• Possible typos\n"
-  },
-  "info_body": {
-    "de": "Python Code Analyzer v{version}\n\nAnalysiert Python-Dateien auf:\n• Fehlende Definitionen\n• Ungenutzte Definitionen\n• Ungenutzte Imports\n• Dynamische Aufrufe\n• Import-Scope-Probleme\n\n© 2026 - Optimierte Version",
-    "en": "Python Code Analyzer v{version}\n\nAnalyzes Python files for:\n• Missing definitions\n• Unused definitions\n• Unused imports\n• Dynamic calls\n• Import scope issues\n\n© 2026 - Optimized version"
-  },
-  "lang_switched_msg": {
-    "de": "Sprache auf Deutsch umgestellt.",
-    "en": "Language switched to English."
   }
 }

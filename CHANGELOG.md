@@ -5,9 +5,6 @@ Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
 ## [Unreleased]
 
-### Neue Funktionen / Features
-- **UX-002 / Welle-1 U1** (`MethodenAnalyser3.py`, `locales/translations.json`): Sichtbarer Sprachschalter in der Menüleiste („Sprache / Language" → „Deutsch" / „English"). Menü, Schaltflächen, Tastaturhinweis und Willkommenstext stellen sich sofort um; die Auswahl wird pro Benutzer in `%APPDATA%\MethodenAnalyser\config.json` (bzw. `~/.config/MethodenAnalyser/config.json`) persistiert und beim nächsten Start wiederhergestellt. Das bisher ungenutzte `translator.py` / `locales/translations.json` ist damit im UI erreichbar. Regressionstests in `tests/test_language_switch.py`.
-
 ### Build / Packaging
 - `releases/v3.0.0/PROVENANCE.md` dokumentiert den tatsächlichen lokalen Artefaktstand. Das historische v3.0.0-Bundle ist wegen fehlender Commitkette und einer vom gespeicherten Wert abweichenden EXE-SHA-256 bis zu einem reproduzierbaren Neubuild gesperrt; es wurde weder gelöscht noch durch eine neue Version ersetzt.
 - `build_exe.bat` ergänzt einen reproduzierbaren PyInstaller-Build mit lokalem Workpath (lokales Build-Verzeichnis), zentralem Build-Exclude-Scanner und Kopie der fertigen EXE nach `dist\MethodenAnalyser.exe` sowie `MethodenAnalyser.exe`.
@@ -16,7 +13,6 @@ Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 - GitHub-Actions-Smoke-Matrix pinnt Windows auf `windows-2025-vs2026` und macOS auf `macos-26`, damit die 2026-Runner-Migration vor dem Stichtag validiert wird.
 
 ### Fehlerbehebungen / Bug Fixes
-- `webapp/server.py`: Statische Dateien werden nur noch über strikt normalisierte Pfade unterhalb der erlaubten Roots ausgeliefert; Content-Types kommen aus einer festen Endungs-Whitelist statt aus frei abgeleiteten Pfadwerten.
 - **A11Y-002** (`webapp/static/index.html`, `webapp/static/app.js`): Die Quelltyp-Umschaltung im Web Companion (`Snippet`, `Datei`, `ZIP`) markiert den aktiven Modus jetzt zusätzlich mit `aria-pressed`; Screenreader können den Segmentzustand damit erkennen, ohne dass die kompakte Oberfläche sichtbare Zusatzbeschriftungen braucht. Regressionstest in `tests/test_webapp_server.py`.
 - **BS27-1** (`MethodenAnalyser3.py`): `run_project_analysis()` rief `output_widget.update()` auf (Zeilen 1529 + 1534), wodurch User-Events (z. B. Button-Klicks) während der laufenden Projektanalyse verarbeitet wurden — re-entranter Aufruf der Funktion war möglich. Fix: beide Aufrufe auf `update_idletasks()` geändert (verarbeitet nur Render-/Layout-Jobs, keine User-Events). Regressionstests in `tests/test_bugsweep_gui_threading_export_20260627.py`.
 - **BS27-2** (`MethodenAnalyser3.py`): `analyze_project()` ignorierte `UnicodeDecodeError` in der `total_lines`-Zählschleife kommentarlos (kein Latin-1-Fallback) — Zeilenzahl für Latin-1-kodierte `.py`-Dateien wurde als 0 gezählt. Fix: Latin-1-Fallback konsistent mit `analyze_file()` ergänzt. Regressionstest in `tests/test_bugsweep_gui_threading_export_20260627.py`.
