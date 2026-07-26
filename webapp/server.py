@@ -315,6 +315,10 @@ class MethodenAnalyserPwaHandler(BaseHTTPRequestHandler):
             self._send_json({"ok": False, "error": "Leerer Request."}, status=400)
             return
         if length > MAX_REQUEST_SIZE:
+            # Erst den angekündigten Body verwerfen, dann antworten: Sonst schließt
+            # der Server, während der Client noch sendet, und der Client sieht statt
+            # der 413-Antwort einen BrokenPipeError.
+            self._drain_request_body(length)
             self._send_json(
                 {"ok": False, "error": "Request ist größer als 2 MB."},
                 status=413,
@@ -373,6 +377,19 @@ class MethodenAnalyserPwaHandler(BaseHTTPRequestHandler):
             self.send_header("Cache-Control", "no-cache")
         self.end_headers()
         self.wfile.write(body)
+
+    def _drain_request_body(self, length: int, limit: int = 4 * MAX_REQUEST_SIZE) -> None:
+        """Liest einen abgelehnten Request-Body blockweise weg und verwirft ihn.
+
+        Begrenzt auf `limit`, damit ein übergroßer Upload den lokalen Server nicht
+        beschäftigt hält; darüber hinaus wird die Verbindung ohnehin geschlossen.
+        """
+        remaining = min(length, limit)
+        while remaining > 0:
+            chunk = self.rfile.read(min(65536, remaining))
+            if not chunk:
+                break
+            remaining -= len(chunk)
 
     def _send_json(self, payload: dict[str, Any], status: int = 200) -> None:
         body = json.dumps(payload, ensure_ascii=False, indent=2).encode("utf-8")
