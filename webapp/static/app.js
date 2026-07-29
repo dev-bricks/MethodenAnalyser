@@ -94,6 +94,7 @@ let sourceKind = "snippet";
 let currentFileName = "<snippet>";
 let currentZipBase64 = null;
 let lastReport = null;
+let lastReportMetadata = null;
 let installPromptEvent = null;
 let isRestoringDraft = false;
 let runtimeInfo = null;
@@ -496,6 +497,7 @@ function renderFindings(report) {
 
 function renderResult(payload) {
   lastReport = payload.report;
+  lastReportMetadata = { origin: "analyzed" };
   renderSummary(payload.report.summary, payload.report);
   renderFindings(payload.report);
   elements.textReport.textContent = payload.text_report;
@@ -507,6 +509,7 @@ function renderResult(payload) {
 
 function renderImportedReport(report, importedFileName) {
   lastReport = report;
+  lastReportMetadata = { origin: "imported", importedFileName };
   const hasFindings = reportHasFindings(report);
   renderSummary(report.summary, report);
   renderFindings(report);
@@ -556,7 +559,10 @@ function persistReport() {
   }
 
   try {
-    localStorage.setItem(STORAGE_KEYS.report, JSON.stringify(lastReport));
+    localStorage.setItem(STORAGE_KEYS.report, JSON.stringify({
+      report: lastReport,
+      metadata: lastReportMetadata,
+    }));
     refreshPwaStatus();
   } catch {
     setNotice(
@@ -605,7 +611,18 @@ function restoreLastReport() {
   }
 
   try {
-    lastReport = JSON.parse(raw);
+    const saved = JSON.parse(raw);
+    const isPersistedEnvelope = isPlainObject(saved) && isPlainObject(saved.report);
+    lastReport = isPersistedEnvelope ? saved.report : saved;
+    lastReportMetadata = isPersistedEnvelope && isPlainObject(saved.metadata) ? saved.metadata : null;
+    if (
+      lastReportMetadata?.origin === "imported"
+      && typeof lastReportMetadata.importedFileName === "string"
+      && lastReportMetadata.importedFileName
+    ) {
+      renderImportedReport(lastReport, lastReportMetadata.importedFileName);
+      return;
+    }
     renderSummary(lastReport.summary, lastReport);
     renderFindings(lastReport);
     elements.jsonPreview.textContent = JSON.stringify(lastReport, null, 2);
@@ -834,6 +851,7 @@ function resetState() {
   currentFileName = "<snippet>";
   currentZipBase64 = null;
   lastReport = null;
+  lastReportMetadata = null;
   elements.sourceCode.value = "";
   elements.sourceFile.value = "";
   elements.reportFile.value = "";
