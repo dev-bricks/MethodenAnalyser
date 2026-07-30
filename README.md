@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/banner.svg" width="100%" alt="MethodenAnalyser — Static Python analysis across a spectrum of methods">
+  <img src="assets/banner.png" width="100%" alt="MethodenAnalyser — Static Python analysis across a spectrum of methods">
 </p>
 
 <p align="center">
