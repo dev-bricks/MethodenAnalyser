@@ -5,6 +5,11 @@ Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
 ## [Unreleased]
 
+### Repository-Hygiene [2026-08-07]
+- **Pfad A Maintenance**: Badges in `README.md` & `README_de.md` um `dev-bricks` Ecosystem-, `open-bricks` Umbrella- und LLM-Ready-Badges erweitert.
+- GFM Callout-Box für `llms.txt` RAG-Index in `README.md` und `README_de.md` eingebunden.
+- `llms.txt` Last-checked Zeitstempel auf `2026-08-07` und Pytest-Teststand (`82 passed`) synchronisiert.
+
 ### Neue Funktionen / Features
 - **UX-002 / Welle-1 U1** (`MethodenAnalyser3.py`, `locales/translations.json`): Sichtbarer Sprachschalter in der Menüleiste („Sprache / Language" → „Deutsch" / „English"). Menü, Schaltflächen, Tastaturhinweis und Willkommenstext stellen sich sofort um; die Auswahl wird pro Benutzer in `%APPDATA%\MethodenAnalyser\config.json` (bzw. `~/.config/MethodenAnalyser/config.json`) persistiert und beim nächsten Start wiederhergestellt. Das bisher ungenutzte `translator.py` / `locales/translations.json` ist damit im UI erreichbar. Regressionstests in `tests/test_language_switch.py`.
 

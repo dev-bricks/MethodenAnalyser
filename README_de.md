@@ -5,9 +5,12 @@
 <p align="center">
   <img src="https://img.shields.io/badge/Version-3.0-blue?style=for-the-badge" alt="Version">
   <img src="https://img.shields.io/badge/Python-3.10+-yellow?style=for-the-badge" alt="Python">
-  <img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" alt="License">
+  <img src="https://img.shields.io/badge/Lizenz-MIT-green?style=for-the-badge" alt="Lizenz">
   <img src="https://img.shields.io/badge/GUI-Tkinter-orange?style=for-the-badge" alt="GUI">
   <img src="https://img.shields.io/badge/Deps-None-brightgreen?style=for-the-badge" alt="No Dependencies">
+  <img src="https://img.shields.io/badge/Ecosystem-dev--bricks-blue?style=for-the-badge" alt="Ökosystem dev-bricks">
+  <img src="https://img.shields.io/badge/Umbrella-open--bricks-purple?style=for-the-badge" alt="Umbrella open-bricks">
+  <img src="https://img.shields.io/badge/LLM-Ready-teal?style=for-the-badge" alt="LLM Ready">
 </p>
 
 <h1 align="center">MethodenAnalyser</h1>
@@ -17,6 +20,9 @@
 <p align="center">
   <b>Deutsch</b> | <a href="README.md">English</a>
 </p>
+
+> [!TIP]
+> Für LLM-Agenten, automatisierte Tools und RAG-Systeme ist ein kanonischer Index unter [llms.txt](llms.txt) hinterlegt.
 
 ---
 

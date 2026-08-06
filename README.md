@@ -8,6 +8,9 @@
   <img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" alt="License">
   <img src="https://img.shields.io/badge/GUI-Tkinter-orange?style=for-the-badge" alt="GUI">
   <img src="https://img.shields.io/badge/Deps-None-brightgreen?style=for-the-badge" alt="No Dependencies">
+  <img src="https://img.shields.io/badge/Ecosystem-dev--bricks-blue?style=for-the-badge" alt="Ecosystem dev-bricks">
+  <img src="https://img.shields.io/badge/Umbrella-open--bricks-purple?style=for-the-badge" alt="Umbrella open-bricks">
+  <img src="https://img.shields.io/badge/LLM-Ready-teal?style=for-the-badge" alt="LLM Ready">
 </p>
 
 <h1 align="center">MethodenAnalyser</h1>
@@ -17,6 +20,9 @@
 <p align="center">
   <b>English</b> | <a href="README_de.md">Deutsch</a>
 </p>
+
+> [!TIP]
+> For LLM agents, automated tools, and context-aware indexing, a canonical RAG index is provided at [llms.txt](llms.txt).
 
 ---
 

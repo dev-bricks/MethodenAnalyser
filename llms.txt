@@ -61,5 +61,5 @@ code similarity detector Python local
 
 ## Verification
 
-- Test suite: 85 passing tests (`pytest`)
-- Last-checked: 2026-07-25
+- Test suite: 82 passing tests (`pytest`)
+- Last-checked: 2026-08-07
