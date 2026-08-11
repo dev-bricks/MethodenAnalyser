@@ -8,19 +8,12 @@ set "SCANNER=%PROJECT_ROOT%\..\..\_tools\build_exclude_scanner.py"
 set "BUILD_ROOT=C:\_Local_DEV\codex_build\methodenanalyser"
 set "DIST_DIR=%PROJECT_ROOT%\dist"
 
-if not exist "%SCANNER%" (
-    echo [FEHLER] Build-Exclude-Scanner nicht gefunden:
-    echo %SCANNER%
-    exit /b 1
+set "EXCLUDES="
+if exist "%SCANNER%" (
+    for /f "delims=" %%E in ('python "%SCANNER%" --project "%PROJECT_ROOT%" --emit pyinstaller') do set "EXCLUDES=%%E"
+) else (
+    echo [HINWEIS] Build-Exclude-Scanner nicht vorhanden, fahre ohne dynamische Excludes fort.
 )
-
-where python >nul 2>&1
-if errorlevel 1 (
-    echo [FEHLER] Python wurde nicht gefunden.
-    exit /b 1
-)
-
-for /f "delims=" %%E in ('python "%SCANNER%" --project "%PROJECT_ROOT%" --emit pyinstaller') do set "EXCLUDES=%%E"
 
 if not exist "%BUILD_ROOT%" mkdir "%BUILD_ROOT%"
 if not exist "%DIST_DIR%" mkdir "%DIST_DIR%"
