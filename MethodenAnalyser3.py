@@ -15,13 +15,14 @@ import datetime
 import sqlite3
 import threading
 import warnings
+import importlib
 from typing import Set, Dict, List, Tuple, Any, Optional, Callable
 from dataclasses import dataclass, field
 from functools import lru_cache
 
 try:
     from translator import TranslationSystem
-except Exception:  # pragma: no cover - Uebersetzung ist optional
+except Exception:  # pragma: no cover - Übersetzung ist optional
     TranslationSystem = None
 
 # ============================================================================
@@ -401,10 +402,14 @@ class CodeAnalyzer(ast.NodeVisitor):
             attr_name = node.func.attr
             self.calls.add(attr_name)
             
-            # Prüfe ob es ein Modul.Attribut Zugriff ist
-            if isinstance(node.func.value, ast.Name):
-                module_name = node.func.value.id
-                self.module_attribute_calls[module_name].add(attr_name)
+            # Vollständige Attribut-Kette auflösen (z.B. concurrent.futures.ThreadPoolExecutor)
+            root_id, chain = _extract_attribute_chain(node.func)
+            if root_id and chain:
+                self.module_attribute_calls[root_id].update(chain)
+                for i in range(1, len(chain)):
+                    subpath = f"{root_id}.{'.'.join(chain[:i])}"
+                    self.module_attribute_calls[subpath].add(chain[i])
+                    self.module_attribute_calls[subpath].update(chain[i:])
                 
         elif isinstance(node.func, ast.Name):
             # Direkter Aufruf: function()
@@ -414,11 +419,13 @@ class CodeAnalyzer(ast.NodeVisitor):
 
     def visit_Attribute(self, node: ast.Attribute) -> None:
         """Verarbeitet Attribut-Zugriffe (auch ohne Call)."""
-        # z.B. threading.Lock (ohne Klammern)
-        if isinstance(node.value, ast.Name):
-            module_name = node.value.id
-            attr_name = node.attr
-            self.module_attribute_calls[module_name].add(attr_name)
+        root_id, chain = _extract_attribute_chain(node)
+        if root_id and chain:
+            self.module_attribute_calls[root_id].update(chain)
+            for i in range(1, len(chain)):
+                subpath = f"{root_id}.{'.'.join(chain[:i])}"
+                self.module_attribute_calls[subpath].add(chain[i])
+                self.module_attribute_calls[subpath].update(chain[i:])
         self.generic_visit(node)
 
     def visit_FunctionDef(self, node: ast.FunctionDef) -> None:
@@ -445,15 +452,20 @@ class CodeAnalyzer(ast.NodeVisitor):
             import_name = alias.asname if alias.asname else module_base
             self.import_names.add(import_name)
             self.imported_definitions.add(import_name)
-            # NEU: Track auch Modulnamen für Attribut-Zugriff
-            if not alias.asname:
+            # Track auch Modulnamen für Attribut-Zugriff (inkl. Submodule & Aliase)
+            if alias.asname:
+                self.imported_modules.add(alias.asname)
+            else:
                 self.imported_modules.add(module_base)
+                self.imported_modules.add(alias.name)
 
     def visit_ImportFrom(self, node: ast.ImportFrom) -> None:
         """Verarbeitet From-Import-Statements und trackt importierte Namen."""
         if node.module:
             module_base = node.module.split(".")[0]
             self.imports.append(module_base)
+            self.imported_modules.add(module_base)
+            self.imported_modules.add(node.module)
         
         # Füge die importierten Namen hinzu
         for alias in node.names:
@@ -464,6 +476,7 @@ class CodeAnalyzer(ast.NodeVisitor):
             import_name = alias.asname if alias.asname else alias.name
             self.import_names.add(import_name)
             self.imported_definitions.add(import_name)
+            self.imported_modules.add(import_name)
 
     def visit_Name(self, node: ast.Name) -> None:
         """Verarbeitet Namensreferenzen."""
@@ -488,6 +501,22 @@ class CodeAnalyzer(ast.NodeVisitor):
 # ============================================================================
 # HILFSFUNKTIONEN
 # ============================================================================
+
+def _extract_attribute_chain(node: ast.AST) -> Tuple[Optional[str], List[str]]:
+    """
+    Extrahiert den Wurzel-Namen und die geordnete Kette von Attributen.
+    Z.B. os.path.exists -> ('os', ['path', 'exists'])
+    """
+    chain: List[str] = []
+    curr = node
+    while isinstance(curr, ast.Attribute):
+        chain.append(curr.attr)
+        curr = curr.value
+    if isinstance(curr, ast.Name):
+        chain.reverse()
+        return curr.id, chain
+    return None, []
+
 
 def has_case_transition(name: str) -> bool:
     """
@@ -663,12 +692,25 @@ def scan_todo_comments(code: str) -> List[Tuple[int, str, str]]:
     return results
 
 
+@lru_cache(maxsize=128)
+def _get_module_all_attributes(module_name: str) -> Optional[Set[str]]:
+    """Ermittelt alle exportierten/verfügbaren Attribute eines Moduls per Reflection."""
+    try:
+        mod = sys.modules.get(module_name)
+        if mod is None:
+            mod = importlib.import_module(module_name)
+        return set(dir(mod))
+    except Exception:
+        return None
+
+
 def get_available_module_attributes(analyzer: 'CodeAnalyzer') -> Set[str]:
     """
-    Ermittelt alle Attribute die durch importierte Module verfügbar sind.
+    Ermittelt alle Attribute, die durch importierte Module verfügbar sind.
     
-    Wenn z.B. 'threading' importiert ist und Code 'threading.Lock()' verwendet,
-    dann sollte 'Lock' nicht als fehlende Definition gemeldet werden.
+    Wenn z.B. 'threading' importiert ist und Code 'threading.Lock()' oder
+    'concurrent.futures.ThreadPoolExecutor()' verwendet, werden diese Attribute
+    als verfügbar erkannt und nicht fälschlich als fehlende Definitionen gemeldet.
     
     Args:
         analyzer: CodeAnalyzer-Instanz mit Import- und Verwendungs-Informationen
@@ -680,18 +722,41 @@ def get_available_module_attributes(analyzer: 'CodeAnalyzer') -> Set[str]:
     
     # Durchlaufe alle Modul.Attribut Zugriffe
     for module_name, attributes in analyzer.module_attribute_calls.items():
-        # Prüfe ob das Modul importiert wurde
-        if module_name in analyzer.imported_modules or module_name in analyzer.import_names:
-            # Prüfe ob wir die Exports dieses Moduls kennen
-            if module_name in STDLIB_EXPORTS:
-                # Nur valide Attribute hinzufügen
-                for attr in attributes:
-                    if attr in STDLIB_EXPORTS[module_name]:
-                        available_attrs.add(attr)
-            else:
-                # Modul importiert aber unbekannt → akzeptiere alle Attribute
-                # (um False Positives zu vermeiden)
-                available_attrs.update(attributes)
+        base_mod = module_name.split(".")[0]
+        is_imported = (
+            module_name in analyzer.imported_modules
+            or module_name in analyzer.import_names
+            or base_mod in analyzer.imported_modules
+            or base_mod in analyzer.import_names
+        )
+        if not is_imported:
+            continue
+
+        # 1. Dynamische Introspektion für Standard-Library und importierbare Pakete
+        mod_attrs = _get_module_all_attributes(module_name)
+        if mod_attrs is None and base_mod != module_name:
+            mod_attrs = _get_module_all_attributes(base_mod)
+
+        if mod_attrs is not None:
+            for attr in attributes:
+                if attr in mod_attrs:
+                    available_attrs.add(attr)
+            continue
+
+        # 2. Prüfe ob wir die Exports dieses Moduls aus statischer Tabelle kennen (Fallback)
+        if module_name in STDLIB_EXPORTS or base_mod in STDLIB_EXPORTS:
+            known_exports = STDLIB_EXPORTS.get(module_name, STDLIB_EXPORTS.get(base_mod, set()))
+            matched = False
+            for attr in attributes:
+                if attr in known_exports:
+                    available_attrs.add(attr)
+                    matched = True
+            if matched:
+                continue
+
+        # 3. Modul importiert aber offline / unbekannt → akzeptiere alle Attribute
+        # (um False Positives bei externen Third-Party-Bibliotheken zu vermeiden)
+        available_attrs.update(attributes)
     
     return available_attrs
 
@@ -881,7 +946,7 @@ def analyze_file(path: str) -> AnalysisResult:
 
 def _extract_typehints(tree: ast.AST) -> Set[str]:
     """
-    Extrahiert verwendete Type-Hints aus bereits geparsten AST.
+    Extrahiert verwendete Type-Hints aus bereits geparstem AST.
     
     Args:
         tree: Bereits geparster AST
@@ -889,20 +954,24 @@ def _extract_typehints(tree: ast.AST) -> Set[str]:
     Returns:
         Set der verwendeten Type-Hint-Namen
     """
-    hints = set()
+    hints: Set[str] = set()
     try:
         for node in ast.walk(tree):
             # Variable Annotationen
-            if isinstance(node, ast.AnnAssign) and isinstance(node.annotation, ast.Name):
-                hints.add(node.annotation.id)
+            if isinstance(node, ast.AnnAssign) and node.annotation:
+                for sub in ast.walk(node.annotation):
+                    if isinstance(sub, ast.Name):
+                        hints.add(sub.id)
             # Funktionsparameter Annotationen
             elif isinstance(node, ast.arg) and node.annotation:
-                if isinstance(node.annotation, ast.Name):
-                    hints.add(node.annotation.id)
+                for sub in ast.walk(node.annotation):
+                    if isinstance(sub, ast.Name):
+                        hints.add(sub.id)
             # Funktions-Return-Annotationen
-            elif isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
-                if node.returns and isinstance(node.returns, ast.Name):
-                    hints.add(node.returns.id)
+            elif isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)) and node.returns:
+                for sub in ast.walk(node.returns):
+                    if isinstance(sub, ast.Name):
+                        hints.add(sub.id)
     except Exception as e:
         # Logge Fehler, aber breche nicht ab
         print(f"Warnung beim Extrahieren von Type-Hints: {e}", file=sys.stderr)
