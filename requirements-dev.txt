@@ -1,3 +1,4 @@
 # MethodenAnalyser - Development & Build Dependencies
-pytest>=8.0.0
-pyinstaller>=6.0.0
+# Tested toolchain range (runtime remains Python standard library only).
+pytest>=9.0.3,<10.0
+pyinstaller>=6.14.2,<7.0

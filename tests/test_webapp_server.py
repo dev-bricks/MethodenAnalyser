@@ -22,6 +22,7 @@ from webapp.server import (
     analyze_payload,
     build_runtime_info,
 )
+from MethodenAnalyser3 import analyze_project, build_json_report
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -74,6 +75,24 @@ class MethodenAnalyserWebappServerTests(unittest.TestCase):
     def test_rejects_unknown_source_kind(self) -> None:
         with self.assertRaises(ValueError):
             analyze_payload({"code": "print('ok')\n", "source_kind": "folder"})
+
+    def test_rejects_project_payload_for_api(self) -> None:
+        with self.assertRaisesRegex(ValueError, "snippet.*file.*zip"):
+            analyze_payload({"code": "print('ok')\n", "source_kind": "project"})
+
+    def test_project_report_is_import_only_contract(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project = Path(tmpdir) / "demo_project"
+            project.mkdir()
+            (project / "good.py").write_text("print('ok')\n", encoding="utf-8")
+            result = analyze_project(str(project))
+            report = build_json_report("project", result, source_name="demo_project")
+
+        self.assertEqual(report["source_kind"], "project")
+        self.assertEqual(report["summary"]["files_analyzed"], 1)
+        app_js = (PROJECT_ROOT / "webapp" / "static" / "app.js").read_text(encoding="utf-8")
+        self.assertIn('["snippet", "file", "project", "zip"]', app_js)
+        self.assertIn('report.source_kind === "project"', app_js)
 
     def test_zip_payload_returns_project_report(self) -> None:
         payload = analyze_payload(
@@ -227,6 +246,13 @@ class MethodenAnalyserInvalidBodyTests(unittest.TestCase):
         status, payload = self.post_raw(body)
         self.assertEqual(status, 400)
         self.assertFalse(payload["ok"])
+
+    def test_project_post_returns_400(self) -> None:
+        body = json.dumps({"code": "print('ok')\n", "source_kind": "project"}).encode("utf-8")
+        status, payload = self.post_raw(body)
+        self.assertEqual(status, 400)
+        self.assertFalse(payload["ok"])
+        self.assertIn("source_kind", payload["error"])
 
     def test_request_larger_than_limit_returns_413(self) -> None:
         status, payload = self.post_raw(b"x" * (MAX_REQUEST_SIZE + 1))

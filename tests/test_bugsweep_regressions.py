@@ -10,7 +10,7 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from translator import TranslationSystem
+from translator import TranslationSystem  # noqa: E402
 
 
 # ---------------------------------------------------------------------------
@@ -90,9 +90,8 @@ def test_manage_translations_survives_corrupt_json(tmp_path):
     corrupt_file = trans_dir / "translations.json"
     corrupt_file.write_text("{invalid json", encoding="utf-8")
 
-    trans_file = str(tmp_path / "locales" / "translations.json")
     try:
-        result = mt.manage_translations(str(tmp_path))
+        mt.manage_translations(str(tmp_path))
     except (json.JSONDecodeError, OSError) as e:
         raise AssertionError(f"manage_translations() darf bei korruptem JSON nicht abstürzen: {e}")
 
@@ -121,7 +120,9 @@ def test_manage_translations_survives_write_oserror(tmp_path):
 
 def test_test_cli_translator_hints_no_digraphs():
     """setUp() in TranslatorIsGermanTests darf keine ASCII-Digraphe mehr enthalten (Bug #9-6)."""
-    import ast, pathlib
+    import ast
+    import pathlib
+
     src = (pathlib.Path(__file__).parent / "test_cli.py").read_text(encoding="utf-8")
     tree = ast.parse(src)
     for node in ast.walk(tree):
@@ -147,7 +148,9 @@ def test_test_cli_translator_hints_no_digraphs():
 
 def test_test_cli_subprocess_run_has_timeout():
     """Alle subprocess.run()-Aufrufe in test_cli.py müssen timeout= setzen (Bug #9-7)."""
-    import ast, pathlib
+    import ast
+    import pathlib
+
     src = (pathlib.Path(__file__).parent / "test_cli.py").read_text(encoding="utf-8")
     tree = ast.parse(src)
     for node in ast.walk(tree):
@@ -171,7 +174,10 @@ def test_test_cli_subprocess_run_has_timeout():
 
 def test_main_file_no_digraphs_in_user_strings():
     """ASCII-Digraphe in String-Literalen von MethodenAnalyser3.py verboten (Bug #9-8)."""
-    import ast, re, pathlib
+    import ast
+    import pathlib
+    import re
+
     src = pathlib.Path(__file__).resolve().parents[1] / "MethodenAnalyser3.py"
     text = src.read_text(encoding="utf-8")
     tree = ast.parse(text)

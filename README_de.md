@@ -73,6 +73,10 @@ python MethodenAnalyser3.py
 
 Unter Windows kann das Tool auch per Doppelklick auf `START.bat` gestartet werden.
 
+Die Laufzeit benötigt nur die Python-Standardbibliothek. Für Tests und EXE-
+Builds die begrenzte Toolchain aus [requirements-dev.txt](requirements-dev.txt)
+installieren; Befehle und Build-Grenzen stehen in [BUILD.md](BUILD.md).
+
 ---
 
 ## Verwendung
@@ -102,9 +106,14 @@ type pfad\zur\datei.py | python MethodenAnalyser3.py --stdin --json-output snipp
 
 `--json-output` schreibt zusätzlich den maschinenlesbaren Report `methodenanalyser-report-v1.json`. Mit eigenem Dateinamen kann der Report gezielt abgelegt werden; das Format ist in [EXPORTFORMAT.md](EXPORTFORMAT.md) dokumentiert.
 
-### Lokale Weboberfläche
+### Lokaler Web-Hilfsmodus (nur derselbe Rechner)
 
 Für Snippets, einzelne Python-Dateien und kleine ZIP-Archive gibt es zusätzlich eine optionale lokale Weboberfläche:
+
+Für `POST /api/analyze` sind `source_kind` `snippet`, `file` und `zip`
+zulässig; ein `project`-POST wird bewusst abgelehnt. Ein `project`-Report darf
+separat als `methodenanalyser-report-v1.json` importiert werden. Die Quellen-
+matrix steht in [EXPORTFORMAT.md](EXPORTFORMAT.md) und [WEBAPP.md](WEBAPP.md).
 
 ```bash
 python webapp/server.py
@@ -185,8 +194,18 @@ Release-Artefakte wie EXE-Dateien, lokale Builds und Store-Pakete bleiben außer
 ## Repository-Hygiene
 
 - GitHub-Remote: `dev-bricks/MethodenAnalyser`
-- Lokaler Branch `master` ist synchron mit `origin/master` (`0 ahead / 0 behind`).
-- Secret-/Privacy-Check: keine Tokens, Schlüssel oder Credentials in den getrackten Projektdateien gefunden.
+- Die öffentliche Hygiene-Baseline ist ein benannter Commit oder Tag; diese
+  README behauptet keine dauerhaft gültige Ahead/Behind-Zahl. Vor Release oder
+  Übergabe ausführen: `git branch --show-current`,
+  `git rev-list --left-right --count master...origin/master` und
+  `git status --short --ignored`.
+- Erwartetes Gate: Branch `master`, für die benannte Baseline `0 0` Ahead/Behind
+  und ein sauberer Arbeitsbaum. Uncommittete Icon-/Asset-Änderungen bleiben
+  außerhalb dieses Dokumentations-Slices und werden weder übernommen noch
+  verworfen.
+- Secret-/Privacy-Scan und Kompilationsprüfung sind für dieselbe benannte
+  Baseline zu wiederholen; ein zeitabhängiges Scan-Ergebnis wird hier nicht
+  behauptet.
 - Keine Telemetrie, keine Netzwerkverbindungen und keine Cloud-Synchronisierung aus der Anwendung heraus.
 - Lokale Build-, Release-, Coverage-, Cache- und Signierartefakte sind über `.gitignore` ausgeschlossen.
 - Interne Wartungsnotizen wie `AUFGABEN.txt` bleiben lokal und werden nicht im Git-Quellbaum veröffentlicht.
@@ -200,6 +219,10 @@ Release-Artefakte wie EXE-Dateien, lokale Builds und Store-Pakete bleiben außer
 python -m py_compile MethodenAnalyser3.py manage_translations.py translator.py webapp/server.py
 python -m unittest discover -s tests -v
 ```
+
+Der reproduzierbare pytest-/PyInstaller-Bereich und der Fallback von
+`build_exe.bat` sind in [BUILD.md](BUILD.md) und
+[_sources/CROSSCHECK.md](_sources/CROSSCHECK.md) festgelegt.
 
 GitHub Actions führt denselben Smoke-Test auf explizit gepinnten 2026-Migrations-Images aus: `windows-2025-vs2026` für Windows und `macos-26` für macOS. Damit hängt der Smoke-Test nicht mehr von der schrittweisen Umstellung der Labels `windows-latest` und `macos-latest` ab.
 

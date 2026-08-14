@@ -125,7 +125,7 @@ def get_translator():
 
 
 def _t(key: str) -> str:
-    """Uebersetzt key in die aktuelle Sprache (Fallback: key selbst)."""
+    """Übersetzt key in die aktuelle Sprache (Fallback: key selbst)."""
     translator = get_translator()
     return translator.t(key) if translator is not None else key
 
@@ -1068,7 +1068,7 @@ def generate_report(result: AnalysisResult) -> str:
 
     # Optional: Zeige importierte Definitionen wenn gewünscht
     if result.imported_definitions:
-        report.append(f"\n[IMPORTS] IMPORTIERTE DEFINITIONEN\n")
+        report.append("\n[IMPORTS] IMPORTIERTE DEFINITIONEN\n")
         report.append("-" * 70 + "\n")
         # Gruppiere nach Typ für bessere Lesbarkeit
         classes = [name for name in result.imported_definitions if name[0].isupper()]
@@ -1088,7 +1088,7 @@ def generate_report(result: AnalysisResult) -> str:
 
     # NEU: Zeige Modul-Attribut Usage
     if result.module_attribute_usage:
-        report.append(f"\n[MODULE] MODUL-ATTRIBUT VERWENDUNG\n")
+        report.append("\n[MODULE] MODUL-ATTRIBUT VERWENDUNG\n")
         report.append("-" * 70 + "\n")
         report.append("  Zeigt welche Attribute von importierten Modulen verwendet werden:\n\n")
         
@@ -1194,7 +1194,7 @@ def run_analysis(output_widget: scrolledtext.ScrolledText) -> None:
         output_widget.insert(tk.END, f"\n[OK] Report gespeichert: {export_path}")
 
     except PermissionError:
-        output_widget.insert(tk.END, f"\n[WARNUNG] Keine Schreibberechtigung für Export")
+        output_widget.insert(tk.END, "\n[WARNUNG] Keine Schreibberechtigung für Export")
         messagebox.showwarning("Export-Fehler", "Keine Schreibberechtigung")
     except Exception as e:
         output_widget.insert(tk.END, f"\n[WARNUNG] Export-Fehler: {e}")
@@ -1280,10 +1280,10 @@ def auto_fix_unused_imports(output_widget: scrolledtext.ScrolledText) -> None:
             f.writelines(new_lines)
         
         # Ausgabe
-        output_widget.insert(tk.END, f"\n\n[OK] AUTO-FIX ERFOLGREICH\n")
+        output_widget.insert(tk.END, "\n\n[OK] AUTO-FIX ERFOLGREICH\n")
         output_widget.insert(tk.END, f"Entfernte Zeilen: {sorted(lines_to_remove)}\n")
         output_widget.insert(tk.END, f"Backup erstellt: {backup_path}\n")
-        output_widget.insert(tk.END, f"\nBitte Datei erneut analysieren zur Überprüfung.")
+        output_widget.insert(tk.END, "\nBitte Datei erneut analysieren zur Überprüfung.")
         
         messagebox.showinfo("Erfolg", f"Ungenutzte Imports entfernt!\nBackup: {backup_path}")
         
@@ -1553,7 +1553,10 @@ def build_json_report(
     if isinstance(result, ProjectAnalysisResult):
         source_root = result.folder_path
         source_label = os.path.basename(source_name) if source_name else os.path.basename(source_root)
-        normalize = lambda value: value.replace("\\", "/")
+
+        def normalize(value: str) -> str:
+            return value.replace("\\", "/")
+
         report["source"] = {"name": source_label, "kind": source_kind}
         report["files"] = [
             _json_file_entry(normalize(os.path.relpath(path, source_root)), file_result)
@@ -1640,7 +1643,7 @@ def run_project_analysis(output_widget: scrolledtext.ScrolledText) -> None:
 
 
 def _build_welcome_text() -> str:
-    """Baut die uebersetzte Willkommensnachricht inkl. eingesetztem Shortcut-Hinweis."""
+    """Baut die übersetzte Willkommensnachricht inkl. eingesetztem Shortcut-Hinweis."""
     return _t("welcome_body").replace("{shortcut}", _get_keyboard_shortcut_hint())
 
 

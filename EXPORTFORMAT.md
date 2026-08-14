@@ -1,6 +1,6 @@
 # EXPORTFORMAT - methodenanalyser-report-v1.json
 
-Stand: 2026-05-24
+Stand: 2026-08-11
 
 Dieses Dokument beschreibt das JSON-Austauschformat für MethodenAnalyser. Das Format verbindet GUI, CLI, Tests, Automationen und die optionale lokale Weboberfläche derselben Desktop-Linie. Der bestehende Textreport bleibt unverändert; JSON ist eine zusätzliche maschinenlesbare Ausgabe, keine Companion- oder Mobile-Sync-Schnittstelle.
 
@@ -20,6 +20,21 @@ type beispiel.py | python MethodenAnalyser3.py --stdin --json-output snippet.jso
 ```
 
 Ohne Dateiwert schreibt `--json-output` nach `methodenanalyser-report-v1.json`.
+
+## Quellenarten und Zuständigkeit
+
+| `source_kind` | Erzeuger | Zulässig in `POST /api/analyze` | Import in der lokalen Weboberfläche |
+|---|---|:---:|:---:|
+| `snippet` | CLI/GUI/Web-Hilfsmodus | Ja | Ja |
+| `file` | CLI/GUI/Web-Hilfsmodus | Ja | Ja |
+| `zip` | lokaler Web-Hilfsmodus | Ja | Ja |
+| `project` | Desktop-/CLI-Projektanalyse | **Nein** | **Ja, als fertiger JSON-Report** |
+
+`project` ist eine Erzeuger-/Importquelle für einen bereits erzeugten
+`methodenanalyser-report-v1.json`. Es ist kein API-Uploadmodus: Der Server
+weist `POST /api/analyze` mit `source_kind = "project"` bewusst zurück. Damit
+bleibt der Projektordner lokal beim Desktop-/CLI-Pfad; die Weboberfläche kann
+den fertigen, relativen und redigierten Report nur anzeigen.
 
 ## Top-Level-Felder
 
@@ -72,6 +87,9 @@ Ohne Dateiwert schreibt `--json-output` nach `methodenanalyser-report-v1.json`.
 ## Stabilitätsregeln
 
 - Neue Felder dürfen ergänzt werden, bestehende Feldnamen bleiben für `methodenanalyser-report-v1` stabil.
-- Lokale Browser- oder Server-Hilfsmodi dürfen `source_kind = "snippet"` und `source_kind = "zip"` nutzen.
+- Lokale Browser- oder Server-Hilfsmodi dürfen per API `source_kind = "snippet"`,
+  `"file"` und `"zip"` nutzen.
+- Importierte Reports dürfen zusätzlich `source_kind = "project"` tragen; das
+  ist kein API-Eingang und kein neuer Synchronisationsmechanismus.
 - Projektberichte verwenden relative Pfade ab Projektwurzel und normalisieren Trenner auf `/`.
 - Fehlerhafte Dateien erscheinen in `errors`, erfolgreiche Dateien weiter in `files`.

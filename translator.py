@@ -1,5 +1,5 @@
 """
-TranslationSystem - Multi-Language Support fuer Anwendungen
+TranslationSystem - Multi-Language Support für Anwendungen
 ============================================================
 Version: 1.0.0 (isoliert aus _LANG)
 Quelle: ARC_EntwicklungsschleifeAdvanced/TranslationSystem.py v2.4
@@ -9,7 +9,7 @@ Verwendung:
 from translator import TranslationSystem
 
 translator = TranslationSystem('de')
-label.setText(translator.t('Datei oeffnen'))
+label.setText(translator.t('Datei öffnen'))
 translator.set_language('en')
 """
 
@@ -78,13 +78,13 @@ class TranslationSystem:
 
     def t(self, key: str) -> str:
         """
-        Uebersetzt einen Key in die aktuelle Sprache.
+        Übersetzt einen Key in die aktuelle Sprache.
 
         Args:
             key: Translation-Key (oft der deutsche Originaltext)
 
         Returns:
-            Uebersetzter Text oder Key als Fallback
+            Übersetzter Text oder Key als Fallback
         """
         entry = self.translations.get(key)
         if isinstance(entry, dict):

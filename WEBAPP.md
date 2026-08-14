@@ -1,6 +1,6 @@
 # MethodenAnalyser Lokale Weboberfläche
 
-Stand: 2026-07-22
+Stand: 2026-08-11
 
 Die lokale Weboberfläche ist ein Hilfs-/Demo-Modus für schnelle Snippet-, Einzeldatei- und kleine ZIP-Analysen auf demselben Rechner. Sie ersetzt nicht die Desktop-App für ganze Projektordner, ist keine Companion-App und keine eigene Mobile-Produktlinie. Sie nutzt denselben Analysekern und dasselbe JSON-Format wie CLI und GUI.
 
@@ -66,9 +66,24 @@ Request:
 }
 ```
 
-`source_kind` ist aktuell `snippet`, `file` oder `zip`.
+`source_kind` ist für `POST /api/analyze` aktuell `snippet`, `file` oder
+`zip`. Ein `project`-POST wird bewusst mit HTTP 400 abgelehnt.
 
 Für ZIP-Analysen wird statt `code` ein Base64-Feld `zip_base64` gesendet. Das Archiv bleibt lokal, wird temporär entpackt und nur auf `.py`-Dateien geprüft.
+
+### Quellenmatrix
+
+| Quelle | API-Eingang | Report-Import | Bedeutung |
+|---|:---:|:---:|---|
+| `snippet` | Ja | Ja | Einzelner Code-Snippet |
+| `file` | Ja | Ja | Einzelne Datei, Dateiname wird auf den Basename reduziert |
+| `zip` | Ja | Ja | Kleines lokales ZIP mit Python-Dateien |
+| `project` | Nein | Ja | Fertiger Desktop-/CLI-Projektbericht, nur Anzeige/Import |
+
+Die UI akzeptiert `project` ausschließlich beim Laden eines bereits erzeugten
+`methodenanalyser-report-v1.json`. Der lokale Server analysiert Projektordner
+nicht über die API; dadurch bleiben API-Quellen und importierte Projektberichte
+klar getrennt.
 
 Response:
 

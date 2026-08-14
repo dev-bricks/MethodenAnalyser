@@ -8,6 +8,14 @@ set "SCANNER=%PROJECT_ROOT%\..\..\_tools\build_exclude_scanner.py"
 set "BUILD_ROOT=C:\_Local_DEV\codex_build\methodenanalyser"
 set "DIST_DIR=%PROJECT_ROOT%\dist"
 
+rem Toolchain contract: install requirements-dev.txt and read BUILD.md first.
+rem Verified PyInstaller range: >=6.14.2,<7.0.
+python -c "import PyInstaller; print('[INFO] PyInstaller ' + PyInstaller.__version__)" >nul 2>&1
+if errorlevel 1 (
+    echo [FEHLER] PyInstaller fehlt. Installiere requirements-dev.txt.
+    exit /b 1
+)
+
 set "EXCLUDES="
 if exist "%SCANNER%" (
     for /f "delims=" %%E in ('python "%SCANNER%" --project "%PROJECT_ROOT%" --emit pyinstaller') do set "EXCLUDES=%%E"

@@ -13,8 +13,8 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-import MethodenAnalyser3 as m
-from translator import TranslationSystem
+import MethodenAnalyser3 as m  # noqa: E402
+from translator import TranslationSystem  # noqa: E402
 
 
 def _reset_language(lang: str) -> None:

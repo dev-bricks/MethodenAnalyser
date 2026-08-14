@@ -5,6 +5,16 @@ Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
 ## [Unreleased]
 
+### Vertrags-Synchronisation [2026-08-11]
+- `EXPORTFORMAT.md`, `WEBAPP.md` und beide READMEs unterscheiden jetzt
+  API-Eingänge (`snippet`, `file`, `zip`) von importierten `project`-Reports;
+  `project`-POSTs werden durch den lokalen Server abgelehnt.
+- `requirements-dev.txt`, `BUILD.md` und `_sources/CROSSCHECK.md` definieren
+  den getrennten, getesteten pytest-/PyInstaller-Bereich. Die Runtime bleibt
+  Standardbibliothek-only.
+- README-Git-Hygiene beschreibt nun einen benannten Branch-/Commit-Check statt
+  einer dauerhaft behaupteten Ahead/Behind-Snapshot-Zahl.
+
 ### Repository-Hygiene [2026-08-07]
 - **Pfad A Maintenance**: Badges in `README.md` & `README_de.md` um `dev-bricks` Ecosystem-, `open-bricks` Umbrella- und LLM-Ready-Badges erweitert.
 - GFM Callout-Box für `llms.txt` RAG-Index in `README.md` und `README_de.md` eingebunden.

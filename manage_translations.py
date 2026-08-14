@@ -1,5 +1,5 @@
 """
-manage_translations.py - Auto-Scanner fuer deutsche GUI-Strings
+manage_translations.py - Auto-Scanner für deutsche GUI-Strings
 ================================================================
 Findet deutsche Strings in .py-Dateien und pflegt locales/translations.json.
 
@@ -86,7 +86,7 @@ def manage_translations(source_dir="."):
         print(f"[FEHLER] translations.json konnte nicht geschrieben werden: {e}", file=sys.stderr)
 
     if added:
-        print(f"[+] {len(added)} neue Eintraege hinzugefuegt:")
+        print(f"[+] {len(added)} neue Einträge hinzugefügt:")
         for s in added[:20]:
             print(f"    - {s}")
         if len(added) > 20:
@@ -96,9 +96,9 @@ def manage_translations(source_dir="."):
 
     missing = [k for k, v in translations.items() if not v.get("en")]
     if missing:
-        print(f"\n[!] {len(missing)} fehlende englische Uebersetzungen")
+        print(f"\n[!] {len(missing)} fehlende englische Übersetzungen")
     else:
-        print("\n[ok] Alle Strings haben englische Uebersetzungen.")
+        print("\n[ok] Alle Strings haben englische Übersetzungen.")
 
     print(f"\n[i] Gesamt: {len(translations)} Strings in {trans_file}")
 
