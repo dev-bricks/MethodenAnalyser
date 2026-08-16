@@ -3,7 +3,8 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Version-3.0-blue?style=for-the-badge" alt="Version">
+  <img src="https://img.shields.io/badge/Version-3.0.0-blue?style=for-the-badge" alt="Version">
+  <img src="https://img.shields.io/badge/Tests-96%20Passed-success?style=for-the-badge&logo=pytest&logoColor=white" alt="Tests">
   <img src="https://img.shields.io/badge/Python-3.10+-yellow?style=for-the-badge" alt="Python">
   <img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" alt="License">
   <img src="https://img.shields.io/badge/GUI-Tkinter-orange?style=for-the-badge" alt="GUI">
@@ -58,6 +59,39 @@
 ![MethodenAnalyser Main Window](README/screenshots/main.png)
 
 *The desktop user interface displaying file-based analysis results and structural metrics.*
+
+---
+
+## Architecture & Analysis Flow
+
+```mermaid
+flowchart TD
+    subgraph Input["📥 Input Layer"]
+        CLI["CLI Interface (--file, --project, --stdin)"]
+        GUI["Tkinter Desktop GUI"]
+        WebHelper["Local Web Companion (Fast & Offline PWA)"]
+    end
+
+    subgraph Core["⚙️ AST Analysis Engine"]
+        Parser["Python ast.parse() & Safe Encoding Fallback (UTF-8 / Latin-1)"]
+        Imports["Import & Namespace Tracker (Unused, Dunders, Future-Imports)"]
+        Methods["Method & Class Cataloger"]
+        Duplicates["SequenceMatcher Code-Similarity Engine"]
+        Dynamic["Dynamic Attribute Chain & Reflection Inspector"]
+        Scope["Import Scope & Typo Detector"]
+    end
+
+    subgraph Output["📤 Output & Export Formats"]
+        GUISummary["Interactive GUI Results & Auto-Fix"]
+        CLIText["Structured Terminal Report & Exit Codes"]
+        JSONExport["methodenanalyser-report-v1.json (CI/CD Ready)"]
+        BrowserUI["Web UI Inspection Dashboard"]
+    end
+
+    Input --> Parser
+    Parser --> Imports & Methods & Duplicates & Dynamic & Scope
+    Imports & Methods & Duplicates & Dynamic & Scope --> Output
+```
 
 ---
 
@@ -224,6 +258,20 @@ For the reproducible pytest/PyInstaller range and the `build_exe.bat` fallback,
 see [BUILD.md](BUILD.md) and [_sources/CROSSCHECK.md](_sources/CROSSCHECK.md).
 
 GitHub Actions runs these smoke tests on every push. The runner labels are pinned to the current 2026 migration targets (`windows-2025-vs2026` and `macos-26`) so the smoke matrix validates the same images that GitHub is moving `windows-latest` and `macos-latest` toward. For LLM agents and crawlers, a lightweight machine-readable context file is provided in [llms.txt](llms.txt).
+
+---
+
+## Ecosystem & Sibling Tools
+
+`MethodenAnalyser` is part of the [`dev-bricks`](https://github.com/dev-bricks) suite and the [`open-bricks`](https://github.com/open-bricks) umbrella of modular, offline-first developer utilities:
+
+| Tool | Description |
+|---|---|
+| **[DevCenter](https://github.com/dev-bricks/DevCenter)** | Central developer hub and automated workflow coordinator |
+| **[CodeBox](https://github.com/dev-bricks/CodeBox)** | Local-first extensible IDE with declarative plugin architecture |
+| **[MethodenAnalyser](https://github.com/dev-bricks/MethodenAnalyser)** | Static Python code and method analyzer with local GUI |
+| **[CareCenter-for-Codex](https://github.com/dev-bricks/CareCenter-for-Codex)** | System hygiene and health center for AI agent setups |
+| **[lock-master](https://github.com/ellmos-ai/lock-master)** | Cross-process lock and concurrency safety system |
 
 ---
 

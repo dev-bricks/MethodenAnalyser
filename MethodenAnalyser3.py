@@ -40,6 +40,7 @@ OUTPUT_HEIGHT = 40
 OUTPUT_FONT = ("Courier", 9)
 APP_ICON_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "MethodenAnalyser.ico")
 TOOL_VERSION = "3.0"
+__version__ = "3.0.0"
 JSON_SCHEMA_VERSION = "methodenanalyser-report-v1"
 DEFAULT_JSON_REPORT_NAME = f"{JSON_SCHEMA_VERSION}.json"
 

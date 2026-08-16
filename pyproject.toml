@@ -1,0 +1,57 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "MethodenAnalyser"
+version = "3.0.0"
+description = "Static Python code analyzer with a local Tkinter GUI: detects unused imports, dead definitions, and similar code blocks using AST analysis."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [
+    { name = "Lukas Geiger" }
+]
+keywords = [
+    "static-analysis",
+    "ast",
+    "code-quality",
+    "dead-code-detection",
+    "unused-imports",
+    "duplicate-detection",
+    "tkinter-gui",
+    "developer-tools",
+    "dev-bricks",
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Win32 (MS Windows)",
+    "Environment :: X11 Applications",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Quality Assurance",
+    "Topic :: Software Development :: Testing",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "-v"
+
+[tool.ruff]
+target-version = "py310"
+line-length = 120
+
+[tool.ruff.lint]
+ignore = [
+    "E501",  # Line too long
+    "E402",  # Module level import not at top of file
+    "E722",  # Bare except
+    "E741",  # Ambiguous variable name
+    "F841",  # Unused variable
+]

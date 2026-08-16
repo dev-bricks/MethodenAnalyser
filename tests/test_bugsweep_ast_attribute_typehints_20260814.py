@@ -8,7 +8,7 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-import MethodenAnalyser3 as m3
+import MethodenAnalyser3 as m3  # noqa: E402
 
 
 def test_concurrent_futures_threadpoolexecutor_not_in_missing_defs():

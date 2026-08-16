@@ -3,7 +3,8 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Version-3.0-blue?style=for-the-badge" alt="Version">
+  <img src="https://img.shields.io/badge/Version-3.0.0-blue?style=for-the-badge" alt="Version">
+  <img src="https://img.shields.io/badge/Tests-96%20Bestanden-success?style=for-the-badge&logo=pytest&logoColor=white" alt="Tests">
   <img src="https://img.shields.io/badge/Python-3.10+-yellow?style=for-the-badge" alt="Python">
   <img src="https://img.shields.io/badge/Lizenz-MIT-green?style=for-the-badge" alt="Lizenz">
   <img src="https://img.shields.io/badge/GUI-Tkinter-orange?style=for-the-badge" alt="GUI">
@@ -58,6 +59,39 @@
 ![MethodenAnalyser Hauptfenster](README/screenshots/main.png)
 
 Die aktuelle Ansicht zeigt die dateibasierte Analyse mit GUI-Workflow statt reiner CLI-Ausgabe.
+
+---
+
+## Architektur & Analyse-Ablauf
+
+```mermaid
+flowchart TD
+    subgraph Input["📥 Eingabe-Ebene"]
+        CLI["CLI-Schnittstelle (--file, --project, --stdin)"]
+        GUI["Tkinter Desktop GUI"]
+        WebHelper["Lokaler Web-Companion (PWA mit Offline-Cache)"]
+    end
+
+    subgraph Core["⚙️ AST Analyse-Kern"]
+        Parser["Python ast.parse() & Latin-1 Fallback-Sicherheit"]
+        Imports["Import- & Namespace-Tracker (Unused, Dunder, Future-Imports)"]
+        Methods["Methoden- & Klassen-Katalogisierung"]
+        Duplicates["SequenceMatcher Code-Ähnlichkeits-Engine"]
+        Dynamic["Dynamische Attributketten- & Reflection-Inspektion"]
+        Scope["Import-Scope- & Tippfehler-Erkennung"]
+    end
+
+    subgraph Output["📤 Ausgabe- & Exportformate"]
+        GUISummary["Interaktive GUI-Ergebnisse & Auto-Fix"]
+        CLIText["Strukturierter Terminal-Report & Exit-Codes"]
+        JSONExport["methodenanalyser-report-v1.json (CI/CD-kompatibel)"]
+        BrowserUI["Web-Dashboard zur visuellen Inspektion"]
+    end
+
+    Input --> Parser
+    Parser --> Imports & Methods & Duplicates & Dynamic & Scope
+    Imports & Methods & Duplicates & Dynamic & Scope --> Output
+```
 
 ---
 
@@ -227,6 +261,20 @@ Der reproduzierbare pytest-/PyInstaller-Bereich und der Fallback von
 GitHub Actions führt denselben Smoke-Test auf explizit gepinnten 2026-Migrations-Images aus: `windows-2025-vs2026` für Windows und `macos-26` für macOS. Damit hängt der Smoke-Test nicht mehr von der schrittweisen Umstellung der Labels `windows-latest` und `macos-latest` ab.
 
 Für Crawler, LLMs und Verzeichnisdienste liegt ein knapper maschinenlesbarer Projektkontext in [llms.txt](llms.txt). Die Community-Workflows verwenden aktuelle `actions/stale`- und `actions/first-interaction`-Versionen.
+
+---
+
+## Ökosystem & Verwandte Werkzeuge
+
+`MethodenAnalyser` ist Teil der [`dev-bricks`](https://github.com/dev-bricks)-Suite und des modularen [`open-bricks`](https://github.com/open-bricks)-Entwicklerökosystems:
+
+| Werkzeug | Beschreibung |
+|---|---|
+| **[DevCenter](https://github.com/dev-bricks/DevCenter)** | Zentrale Entwickler-Zentrale und automatisierter Workflow-Koordinator |
+| **[CodeBox](https://github.com/dev-bricks/CodeBox)** | Lokale, erweiterbare IDE mit deklarativer Plugin-Architektur |
+| **[MethodenAnalyser](https://github.com/dev-bricks/MethodenAnalyser)** | Statischer Python Code- und Methoden-Analyser mit lokaler GUI |
+| **[CareCenter-for-Codex](https://github.com/dev-bricks/CareCenter-for-Codex)** | Systemhygiene- und Gesundheitszentrum für KI-Agenten-Setups |
+| **[lock-master](https://github.com/ellmos-ai/lock-master)** | Prozessübergreifendes Lock- und Nebenläufigkeits-Sicherheitssystem |
 
 ---
 

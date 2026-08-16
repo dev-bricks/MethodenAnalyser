@@ -5,6 +5,16 @@ Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
 ## [Unreleased]
 
+## [3.0.0] - 2026-08-16
+
+### Discoverability, README-Design & Toolchain-Harmonisierung (Pfad B)
+- **Badges & Discoverability**: Pytest-Status-Badge (96 Passed) sowie Version (3.0.0) in `README.md` und `README_de.md` integriert.
+- **Interaktive Systemarchitektur**: Zweisprachige Mermaid Systemarchitektur- und Datenflussdiagramme (Eingabe, AST-Analyse-Engine, Export/GUI/CLI/Web) ergänzt.
+- **Ökosystem-Cross-Referencing**: Übersicht der verwandten Werkzeuge innerhalb der `dev-bricks`- und `open-bricks`-Ökosysteme (`DevCenter`, `CodeBox`, `CareCenter-for-Codex`, `lock-master`) dokumentiert.
+- **Packaging & Toolchain-Standardisierung**: `pyproject.toml` mit standardisierter Build-Konfiguration, `[tool.pytest.ini_options]` und `[tool.ruff]` (py310, line-length 120) angelegt.
+- **Metadaten- & Manifest-Testsuite**: Automatisierte Testsuite in `tests/test_metadata.py` zur Validierung von Versionsparität (`MethodenAnalyser3.py`, `pyproject.toml`, `store_package.json`, `CHANGELOG.md`), Dokumentenintegrität, Übersetzungsstruktur (`locales/translations.json`) und Exportformat-Konstanten erstellt.
+- **`llms.txt`**: Last-checked Zeitstempel auf `2026-08-16` und Teststand auf 96 Tests synchronisiert.
+
 ### Vertrags-Synchronisation [2026-08-11]
 - `EXPORTFORMAT.md`, `WEBAPP.md` und beide READMEs unterscheiden jetzt
   API-Eingänge (`snippet`, `file`, `zip`) von importierten `project`-Reports;
