@@ -5,6 +5,13 @@ Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
 ## [Unreleased]
 
+### UX & Barrierefreiheit / Accessibility (UX-003) [2026-08-21]
+- **Barrierefreie Tooltips (`ToolTip`)**: Leichtgewichtiges, barrierefreies Tooltip-Widget für Tkinter implementiert. Unterstützt Maus-Hover (`<Enter>`/`<Leave>`), Tastaturfokus (`<FocusIn>`/`<FocusOut>`) und dynamische Aktualisierung bei Sprachwechsel für alle Hauptaktionsschaltflächen (`btn_analyze_file`, `btn_info`, `btn_autofix`, `btn_analyze_project`).
+- **Live-Statusleiste (`status_bar`)**: Barrierefreie Statusleiste am unteren Fensterrand integriert, die Kontext- und Tastaturhinweise beim Fokussieren/Hovern sowie den Echtzeit-Fortschritt bei Dateianalyse, Projektanalyse und Auto-Fix zurückmeldet.
+- **Vollständige Live-Neuübersetzung**: Beim Umschalten der Sprache („Sprache / Language") werden Fenstertitel, Schaltflächen, Tooltips, Menüleisten-Einträge und Statusleisten-Texte dynamisch und verlustfrei aktualisiert.
+- **Lokalisierungskatalog & Typografie**: `locales/translations.json` um 18 neue Schlüssel (Statusmeldungen, Dialogtitel, Aktionshinweise) für Deutsch und Englisch mit strikter Einhaltung echter deutscher Umlaute (`ä`, `ö`, `ü`, `ß`) erweitert.
+- **Automatisierte Testsuite**: 4 neue Tests in `tests/test_ui_accessibility.py` sichern Tooltip-Lebenszyklus, Katalogvollständigkeit, echte deutsche Umlaute und dynamische Neuübersetzung ab (Gesamttestsuite auf 100 Passed / 100% grün).
+
 ## [3.0.0] - 2026-08-16
 
 ### Discoverability, README-Design & Toolchain-Harmonisierung (Pfad B)

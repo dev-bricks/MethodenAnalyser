@@ -66,5 +66,5 @@ code similarity detector Python local
 
 - Canonical test command: `pytest` (or `python -m unittest discover -s tests -v`).
 - Development/build versions are bounded in `requirements-dev.txt` and checked
-  in `BUILD.md`; test suite passing (96 tests, 13 subtests passed, 100% green).
-- Last-checked: 2026-08-16
+  in `BUILD.md`; test suite passing (100 tests, 13 subtests passed, 100% green).
+- Last-checked: 2026-08-21

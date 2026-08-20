@@ -1,4 +1,8 @@
 {
+  "app_title": {
+    "de": "Python Code Analyzer v3.0 - Multi-File",
+    "en": "Python Code Analyzer v3.0 - Multi-File"
+  },
   "btn_analyze_file": {
     "de": "📂 Datei analysieren",
     "en": "📂 Analyze File"
@@ -15,6 +19,22 @@
     "de": "Projekt analysieren",
     "en": "Analyze Project"
   },
+  "tooltip_analyze_file": {
+    "de": "Öffnet eine Python-Datei zur statischen Code- und Import-Analyse (Alt+D)",
+    "en": "Opens a Python file for static code and import analysis (Alt+D)"
+  },
+  "tooltip_info": {
+    "de": "Zeigt Versionsinformationen und Funktionsübersicht (F1)",
+    "en": "Shows version information and feature overview (F1)"
+  },
+  "tooltip_autofix": {
+    "de": "Entfernt ungenutzte Imports aus der zuletzt analysierten Datei (Alt+F)",
+    "en": "Removes unused imports from the last analyzed file (Alt+F)"
+  },
+  "tooltip_analyze_project": {
+    "de": "Analysiert alle Python-Dateien in einem Projektordner (Alt+P)",
+    "en": "Analyzes all Python files in a project folder (Alt+P)"
+  },
   "shortcut_hint": {
     "de": "Tastatur: Alt+D Datei | Alt+P Projekt | Alt+F Auto-Fix | F1 Info",
     "en": "Keyboard: Alt+D File | Alt+P Project | Alt+F Auto-Fix | F1 Info"
@@ -22,6 +42,58 @@
   "menu_language": {
     "de": "Sprache / Language",
     "en": "Sprache / Language"
+  },
+  "status_ready": {
+    "de": "Bereit",
+    "en": "Ready"
+  },
+  "status_analyzing_file": {
+    "de": "Analysiere Datei...",
+    "en": "Analyzing file..."
+  },
+  "status_analyzing_project": {
+    "de": "Analysiere Projektordner...",
+    "en": "Analyzing project folder..."
+  },
+  "status_analysis_done": {
+    "de": "Analyse abgeschlossen.",
+    "en": "Analysis completed."
+  },
+  "status_autofix_done": {
+    "de": "Auto-Fix erfolgreich abgeschlossen.",
+    "en": "Auto-Fix completed successfully."
+  },
+  "status_no_unused_imports": {
+    "de": "Keine ungenutzten Imports vorhanden.",
+    "en": "No unused imports found."
+  },
+  "dialog_select_file": {
+    "de": "Python-Datei auswählen",
+    "en": "Select Python File"
+  },
+  "dialog_select_project": {
+    "de": "Projektordner auswählen",
+    "en": "Select Project Folder"
+  },
+  "dialog_no_file_title": {
+    "de": "Hinweis",
+    "en": "Notice"
+  },
+  "dialog_no_file_msg": {
+    "de": "Bitte erst eine Datei analysieren!",
+    "en": "Please analyze a file first!"
+  },
+  "dialog_no_unused_title": {
+    "de": "Info",
+    "en": "Info"
+  },
+  "dialog_no_unused_msg": {
+    "de": "Keine ungenutzten Imports gefunden!",
+    "en": "No unused imports found!"
+  },
+  "dialog_autofix_title": {
+    "de": "Auto-Fix bestätigen",
+    "en": "Confirm Auto-Fix"
   },
   "welcome_body": {
     "de": "Willkommen beim Python Code Analyzer!\n\n{shortcut}\n\nKlicken Sie auf 'Datei analysieren', um eine Python-Datei zu untersuchen.\n\nDie Analyse umfasst:\n• Fehlende und ungenutzte Definitionen\n• Import-Analyse und -Optimierung\n• Dynamische Methodenaufrufe\n• Mögliche Tippfehler\n",

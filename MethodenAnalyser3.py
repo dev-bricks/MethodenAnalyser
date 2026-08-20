@@ -1211,20 +1211,24 @@ def create_safe_filename(original_path: str, suffix: str) -> str:
     return export_path
 
 
-def run_analysis(output_widget: scrolledtext.ScrolledText) -> None:
+def run_analysis(output_widget: scrolledtext.ScrolledText, status_widget: Optional[tk.Label] = None) -> None:
     """
     Lädt Datei und führt Analyse durch.
     
     Args:
         output_widget: ScrolledText-Widget für Ausgabe
+        status_widget: Optionales Statusleisten-Widget für Statusanzeigen
     """
     path = filedialog.askopenfilename(
-        title="Python-Datei auswählen",
+        title=_t("dialog_select_file"),
         filetypes=[("Python Dateien", "*.py"), ("Alle Dateien", "*.*")]
     )
     
     if not path:
         return
+    if status_widget is not None:
+        status_widget.config(text=_t("status_analyzing_file"))
+        status_widget.update_idletasks()
     try:
         result = analyze_file(path)
         # Für Auto-Fix speichern
@@ -1234,16 +1238,22 @@ def run_analysis(output_widget: scrolledtext.ScrolledText) -> None:
     except FileNotFoundError as e:
         output_widget.delete("1.0", tk.END)
         output_widget.insert(tk.END, f"[FEHLER] {e}")
+        if status_widget is not None:
+            status_widget.config(text=f"[FEHLER] {e}")
         messagebox.showerror("Dateifehler", str(e))
         return
     except RuntimeError as e:
         output_widget.delete("1.0", tk.END)
         output_widget.insert(tk.END, f"[FEHLER] {e}")
+        if status_widget is not None:
+            status_widget.config(text=f"[FEHLER] {e}")
         messagebox.showerror("Analysefehler", str(e))
         return
     except Exception as e:
         output_widget.delete("1.0", tk.END)
         output_widget.insert(tk.END, f"[FEHLER] Unerwarteter Fehler: {e}")
+        if status_widget is not None:
+            status_widget.config(text=f"[FEHLER] {e}")
         messagebox.showerror("Fehler", f"Unerwarteter Fehler: {e}")
         return
 
@@ -1262,12 +1272,18 @@ def run_analysis(output_widget: scrolledtext.ScrolledText) -> None:
             f.write(generate_report(result))
         
         output_widget.insert(tk.END, f"\n[OK] Report gespeichert: {export_path}")
+        if status_widget is not None:
+            status_widget.config(text=f"{_t('status_analysis_done')} {os.path.basename(path)}")
 
     except PermissionError:
         output_widget.insert(tk.END, "\n[WARNUNG] Keine Schreibberechtigung für Export")
+        if status_widget is not None:
+            status_widget.config(text="[WARNUNG] Keine Schreibberechtigung für Export")
         messagebox.showwarning("Export-Fehler", "Keine Schreibberechtigung")
     except Exception as e:
         output_widget.insert(tk.END, f"\n[WARNUNG] Export-Fehler: {e}")
+        if status_widget is not None:
+            status_widget.config(text=f"[WARNUNG] Export-Fehler: {e}")
         messagebox.showwarning("Export-Fehler", str(e))
 
 
@@ -1289,28 +1305,34 @@ def _collect_unused_import_lines(tree: ast.AST, unused_set: Set[str]) -> Set[int
     return lines_to_remove
 
 
-def auto_fix_unused_imports(output_widget: scrolledtext.ScrolledText) -> None:
+def auto_fix_unused_imports(output_widget: scrolledtext.ScrolledText, status_widget: Optional[tk.Label] = None) -> None:
     """
     Entfernt ungenutzte Imports aus der zuletzt analysierten Datei.
     
     Args:
         output_widget: ScrolledText-Widget für Ausgabe
+        status_widget: Optionales Statusleisten-Widget für Statusanzeigen
     """
     global _last_analysis_path, _last_analysis_result
     
     if not _last_analysis_path or not _last_analysis_result:
-        messagebox.showwarning("Hinweis", "Bitte erst eine Datei analysieren!")
+        if status_widget is not None:
+            status_widget.config(text=_t("dialog_no_file_msg"))
+        messagebox.showwarning(_t("dialog_no_file_title"), _t("dialog_no_file_msg"))
         return
     
     if not _last_analysis_result.unused_imports:
-        messagebox.showinfo("Info", "Keine ungenutzten Imports gefunden!")
+        if status_widget is not None:
+            status_widget.config(text=_t("status_no_unused_imports"))
+        messagebox.showinfo(_t("dialog_no_unused_title"), _t("dialog_no_unused_msg"))
         return
     
     # Bestätigung
     unused_list = ", ".join(_last_analysis_result.unused_imports)
+    prompt_text = _t("dialog_autofix_prompt").replace("{unused_list}", unused_list)
     if not messagebox.askyesno(
-        "Auto-Fix bestätigen",
-        f"Folgende Imports werden entfernt:\n\n{unused_list}\n\nFortfahren?"
+        _t("dialog_autofix_title"),
+        prompt_text
     ):
         return
     
@@ -1334,6 +1356,8 @@ def auto_fix_unused_imports(output_widget: scrolledtext.ScrolledText) -> None:
         lines_to_remove = _collect_unused_import_lines(tree, unused_set)
 
         if not lines_to_remove:
+            if status_widget is not None:
+                status_widget.config(text=_t("status_no_unused_imports"))
             messagebox.showinfo("Info", "Keine vollständig ungenutzten Import-Zeilen gefunden.\n(Teilweise genutzte Imports müssen manuell bearbeitet werden)")
             return
 
@@ -1354,10 +1378,14 @@ def auto_fix_unused_imports(output_widget: scrolledtext.ScrolledText) -> None:
         output_widget.insert(tk.END, f"Entfernte Zeilen: {sorted(lines_to_remove)}\n")
         output_widget.insert(tk.END, f"Backup erstellt: {backup_path}\n")
         output_widget.insert(tk.END, "\nBitte Datei erneut analysieren zur Überprüfung.")
+        if status_widget is not None:
+            status_widget.config(text=_t("status_autofix_done"))
         
         messagebox.showinfo("Erfolg", f"Ungenutzte Imports entfernt!\nBackup: {backup_path}")
         
     except Exception as e:
+        if status_widget is not None:
+            status_widget.config(text=f"[FEHLER] {e}")
         messagebox.showerror("Fehler", f"Auto-Fix fehlgeschlagen: {e}")
 
 
@@ -1684,12 +1712,79 @@ def write_json_report(report: Dict[str, Any], output_path: str) -> str:
     return target
 
 
-def run_project_analysis(output_widget: scrolledtext.ScrolledText) -> None:
+class ToolTip:
+    """
+    Barrierefreies, leichtgewichtiges Tooltip-Widget für Tkinter-Komponenten.
+    Unterstützt Maus-Hover (<Enter>/<Leave>) und Tastaturfokus (<FocusIn>/<FocusOut>).
+    """
+
+    def __init__(self, widget: tk.Widget, text: str = ""):
+        self.widget = widget
+        self.text = text
+        self.tip_window: Optional[tk.Toplevel] = None
+        self.widget.bind("<Enter>", self.show_tip, add="+")
+        self.widget.bind("<Leave>", self.hide_tip, add="+")
+        self.widget.bind("<FocusIn>", self.show_tip, add="+")
+        self.widget.bind("<FocusOut>", self.hide_tip, add="+")
+        self.widget.bind("<ButtonPress>", self.hide_tip, add="+")
+
+    def set_text(self, text: str) -> None:
+        self.text = text
+        if self.tip_window and self.tip_window.winfo_exists():
+            for child in self.tip_window.winfo_children():
+                if isinstance(child, tk.Label):
+                    child.config(text=self.text)
+
+    def show_tip(self, event: Optional[Any] = None) -> None:
+        if self.tip_window or not self.text:
+            return
+        try:
+            x = self.widget.winfo_rootx() + 20
+            y = self.widget.winfo_rooty() + self.widget.winfo_height() + 5
+        except Exception:
+            return
+
+        self.tip_window = tw = tk.Toplevel(self.widget)
+        tw.wm_overrideredirect(True)
+        tw.wm_geometry(f"+{x}+{y}")
+        try:
+            tw.attributes("-topmost", True)
+        except Exception:
+            pass
+
+        label = tk.Label(
+            tw,
+            text=self.text,
+            justify=tk.LEFT,
+            background="#2c3e50",
+            foreground="#ffffff",
+            relief=tk.SOLID,
+            borderwidth=1,
+            font=("Segoe UI" if os.name == "nt" else "Arial", 9),
+            padx=8,
+            pady=4,
+        )
+        label.pack(ipadx=1)
+
+    def hide_tip(self, event: Optional[Any] = None) -> None:
+        if self.tip_window:
+            try:
+                self.tip_window.destroy()
+            except Exception:
+                pass
+            self.tip_window = None
+
+
+def run_project_analysis(output_widget: scrolledtext.ScrolledText, status_widget: Optional[tk.Label] = None) -> None:
     """Ordner-Dialog und Projekt-Analyse."""
-    folder_path = filedialog.askdirectory(title="Projektordner auswählen")
+    folder_path = filedialog.askdirectory(title=_t("dialog_select_project"))
     if not folder_path:
         return
     
+    if status_widget is not None:
+        status_widget.config(text=_t("status_analyzing_project"))
+        status_widget.update_idletasks()
+
     output_widget.delete("1.0", tk.END)
     output_widget.insert(tk.END, f"Analysiere: {folder_path}\n\n")
     output_widget.update_idletasks()  # nur Render-Jobs, keine User-Events (Re-entranz-Schutz)
@@ -1698,6 +1793,9 @@ def run_project_analysis(output_widget: scrolledtext.ScrolledText) -> None:
         output_widget.insert(tk.END, f"[{cur}/{tot}] {os.path.basename(fp)}\n")
         output_widget.see(tk.END)
         output_widget.update_idletasks()  # nur Render-Jobs, keine User-Events (Re-entranz-Schutz)
+        if status_widget is not None:
+            status_widget.config(text=f"[{cur}/{tot}] {os.path.basename(fp)}")
+            status_widget.update_idletasks()
     
     try:
         result = analyze_project(folder_path, progress_cb)
@@ -1708,7 +1806,11 @@ def run_project_analysis(output_widget: scrolledtext.ScrolledText) -> None:
         with open(export_path, "w", encoding="utf-8") as f:
             f.write(generate_project_report(result))
         output_widget.insert(tk.END, f"\nGespeichert: {export_path}")
+        if status_widget is not None:
+            status_widget.config(text=f"{_t('status_analysis_done')} {os.path.basename(folder_path)}")
     except Exception as e:
+        if status_widget is not None:
+            status_widget.config(text=f"[FEHLER] {e}")
         messagebox.showerror("Fehler", str(e))
 
 
@@ -1720,7 +1822,7 @@ def _build_welcome_text() -> str:
 def create_gui() -> None:
     """Erstellt und startet die GUI-Anwendung."""
     root = tk.Tk()
-    root.title("Python Code Analyzer v3.0 - Multi-File")
+    root.title(_t("app_title"))
     root.geometry(WINDOW_GEOMETRY)
     if os.path.exists(APP_ICON_PATH):
         try:
@@ -1728,6 +1830,21 @@ def create_gui() -> None:
         except tk.TclError:
             pass
     
+    # Status-Bar am unteren Fensterrand für barrierefreie Live-Meldungen
+    status_bar = tk.Label(
+        root,
+        text=_t("status_ready"),
+        bd=1,
+        relief=tk.SUNKEN,
+        anchor=tk.W,
+        font=("Segoe UI" if os.name == "nt" else "Arial", 9),
+        bg="#e0e0e0",
+        fg="#333333",
+        padx=8,
+        pady=3,
+    )
+    status_bar.pack(side=tk.BOTTOM, fill=tk.X)
+
     # Button-Frame für besseres Layout
     button_frame = tk.Frame(root)
     button_frame.pack(pady=10)
@@ -1742,7 +1859,7 @@ def create_gui() -> None:
     btn = tk.Button(
         button_frame,
         text=_t("btn_analyze_file"),
-        command=lambda: run_analysis(output),
+        command=lambda: run_analysis(output, status_bar),
         bg="#4CAF50",
         fg="white",
         font=("Arial", 11, "bold"),
@@ -1751,6 +1868,7 @@ def create_gui() -> None:
         cursor="hand2"
     )
     btn.pack(side=tk.LEFT, padx=5)
+    btn_tip = ToolTip(btn, _t("tooltip_analyze_file"))
     
     # Info-Button
     info_btn = tk.Button(
@@ -1765,12 +1883,13 @@ def create_gui() -> None:
         cursor="hand2"
     )
     info_btn.pack(side=tk.LEFT, padx=5)
+    info_tip = ToolTip(info_btn, _t("tooltip_info"))
     
     # Auto-Fix Button
     fix_btn = tk.Button(
         button_frame,
         text=_t("btn_autofix"),
-        command=lambda: auto_fix_unused_imports(output),
+        command=lambda: auto_fix_unused_imports(output, status_bar),
         bg="#FF9800",
         fg="white",
         font=("Arial", 10),
@@ -1779,12 +1898,13 @@ def create_gui() -> None:
         cursor="hand2"
     )
     fix_btn.pack(side=tk.LEFT, padx=5)
+    fix_tip = ToolTip(fix_btn, _t("tooltip_autofix"))
 
-    # NEU: Projekt-Analyse Button
+    # Projekt-Analyse Button
     project_btn = tk.Button(
         button_frame,
         text=_t("btn_analyze_project"),
-        command=lambda: run_project_analysis(output),
+        command=lambda: run_project_analysis(output, status_bar),
         bg="#9C27B0",
         fg="white",
         font=("Arial", 10),
@@ -1793,6 +1913,22 @@ def create_gui() -> None:
         cursor="hand2"
     )
     project_btn.pack(side=tk.LEFT, padx=5)
+    project_tip = ToolTip(project_btn, _t("tooltip_analyze_project"))
+
+    def _bind_status_hint(widget: tk.Widget, tooltip_key: str) -> None:
+        def _on_enter(_e: Any) -> None:
+            status_bar.config(text=_t(tooltip_key))
+        def _on_leave(_e: Any) -> None:
+            status_bar.config(text=_t("status_ready"))
+        widget.bind("<Enter>", _on_enter, add="+")
+        widget.bind("<Leave>", _on_leave, add="+")
+        widget.bind("<FocusIn>", _on_enter, add="+")
+        widget.bind("<FocusOut>", _on_leave, add="+")
+
+    _bind_status_hint(btn, "tooltip_analyze_file")
+    _bind_status_hint(info_btn, "tooltip_info")
+    _bind_status_hint(fix_btn, "tooltip_autofix")
+    _bind_status_hint(project_btn, "tooltip_analyze_project")
 
     shortcut_hint = tk.Label(
         root,
@@ -1829,11 +1965,21 @@ def create_gui() -> None:
             translator.set_language(lang)
         set_saved_language(lang)
         lang_var.set(lang)
+        root.title(_t("app_title"))
         btn.config(text=_t("btn_analyze_file"))
         info_btn.config(text=_t("btn_info"))
         fix_btn.config(text=_t("btn_autofix"))
         project_btn.config(text=_t("btn_analyze_project"))
+        btn_tip.set_text(_t("tooltip_analyze_file"))
+        info_tip.set_text(_t("tooltip_info"))
+        fix_tip.set_text(_t("tooltip_autofix"))
+        project_tip.set_text(_t("tooltip_analyze_project"))
         shortcut_hint.config(text=_get_keyboard_shortcut_hint())
+        status_bar.config(text=_t("status_ready"))
+        try:
+            menubar.entryconfig(1, label=_t("menu_language"))
+        except Exception:
+            pass
         # Willkommenstext nur neu rendern, solange keine Analyse-Ausgabe angezeigt wird.
         if output.get("1.0", "1.end").strip() in _WELCOME_HEADS:
             output.delete("1.0", tk.END)
@@ -1855,10 +2001,10 @@ def create_gui() -> None:
 
     _register_gui_shortcuts(
         root,
-        analyze_file_cb=lambda: run_analysis(output),
+        analyze_file_cb=lambda: run_analysis(output, status_bar),
         info_cb=show_info_dialog,
-        auto_fix_cb=lambda: auto_fix_unused_imports(output),
-        analyze_project_cb=lambda: run_project_analysis(output),
+        auto_fix_cb=lambda: auto_fix_unused_imports(output, status_bar),
+        analyze_project_cb=lambda: run_project_analysis(output, status_bar),
     )
     output.focus_set()
 
