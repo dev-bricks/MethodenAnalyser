@@ -5,6 +5,9 @@ Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
 ## [Unreleased]
 
+### Fehlerbehebungen / Bug Fixes (BS-20260821) [2026-08-21]
+- **Import-Scope-Analyse & From-/Alias-/Relative-Import-Präzision (`MethodenAnalyser3.py`)**: `ImportScopeAnalyzer.visit_ImportFrom` erfasste bisher fälschlicherweise das Ursprungsmodul (`node.module.split(".")[0]`) anstelle der tatsächlich in den Scope gebundenen Bezeichner bzw. Aliase; zudem wurden relative Imports ohne Modulangabe (`from . import sibling`) ignoriert und aliased Imports (`import os.path as osp`) auf das Stamm-Modul reduziert. Dadurch kam es bei aktiv genutzten From-Imports (z. B. `from math import sqrt`) oder Alias-Imports zu falschen `unused_global`-Warnungen im Report. Fix: `visit_Import` und `visit_ImportFrom` binden die tatsächlichen Bezeichner/Aliase an den aktuellen Scope, und `_analyze_import_scopes` gleicht diese präzise gegen alle genutzten Namen inkl. String-Literale (`_string_refs`) ab. 5 neue Regressionstests in `tests/test_bugsweep_import_scopes_20260821.py` ergänzt (Gesamttestsuite: 105 Passed / 100% grün).
+
 ### UX & Barrierefreiheit / Accessibility (UX-003) [2026-08-21]
 - **Barrierefreie Tooltips (`ToolTip`)**: Leichtgewichtiges, barrierefreies Tooltip-Widget für Tkinter implementiert. Unterstützt Maus-Hover (`<Enter>`/`<Leave>`), Tastaturfokus (`<FocusIn>`/`<FocusOut>`) und dynamische Aktualisierung bei Sprachwechsel für alle Hauptaktionsschaltflächen (`btn_analyze_file`, `btn_info`, `btn_autofix`, `btn_analyze_project`).
 - **Live-Statusleiste (`status_bar`)**: Barrierefreie Statusleiste am unteren Fensterrand integriert, die Kontext- und Tastaturhinweise beim Fokussieren/Hovern sowie den Echtzeit-Fortschritt bei Dateianalyse, Projektanalyse und Auto-Fix zurückmeldet.

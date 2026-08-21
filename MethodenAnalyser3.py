@@ -340,14 +340,14 @@ class ImportScopeAnalyzer(ast.NodeVisitor):
 
     def visit_Import(self, node: ast.Import) -> None:
         """Verarbeitet Import-Statements."""
-        names = {alias.name.split(".")[0] for alias in node.names}
+        names = {alias.asname or alias.name.split(".")[0] for alias in node.names}
         self._assign_imports(names)
         self.generic_visit(node)
 
     def visit_ImportFrom(self, node: ast.ImportFrom) -> None:
         """Verarbeitet From-Import-Statements."""
-        if node.module:
-            names = {node.module.split(".")[0]}
+        names = {alias.asname or alias.name for alias in node.names if alias.name != "*"}
+        if names:
             self._assign_imports(names)
         self.generic_visit(node)
 
@@ -855,7 +855,7 @@ def analyze_source(code: str, source_name: str = "<snippet>") -> AnalysisResult:
     ]
 
     # Import-Scopes analysieren
-    import_scopes = _analyze_import_scopes(scope_analyzer, analyzer)
+    import_scopes = _analyze_import_scopes(scope_analyzer, analyzer, _string_refs)
 
     # Name-Matching mit verbesserter Lesbarkeit
     name_matches = _find_name_matches(calls, defs)
@@ -1008,7 +1008,8 @@ def _find_name_matches(calls: Set[str], defs: Set[str]) -> List[Tuple[str, str]]
 
 def _analyze_import_scopes(
     scope_analyzer: ImportScopeAnalyzer, 
-    analyzer: CodeAnalyzer
+    analyzer: CodeAnalyzer,
+    string_refs: Optional[Set[str]] = None,
 ) -> Dict[str, List[str]]:
     """
     Analysiert Import-Scopes und gibt Empfehlungen.
@@ -1016,6 +1017,7 @@ def _analyze_import_scopes(
     Args:
         scope_analyzer: ImportScopeAnalyzer-Instanz
         analyzer: CodeAnalyzer-Instanz
+        string_refs: Optionale Menge von Bezeichnern in String-Literalen
         
     Returns:
         Dictionary mit Scope-Analyse-Ergebnissen
@@ -1029,6 +1031,7 @@ def _analyze_import_scopes(
         set.union(*scope_analyzer.method_level.values()) 
         if scope_analyzer.method_level else set()
     )
+    used_all = analyzer.used_names | (string_refs or set())
 
     results = {
         "multi_local": sorted(
@@ -1043,7 +1046,7 @@ def _analyze_import_scopes(
         ),
         "unused_global": sorted(
             imp for imp in top
-            if imp not in analyzer.used_names and 
+            if imp not in used_all and 
                imp not in all_class and 
                imp not in all_methods
         ),
