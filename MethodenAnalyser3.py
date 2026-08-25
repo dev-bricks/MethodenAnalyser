@@ -54,13 +54,17 @@ EXIT_PARTIAL_ERROR = 3
 # SPRACHE / KONFIGURATION (Welle-1 U1: sichtbarer DE/EN-Sprachschalter)
 # ============================================================================
 
-SUPPORTED_LANGUAGES = ("de", "en")
+SUPPORTED_LANGUAGES = ("de", "en", "es", "zh", "ja", "ru")
 DEFAULT_LANGUAGE = "de"
 
 # Erste Zeile der Willkommensnachricht je Sprache (fuer Live-Neurendern beim Sprachwechsel)
 _WELCOME_HEADS = (
     "Willkommen beim Python Code Analyzer!",
     "Welcome to Python Code Analyzer!",
+    "¡Bienvenido a Python Code Analyzer!",
+    "欢迎使用 Python 代码分析器！",
+    "Python コードアナライザーへようこそ！",
+    "Добро пожаловать в Python Code Analyzer!",
 )
 
 
@@ -467,6 +471,14 @@ class CodeAnalyzer(ast.NodeVisitor):
             self.imports.append(module_base)
             self.imported_modules.add(module_base)
             self.imported_modules.add(node.module)
+        else:
+            # Relative Imports ohne Modulnamen (z.B. `from . import utils, config`)
+            for alias in node.names:
+                if alias.name != '*':
+                    module_base = alias.name.split(".")[0]
+                    self.imports.append(module_base)
+                    self.imported_modules.add(module_base)
+                    self.imported_modules.add(alias.name)
         
         # Füge die importierten Namen hinzu
         for alias in node.names:
@@ -496,6 +508,36 @@ class CodeAnalyzer(ast.NodeVisitor):
         """Erfasst Exception-Binding-Namen als lokale Namen."""
         if node.name:
             self.local_names.add(node.name)
+        self.generic_visit(node)
+
+    def visit_MatchAs(self, node: Any) -> None:
+        """Erfasst Pattern-Matching Variable-Bindings als lokale Namen."""
+        if getattr(node, "name", None):
+            self.local_names.add(node.name)
+        self.generic_visit(node)
+
+    def visit_MatchStar(self, node: Any) -> None:
+        """Erfasst Pattern-Matching Star-Bindings (*rest) als lokale Namen."""
+        if getattr(node, "name", None):
+            self.local_names.add(node.name)
+        self.generic_visit(node)
+
+    def visit_MatchMapping(self, node: Any) -> None:
+        """Erfasst Pattern-Matching Mapping-Rest-Bindings (**rest) als lokale Namen."""
+        if getattr(node, "rest", None):
+            self.local_names.add(node.rest)
+        self.generic_visit(node)
+
+    def visit_Global(self, node: ast.Global) -> None:
+        """Erfasst globale Variablen-Deklarationen als lokale Namen."""
+        for name in node.names:
+            self.local_names.add(name)
+        self.generic_visit(node)
+
+    def visit_Nonlocal(self, node: ast.Nonlocal) -> None:
+        """Erfasst nonlocal Variablen-Deklarationen als lokale Namen."""
+        for name in node.names:
+            self.local_names.add(name)
         self.generic_visit(node)
 
 
@@ -971,6 +1013,11 @@ def _extract_typehints(tree: ast.AST) -> Set[str]:
             # Funktions-Return-Annotationen
             elif isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)) and node.returns:
                 for sub in ast.walk(node.returns):
+                    if isinstance(sub, ast.Name):
+                        hints.add(sub.id)
+            # Python 3.12+ type-Statement (TypeAlias)
+            elif hasattr(ast, "TypeAlias") and isinstance(node, ast.TypeAlias) and node.value:
+                for sub in ast.walk(node.value):
                     if isinstance(sub, ast.Name):
                         hints.add(sub.id)
     except Exception as e:
@@ -1991,14 +2038,20 @@ def create_gui() -> None:
 
     menubar = tk.Menu(root)
     lang_menu = tk.Menu(menubar, tearoff=0)
-    lang_menu.add_radiobutton(
-        label="Deutsch", value="de", variable=lang_var,
-        command=lambda: apply_language("de"),
-    )
-    lang_menu.add_radiobutton(
-        label="English", value="en", variable=lang_var,
-        command=lambda: apply_language("en"),
-    )
+    for label, code in (
+        ("Deutsch", "de"),
+        ("English", "en"),
+        ("Español", "es"),
+        ("中文", "zh"),
+        ("日本語", "ja"),
+        ("Русский", "ru"),
+    ):
+        lang_menu.add_radiobutton(
+            label=label,
+            value=code,
+            variable=lang_var,
+            command=lambda c=code: apply_language(c),
+        )
     menubar.add_cascade(label=_t("menu_language"), menu=lang_menu)
     root.config(menu=menubar)
 

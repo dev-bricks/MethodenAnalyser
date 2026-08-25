@@ -5,6 +5,13 @@ Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
 ## [Unreleased]
 
+### Internationalisierung & AST-Erweiterungen (MA-I18N-01 bis MA-I18N-04) [2026-08-25]
+- **Multi-Language-Engine gem. P-006 (`translator.py`)**: `TranslationSystem` auf 6 Sprachen (`de`, `en`, `es`, `zh`, `ja`, `ru`) mit mehrstufiger robuster Fallback-Kette (`Zielsprache -> en -> de -> Key`), Pfadrobustheit und typisierter Schnittstelle (`get_supported_languages()`, `is_supported_language()`) angehoben.
+- **Vollständiger 6-Sprachen-Katalog (`locales/translations.json`)**: Sämtliche Dialog-, Aktions-, Tooltip-, Menü- und Statusmeldungen für Deutsch, Englisch, Spanisch, Chinesisch, Japanisch und Russisch übersetzt.
+- **GUI-Sprachmenü & Live-Umschaltung (`MethodenAnalyser3.py`)**: Menüleiste um direkte Sprachauswahl für alle 6 Sprachen erweitert; Live-Neuübersetzung von Fenstertitel, Aktionsschaltflächen, Tooltips, Statusleiste und Willkommensansicht ohne Neustart; persistiert in der Benutzerkonfiguration.
+- **AST Pattern-Matching & Relative Imports (`MethodenAnalyser3.py`)**: Unterstützung für Python 3.10+ Pattern Matching (`MatchAs`, `MatchStar`, `MatchMapping`), `Global`/`Nonlocal` Deklarationen, relative Imports ohne Modulnamen (`from . import config, utils`) und Python 3.12+ `ast.TypeAlias`.
+- **Automatisierte Testsuiten**: 8 neue Tests in `tests/test_i18n_translator.py` und `tests/test_ast_enhancements.py` sowie Aktualisierung von `test_language_switch.py`, `test_metadata.py` und `test_ui_accessibility.py` (Gesamttestsuite auf 113 Tests / 13 Subtests erhöht, 100% grün).
+
 ### Fehlerbehebungen / Bug Fixes (BS-20260821) [2026-08-21]
 - **Import-Scope-Analyse & From-/Alias-/Relative-Import-Präzision (`MethodenAnalyser3.py`)**: `ImportScopeAnalyzer.visit_ImportFrom` erfasste bisher fälschlicherweise das Ursprungsmodul (`node.module.split(".")[0]`) anstelle der tatsächlich in den Scope gebundenen Bezeichner bzw. Aliase; zudem wurden relative Imports ohne Modulangabe (`from . import sibling`) ignoriert und aliased Imports (`import os.path as osp`) auf das Stamm-Modul reduziert. Dadurch kam es bei aktiv genutzten From-Imports (z. B. `from math import sqrt`) oder Alias-Imports zu falschen `unused_global`-Warnungen im Report. Fix: `visit_Import` und `visit_ImportFrom` binden die tatsächlichen Bezeichner/Aliase an den aktuellen Scope, und `_analyze_import_scopes` gleicht diese präzise gegen alle genutzten Namen inkl. String-Literale (`_string_refs`) ab. 5 neue Regressionstests in `tests/test_bugsweep_import_scopes_20260821.py` ergänzt (Gesamttestsuite: 105 Passed / 100% grün).
 

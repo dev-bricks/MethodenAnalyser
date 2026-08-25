@@ -24,7 +24,7 @@ def _reset_language(lang: str) -> None:
 
 
 def test_translations_catalog_completeness():
-    """Prüft, dass alle Translation-Keys für DE und EN vorhanden und nicht leer sind."""
+    """Prüft, dass alle Translation-Keys für alle 6 Sprachen (DE, EN, ES, ZH, JA, RU) vorhanden und nicht leer sind."""
     catalog_file = ROOT / "locales" / "translations.json"
     assert catalog_file.exists(), "locales/translations.json muss existieren"
     data = json.loads(catalog_file.read_text(encoding="utf-8"))
@@ -42,8 +42,8 @@ def test_translations_catalog_completeness():
     
     for key in required_keys:
         assert key in data, f"Key '{key}' fehlt im Translations-Katalog"
-        assert "de" in data[key] and data[key]["de"].strip(), f"'de'-Übersetzung für '{key}' fehlt oder ist leer"
-        assert "en" in data[key] and data[key]["en"].strip(), f"'en'-Übersetzung für '{key}' fehlt oder ist leer"
+        for lang in ("de", "en", "es", "zh", "ja", "ru"):
+            assert lang in data[key] and data[key][lang].strip(), f"'{lang}'-Übersetzung für '{key}' fehlt oder ist leer"
 
 
 def test_german_typography_and_umlauts():

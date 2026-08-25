@@ -1,7 +1,7 @@
-"""Regressionstests: Welle-1 U1 — sichtbarer DE/EN-Sprachschalter.
+"""Regressionstests: Multi-Language-Support (DE, EN, ES, ZH, JA, RU).
 
-Prueft die Uebersetzungslogik, die Persistenz der Spracheinstellung und den
-isinstance-Guard des TranslationSystem (keine GUI noetig, alles headless).
+Prüft die Übersetzungslosgik, die Persistenz der Spracheinstellung,
+die Mehrsprachigkeit aller 6 Sprachen und den isinstance-Guard des TranslationSystem.
 """
 from __future__ import annotations
 
@@ -23,21 +23,30 @@ def _reset_language(lang: str) -> None:
         tr.set_language(lang)
 
 
-def test_translator_available_with_both_languages():
+def test_translator_available_with_all_languages():
     tr = m.get_translator()
-    assert tr is not None, "TranslationSystem sollte importierbar/verfuegbar sein"
+    assert tr is not None, "TranslationSystem sollte importierbar/verfügbar sein"
     for key in ("btn_analyze_file", "btn_analyze_project", "shortcut_hint",
                 "welcome_body", "info_body"):
-        assert m._t(key), f"Uebersetzung fuer {key} darf nicht leer sein"
-
-
-def test_button_labels_switch_language():
+        for lang in ("de", "en", "es", "zh", "ja", "ru"):
+            _reset_language(lang)
+            assert m._t(key), f"Übersetzung für {key} ({lang}) darf nicht leer sein"
     _reset_language("de")
-    assert m._t("btn_analyze_file") == "📂 Datei analysieren"
-    assert m._t("btn_analyze_project") == "Projekt analysieren"
-    _reset_language("en")
-    assert m._t("btn_analyze_file") == "📂 Analyze File"
-    assert m._t("btn_analyze_project") == "Analyze Project"
+
+
+def test_button_labels_switch_all_languages():
+    expected = {
+        "de": ("📂 Datei analysieren", "Projekt analysieren"),
+        "en": ("📂 Analyze File", "Analyze Project"),
+        "es": ("📂 Analizar archivo", "Analizar proyecto"),
+        "zh": ("📂 分析文件", "分析项目"),
+        "ja": ("📂 ファイルを分析", "プロジェクトを分析"),
+        "ru": ("📂 Анализировать файл", "Анализировать проект"),
+    }
+    for lang, (btn_file, btn_proj) in expected.items():
+        _reset_language(lang)
+        assert m._t("btn_analyze_file") == btn_file
+        assert m._t("btn_analyze_project") == btn_proj
     _reset_language("de")
 
 
@@ -46,18 +55,23 @@ def test_shortcut_hint_is_translated():
     assert "Keyboard:" in m._get_keyboard_shortcut_hint()
     _reset_language("de")
     assert "Tastatur:" in m._get_keyboard_shortcut_hint()
+    _reset_language("es")
+    assert "Teclado:" in m._get_keyboard_shortcut_hint()
+    _reset_language("zh")
+    assert "快捷键:" in m._get_keyboard_shortcut_hint()
+    _reset_language("ja")
+    assert "キーボード:" in m._get_keyboard_shortcut_hint()
+    _reset_language("ru")
+    assert "Горячие клавиши:" in m._get_keyboard_shortcut_hint()
+    _reset_language("de")
 
 
 def test_welcome_text_substitutes_shortcut_and_switches():
-    _reset_language("de")
-    text_de = m._build_welcome_text()
-    assert "{shortcut}" not in text_de
-    assert "Tastatur:" in text_de
-    assert text_de.startswith(m._WELCOME_HEADS[0])
-    _reset_language("en")
-    text_en = m._build_welcome_text()
-    assert text_en.startswith(m._WELCOME_HEADS[1])
-    assert "Keyboard:" in text_en
+    for idx, lang in enumerate(("de", "en", "es", "zh", "ja", "ru")):
+        _reset_language(lang)
+        text = m._build_welcome_text()
+        assert "{shortcut}" not in text
+        assert text.startswith(m._WELCOME_HEADS[idx])
     _reset_language("de")
 
 
@@ -67,14 +81,16 @@ def test_config_language_roundtrip(tmp_path, monkeypatch):
     # Nichts gespeichert -> Default
     assert m.get_saved_language() == m.DEFAULT_LANGUAGE
     # Speichern + erneut lesen
-    assert m.set_saved_language("en") is True
-    assert (cfg_dir / "config.json").exists()
-    assert m.get_saved_language() == "en"
-    data = json.loads((cfg_dir / "config.json").read_text(encoding="utf-8"))
-    assert data["language"] == "en"
-    # Ungueltige Sprache wird abgelehnt, alter Wert bleibt
-    assert m.set_saved_language("fr") is False
-    assert m.get_saved_language() == "en"
+    for lang in ("en", "es", "zh", "ja", "ru", "de"):
+        assert m.set_saved_language(lang) is True
+        assert (cfg_dir / "config.json").exists()
+        assert m.get_saved_language() == lang
+        data = json.loads((cfg_dir / "config.json").read_text(encoding="utf-8"))
+        assert data["language"] == lang
+
+    # Ungültige Sprache wird abgelehnt, alter Wert bleibt
+    assert m.set_saved_language("invalid_lang") is False
+    assert m.get_saved_language() == "de"
 
 
 def test_unknown_saved_language_falls_back_to_default(tmp_path, monkeypatch):
@@ -90,7 +106,7 @@ def test_corrupt_config_is_tolerated(tmp_path, monkeypatch):
     cfg_dir.mkdir()
     (cfg_dir / "config.json").write_text("{ this is not valid json", encoding="utf-8")
     monkeypatch.setattr(m, "_config_dir", lambda: cfg_dir)
-    # Darf nicht crashen, faellt auf Default zurueck
+    # Darf nicht crashen, fällt auf Default zurück
     assert m.get_saved_language() == m.DEFAULT_LANGUAGE
 
 

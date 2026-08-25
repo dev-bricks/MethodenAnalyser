@@ -74,7 +74,7 @@ def test_llms_txt_integrity():
 
 
 def test_translations_parity_and_validity():
-    """Verify translations.json exists, is valid JSON and has parity between de and en."""
+    """Verify translations.json exists, is valid JSON and has parity across all 6 languages."""
     trans_path = ROOT / "locales" / "translations.json"
     assert trans_path.exists()
     data = json.loads(trans_path.read_text(encoding="utf-8"))
@@ -82,10 +82,9 @@ def test_translations_parity_and_validity():
 
     for key, val in data.items():
         assert isinstance(val, dict), f"Key {key} must contain a dict with languages"
-        assert "de" in val, f"Key {key} missing 'de' translation"
-        assert "en" in val, f"Key {key} missing 'en' translation"
-        assert len(val["de"]) > 0, f"Empty 'de' translation for {key}"
-        assert len(val["en"]) > 0, f"Empty 'en' translation for {key}"
+        for lang in ("de", "en", "es", "zh", "ja", "ru"):
+            assert lang in val, f"Key {key} missing '{lang}' translation"
+            assert len(val[lang].strip()) > 0, f"Empty '{lang}' translation for {key}"
 
 
 def test_export_format_constants():
