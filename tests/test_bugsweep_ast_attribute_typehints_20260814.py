@@ -90,3 +90,32 @@ def run_pool():
 """
     result = m3.analyze_source(code, "test_alias.py")
     assert "ThreadPoolExecutor" not in result.missing_defs
+
+
+def test_analysis_does_not_import_modules_named_by_source(tmp_path, monkeypatch):
+    """Die statische Analyse darf Import-Namen aus dem Quelltext nie ausführen."""
+    module_name = "methodenanalyser_import_probe"
+    marker = tmp_path / "imported.txt"
+    module_path = tmp_path / f"{module_name}.py"
+    module_path.write_text(
+        "from pathlib import Path\n"
+        f"Path({str(marker)!r}).write_text('executed', encoding='utf-8')\n"
+        "def run():\n"
+        "    return None\n",
+        encoding="utf-8",
+    )
+    monkeypatch.syspath_prepend(str(tmp_path))
+    sys.modules.pop(module_name, None)
+    m3._get_module_all_attributes.cache_clear()
+
+    try:
+        result = m3.analyze_source(
+            f"import {module_name}\n{module_name}.run()\n",
+            "test_untrusted_import.py",
+        )
+    finally:
+        sys.modules.pop(module_name, None)
+        m3._get_module_all_attributes.cache_clear()
+
+    assert not marker.exists()
+    assert "run" not in result.missing_defs

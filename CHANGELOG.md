@@ -5,6 +5,9 @@ Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
 ## [Unreleased]
 
+### Sicherheit [2026-08-25]
+- **Inerte statische Analyse:** Modulnamen aus analysiertem Quelltext werden nicht mehr dynamisch importiert. Attributprüfungen verwenden ausschließlich statische Exporttabellen oder bereits geladene Module; ein Regressionstest belegt, dass Import-Nebeneffekte aus Eingabecode nicht ausgeführt werden.
+
 ### Internationalisierung & AST-Erweiterungen (MA-I18N-01 bis MA-I18N-04) [2026-08-25]
 - **Multi-Language-Engine gem. P-006 (`translator.py`)**: `TranslationSystem` auf 6 Sprachen (`de`, `en`, `es`, `zh`, `ja`, `ru`) mit mehrstufiger robuster Fallback-Kette (`Zielsprache -> en -> de -> Key`), Pfadrobustheit und typisierter Schnittstelle (`get_supported_languages()`, `is_supported_language()`) angehoben.
 - **Vollständiger 6-Sprachen-Katalog (`locales/translations.json`)**: Sämtliche Dialog-, Aktions-, Tooltip-, Menü- und Statusmeldungen für Deutsch, Englisch, Spanisch, Chinesisch, Japanisch und Russisch übersetzt.

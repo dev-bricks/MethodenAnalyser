@@ -15,7 +15,6 @@ import datetime
 import sqlite3
 import threading
 import warnings
-import importlib
 from typing import Set, Dict, List, Tuple, Any, Optional, Callable
 from dataclasses import dataclass, field
 from functools import lru_cache
@@ -737,14 +736,11 @@ def scan_todo_comments(code: str) -> List[Tuple[int, str, str]]:
 
 @lru_cache(maxsize=128)
 def _get_module_all_attributes(module_name: str) -> Optional[Set[str]]:
-    """Ermittelt alle exportierten/verfügbaren Attribute eines Moduls per Reflection."""
-    try:
-        mod = sys.modules.get(module_name)
-        if mod is None:
-            mod = importlib.import_module(module_name)
-        return set(dir(mod))
-    except Exception:
+    """Liest Attribute bereits geladener Module, ohne Analyse-Imports auszuführen."""
+    mod = sys.modules.get(module_name)
+    if mod is None:
         return None
+    return set(dir(mod))
 
 
 def get_available_module_attributes(analyzer: 'CodeAnalyzer') -> Set[str]:
@@ -775,10 +771,8 @@ def get_available_module_attributes(analyzer: 'CodeAnalyzer') -> Set[str]:
         if not is_imported:
             continue
 
-        # 1. Dynamische Introspektion für Standard-Library und importierbare Pakete
+        # 1. Sichere Introspektion ausschließlich bereits geladener Module
         mod_attrs = _get_module_all_attributes(module_name)
-        if mod_attrs is None and base_mod != module_name:
-            mod_attrs = _get_module_all_attributes(base_mod)
 
         if mod_attrs is not None:
             for attr in attributes:
