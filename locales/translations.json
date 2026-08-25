@@ -191,6 +191,14 @@
     "ja": "自動修正の確認",
     "ru": "Подтверждение авто-исправления"
   },
+  "dialog_autofix_prompt": {
+    "de": "Folgende ungenutzte Imports entfernen?\n\n{unused_list}\n\nEine Sicherungskopie wird erstellt.",
+    "en": "Remove the following unused imports?\n\n{unused_list}\n\nA backup copy will be created.",
+    "es": "¿Eliminar las siguientes importaciones no utilizadas?\n\n{unused_list}\n\nSe creará una copia de seguridad.",
+    "zh": "要删除以下未使用的导入吗？\n\n{unused_list}\n\n将创建备份副本。",
+    "ja": "次の未使用のインポートを削除しますか？\n\n{unused_list}\n\nバックアップコピーが作成されます。",
+    "ru": "Удалить следующие неиспользуемые импорты?\n\n{unused_list}\n\nБудет создана резервная копия."
+  },
   "welcome_body": {
     "de": "Willkommen beim Python Code Analyzer!\n\n{shortcut}\n\nKlicken Sie auf 'Datei analysieren', um eine Python-Datei zu untersuchen.\n\nDie Analyse umfasst:\n• Fehlende und ungenutzte Definitionen\n• Import-Analyse und -Optimierung\n• Dynamische Methodenaufrufe\n• Mögliche Tippfehler\n",
     "en": "Welcome to Python Code Analyzer!\n\n{shortcut}\n\nClick 'Analyze File' to inspect a Python file.\n\nThe analysis covers:\n• Missing and unused definitions\n• Import analysis and optimization\n• Dynamic method calls\n• Possible typos\n",

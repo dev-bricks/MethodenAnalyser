@@ -50,6 +50,15 @@ def test_button_labels_switch_all_languages():
     _reset_language("de")
 
 
+def test_autofix_confirmation_prompt_is_localized():
+    for lang in ("de", "en", "es", "zh", "ja", "ru"):
+        _reset_language(lang)
+        prompt = m._t("dialog_autofix_prompt").replace("{unused_list}", "os, json")
+        assert prompt != "dialog_autofix_prompt"
+        assert "os, json" in prompt
+    _reset_language("de")
+
+
 def test_shortcut_hint_is_translated():
     _reset_language("en")
     assert "Keyboard:" in m._get_keyboard_shortcut_hint()
