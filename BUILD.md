@@ -1,6 +1,6 @@
 # MethodenAnalyser — reproduzierbarer Dev-/Build-Vertrag
 
-Stand: 2026-08-11
+Stand: 2026-08-26
 
 ## Toolchain
 
@@ -16,8 +16,8 @@ python -m pip show pytest pyinstaller
 
 | Werkzeug | Unterstützter Bereich | Smoke-Readback |
 |---|---|---|
-| pytest | `>=9.0.3,<10.0` | 9.1.1 (2026-08-11) |
-| PyInstaller | `>=6.14.2,<7.0` | 6.21.0 (2026-08-11) |
+| pytest | `>=9.0.3,<10.0` | 9.1.1 (2026-08-26) |
+| PyInstaller | `>=6.14.2,<7.0` | 6.21.0 (2026-08-26) |
 
 Eine andere Version ist möglich, aber nicht durch diesen Vertrag verifiziert.
 
@@ -39,11 +39,16 @@ vorhanden sein.
 cmd /c build_exe.bat
 ```
 
-Das Skript verwendet `MethodenAnalyser.spec` und schreibt in
-`C:\_Local_DEV\codex_build\methodenanalyser\dist\`. Der zentrale
-`build_exclude_scanner.py` wird verwendet, wenn er im erwarteten `_tools`-Pfad
-vorhanden ist; andernfalls meldet das Skript den Fallback und baut ohne
-dynamische Excludes. Ein lokales EXE-Artefakt ist kein Release.
+Das Skript ruft PyInstaller direkt für `MethodenAnalyser3.py` mit
+`--windowed --onefile` auf; die eingecheckte `MethodenAnalyser.spec` wird von
+diesem Batch-Pfad nicht eingelesen. Der zentrale `build_exclude_scanner.py`
+wird verwendet, wenn er im erwarteten `_tools`-Pfad vorhanden ist;
+andernfalls meldet das Skript den Fallback und baut ohne dynamische Excludes.
+
+Arbeits- und primäre Ausgabe liegen unter
+`C:\_Local_DEV\codex_build\methodenanalyser\`. Nach erfolgreichem Build kopiert
+das Skript die EXE zusätzlich nach `dist\MethodenAnalyser.exe` und
+`MethodenAnalyser.exe` im Projekt. Diese lokalen Artefakte sind kein Release.
 
 MSIX, Signierung, WACK, Store-Upload und Release-Registrierung sind getrennte,
 manuell freizugebende Schritte. Dieses Dokument führt sie nicht automatisch

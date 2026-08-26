@@ -2,7 +2,7 @@
 
 > Vorlage: `_TEMPLATES/CROSSCHECK_TEMPLATE.md` | Konvention: GUIDE.md §Toolchain-Standards
 > Pfad: `_sources/CROSSCHECK.md` im jeweiligen Projektordner
-> Stand: 2026-08-11
+> Stand: 2026-08-26
 
 ## Projektübersicht
 
@@ -35,8 +35,8 @@ Keine externen Pakete. Der MethodenAnalyser nutzt ausschließlich die Python-Sta
 
 | Paket | Vertrag | Smoke-Version | Letzte Prüfung | Verwendung |
 |---|---|---|---|---|
-| pytest | `>=9.0.3,<10.0` | 9.1.1 | 2026-08-11 | Lokaler Testlauf |
-| pyinstaller | `>=6.14.2,<7.0` | 6.21.0 | 2026-08-11 | EXE-/MSIX-Build |
+| pytest | `>=9.0.3,<10.0` | 9.1.1 | 2026-08-26 | Lokaler Testlauf |
+| pyinstaller | `>=6.14.2,<7.0` | 6.21.0 | 2026-08-26 | EXE-/MSIX-Build |
 
 > **Hinweis:** Die CI (GitHub Actions) verwendet `python -m unittest` ohne externe Dependencies.
 > pytest und pyinstaller werden nur lokal für Entwicklung und Release-Builds benötigt.
@@ -52,12 +52,15 @@ Aktuelle Version prüfen: `python -m pip show pytest pyinstaller` oder `pip list
 - Runtime: ausschließlich Python-Standardbibliothek, Python 3.10/3.11/3.12 in
   der CI-Matrix; `tkinter` ist eine Voraussetzung der jeweiligen Python-Installation.
 - Tests: `python -m unittest discover -s tests -v` (keine pytest-Plugins im CI).
-- EXE: `build_exe.bat` ruft `python -m PyInstaller` mit
-  `MethodenAnalyser.spec` auf. Der optionale zentrale Exclude-Scanner wird
-  verwendet, wenn er vorhanden ist; fehlt er, läuft der dokumentierte Fallback
-  ohne dynamische Excludes.
-- Build-Ausgabe: `C:\_Local_DEV\codex_build\methodenanalyser\dist\MethodenAnalyser.exe`.
-  Ein lokales `dist/`-Artefakt ist kein Release und wird nicht automatisch in
+- EXE: `build_exe.bat` ruft `python -m PyInstaller` direkt für
+  `MethodenAnalyser3.py` mit `--windowed --onefile` auf; die eingecheckte
+  `MethodenAnalyser.spec` wird von diesem Batch-Pfad nicht eingelesen. Der
+  optionale zentrale Exclude-Scanner wird verwendet, wenn er vorhanden ist;
+  fehlt er, läuft der dokumentierte Fallback ohne dynamische Excludes.
+- Build-Ausgabe: Primär
+  `C:\_Local_DEV\codex_build\methodenanalyser\dist\MethodenAnalyser.exe`, danach
+  Kopien nach `dist\MethodenAnalyser.exe` und `MethodenAnalyser.exe` im Projekt.
+  Diese lokalen Artefakte sind kein Release und werden nicht automatisch in
   `releases/` veröffentlicht.
 - Store/MSIX: Die Store-Vorbereitung bleibt ein separater, manuell freizugebender
   Schritt; dieser Vertrag führt keinen Signier-, Upload- oder WACK-Lauf aus.
