@@ -36,7 +36,8 @@ def test_translations_catalog_completeness():
         "status_analyzing_project", "status_analysis_done", "status_autofix_done",
         "status_no_unused_imports", "dialog_select_file", "dialog_select_project",
         "dialog_no_file_title", "dialog_no_file_msg", "dialog_no_unused_title",
-        "dialog_no_unused_msg", "dialog_autofix_title", "welcome_body", "info_body",
+        "dialog_no_unused_msg", "dialog_partial_unused_title", "dialog_partial_unused_msg",
+        "dialog_autofix_title", "welcome_body", "info_body",
         "lang_switched_msg"
     ]
     
@@ -96,4 +97,28 @@ def test_dynamic_retranslation_of_tooltips_and_status():
     assert m._t("status_ready") == "Ready"
     assert m._t("tooltip_analyze_file").startswith("Opens a Python file")
     
+    _reset_language("de")
+
+
+def test_partial_unused_import_dialog_uses_active_language(monkeypatch, tmp_path):
+    """Teilweise genutzte Imports dürfen keine fest verdrahtete DE-Meldung zeigen."""
+    source = tmp_path / "partial_import.py"
+    source.write_text("from package import used, unused\n", encoding="utf-8")
+    result = m.AnalysisResult(
+        calls=[], defs=[], imported_definitions=[], module_provided_attrs=[],
+        missing_defs=[], unused_defs=[], imports=[], used_imports=[],
+        unused_imports=["unused"], duplicate_imports=[], missing_imports=[],
+    )
+    shown: list[tuple[str, str]] = []
+
+    monkeypatch.setattr(m, "_last_analysis_path", str(source))
+    monkeypatch.setattr(m, "_last_analysis_result", result)
+    monkeypatch.setattr(m.messagebox, "showinfo", lambda title, text: shown.append((title, text)))
+    monkeypatch.setattr(m.messagebox, "askyesno", lambda _title, _text: True)
+    _reset_language("en")
+
+    m.auto_fix_unused_imports(output_widget=None)
+
+    assert shown == [(m._t("dialog_partial_unused_title"), m._t("dialog_partial_unused_msg"))]
+    assert "Partially used imports" in shown[0][1]
     _reset_language("de")

@@ -1402,7 +1402,10 @@ def auto_fix_unused_imports(output_widget: scrolledtext.ScrolledText, status_wid
         if not lines_to_remove:
             if status_widget is not None:
                 status_widget.config(text=_t("status_no_unused_imports"))
-            messagebox.showinfo("Info", "Keine vollständig ungenutzten Import-Zeilen gefunden.\n(Teilweise genutzte Imports müssen manuell bearbeitet werden)")
+            messagebox.showinfo(
+                _t("dialog_partial_unused_title"),
+                _t("dialog_partial_unused_msg"),
+            )
             return
 
         # Backup und Ausgabe im erkannten Encoding — verhindert Korrumpierung von
