@@ -29,6 +29,7 @@ if not exist "%DIST_DIR%" mkdir "%DIST_DIR%"
 python -m PyInstaller --noconfirm --clean --windowed --onefile ^
   --name MethodenAnalyser ^
   --icon "%PROJECT_ROOT%\MethodenAnalyser.ico" ^
+  --add-data "%PROJECT_ROOT%\locales;locales" ^
   %EXCLUDES% ^
   --distpath "%BUILD_ROOT%\dist" ^
   --workpath "%BUILD_ROOT%\build" ^

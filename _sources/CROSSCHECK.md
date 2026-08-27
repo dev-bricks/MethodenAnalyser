@@ -57,6 +57,9 @@ Aktuelle Version prüfen: `python -m pip show pytest pyinstaller` oder `pip list
   `MethodenAnalyser.spec` wird von diesem Batch-Pfad nicht eingelesen. Der
   optionale zentrale Exclude-Scanner wird verwendet, wenn er vorhanden ist;
   fehlt er, läuft der dokumentierte Fallback ohne dynamische Excludes.
+- Runtime-Daten: `locales\translations.json` wird explizit per `--add-data`
+  in das Onefile-Artefakt aufgenommen; die sechs Sprachvarianten bleiben damit
+  auch im eingefrorenen Build verfügbar.
 - Build-Ausgabe: Primär
   `C:\_Local_DEV\codex_build\methodenanalyser\dist\MethodenAnalyser.exe`, danach
   Kopien nach `dist\MethodenAnalyser.exe` und `MethodenAnalyser.exe` im Projekt.

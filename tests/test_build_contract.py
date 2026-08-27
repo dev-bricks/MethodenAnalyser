@@ -16,6 +16,7 @@ class BuildContractTests(unittest.TestCase):
         for marker in (
             "python -m PyInstaller",
             "--windowed --onefile",
+            '--add-data "%PROJECT_ROOT%\\locales;locales"',
             "%EXCLUDES%",
             '--specpath "%BUILD_ROOT%"',
             '"%PROJECT_ROOT%\\MethodenAnalyser3.py"',
@@ -29,6 +30,8 @@ class BuildContractTests(unittest.TestCase):
             self.assertIn("MethodenAnalyser.spec", document)
             self.assertIn("nicht eingelesen", document)
             self.assertIn("ohne dynamische Excludes", document)
+            self.assertIn("translations.json", document)
+            self.assertIn("--add-data", document)
             self.assertIn(r"dist\MethodenAnalyser.exe", document)
 
 

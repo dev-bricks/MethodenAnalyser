@@ -44,6 +44,9 @@ Das Skript ruft PyInstaller direkt für `MethodenAnalyser3.py` mit
 diesem Batch-Pfad nicht eingelesen. Der zentrale `build_exclude_scanner.py`
 wird verwendet, wenn er im erwarteten `_tools`-Pfad vorhanden ist;
 andernfalls meldet das Skript den Fallback und baut ohne dynamische Excludes.
+Der Sprachkatalog `locales\translations.json` wird über `--add-data` in das
+Onefile-Artefakt aufgenommen, damit die Desktop-Sprachumschaltung auch im
+eingefrorenen Store-Build funktioniert.
 
 Arbeits- und primäre Ausgabe liegen unter
 `C:\_Local_DEV\codex_build\methodenanalyser\`. Nach erfolgreichem Build kopiert
