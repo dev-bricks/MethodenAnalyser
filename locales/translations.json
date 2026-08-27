@@ -296,6 +296,30 @@
   "cli_help_language": {
     "de": "Sprache für Hilfe und Textreport", "en": "language for help and text reports", "es": "idioma para la ayuda y los informes de texto", "zh": "帮助和文本报告的语言", "ja": "ヘルプとテキストレポートの言語", "ru": "язык справки и текстовых отчётов"
   },
+  "cli_help_help": {
+    "de": "zeigt diese Hilfe und beendet das Programm", "en": "show this help message and exit", "es": "muestra esta ayuda y finaliza", "zh": "显示此帮助并退出", "ja": "このヘルプを表示して終了します", "ru": "показывает эту справку и завершает работу"
+  },
+  "cli_help_file_metavar": {
+    "de": "DATEI.py", "en": "FILE.py", "es": "ARCHIVO.py", "zh": "文件.py", "ja": "ファイル.py", "ru": "ФАЙЛ.py"
+  },
+  "cli_help_project_metavar": {
+    "de": "ORDNER", "en": "DIRECTORY", "es": "DIRECTORIO", "zh": "目录", "ja": "ディレクトリ", "ru": "КАТАЛОГ"
+  },
+  "cli_help_json_output_metavar": {
+    "de": "DATEI.json", "en": "FILE.json", "es": "ARCHIVO.json", "zh": "文件.json", "ja": "ファイル.json", "ru": "ФАЙЛ.json"
+  },
+  "cli_help_file": {
+    "de": "analysiert eine einzelne Python-Datei und schreibt den Textreport nach stdout", "en": "analyzes one Python file and writes the text report to stdout", "es": "analiza un archivo Python y escribe el informe de texto en stdout", "zh": "分析单个 Python 文件并将文本报告写入 stdout", "ja": "単一の Python ファイルを解析し、テキストレポートを stdout に出力します", "ru": "анализирует один файл Python и выводит текстовый отчёт в stdout"
+  },
+  "cli_help_project": {
+    "de": "analysiert rekursiv einen Projektordner und schreibt den Projektreport nach stdout", "en": "analyzes a project directory recursively and writes the project report to stdout", "es": "analiza un directorio de proyecto de forma recursiva y escribe el informe del proyecto en stdout", "zh": "递归分析项目目录并将项目报告写入 stdout", "ja": "プロジェクトディレクトリを再帰的に解析し、プロジェクトレポートを stdout に出力します", "ru": "рекурсивно анализирует каталог проекта и выводит отчёт о проекте в stdout"
+  },
+  "cli_help_stdin": {
+    "de": "liest Python-Code aus stdin und behandelt ihn als Snippet", "en": "reads Python code from stdin and analyzes it as a snippet", "es": "lee código Python desde stdin y lo analiza como un fragmento", "zh": "从 stdin 读取 Python 代码并将其作为代码片段分析", "ja": "stdin から Python コードを読み込み、スニペットとして解析します", "ru": "читает код Python из stdin и анализирует его как фрагмент"
+  },
+  "cli_help_json_output": {
+    "de": "schreibt zusätzlich einen JSON-Report im Schema {schema}; ohne Wert wird {default_name} genutzt", "en": "also writes a JSON report in schema {schema}; without a value, {default_name} is used", "es": "también escribe un informe JSON con el esquema {schema}; sin valor se usa {default_name}", "zh": "额外写入采用 {schema} 架构的 JSON 报告；未提供值时使用 {default_name}", "ja": "{schema} スキーマの JSON レポートも出力します。値がない場合は {default_name} を使用します", "ru": "также создаёт JSON-отчёт по схеме {schema}; без значения используется {default_name}"
+  },
   "web_title": {
     "de": "MethodenAnalyser Web Companion", "en": "MethodenAnalyser Web Companion", "es": "Web Companion de MethodenAnalyser", "zh": "MethodenAnalyser 网页助手", "ja": "MethodenAnalyser Web コンパニオン", "ru": "Веб-помощник MethodenAnalyser"
   },

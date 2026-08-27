@@ -2201,31 +2201,33 @@ def build_cli_parser() -> argparse.ArgumentParser:
     """Erstellt den Argument-Parser für den CLI-Modus."""
     parser = argparse.ArgumentParser(
         description=_t("cli_help_description"),
+        add_help=False,
     )
+    parser.add_argument("-h", "--help", action="help", help=_t("cli_help_help"))
     target_group = parser.add_mutually_exclusive_group()
     target_group.add_argument(
         "--file",
-        metavar="DATEI.py",
-        help="analysiert eine einzelne Python-Datei und schreibt den Textreport nach stdout",
+        metavar=_t("cli_help_file_metavar"),
+        help=_t("cli_help_file"),
     )
     target_group.add_argument(
         "--project",
-        metavar="ORDNER",
-        help="analysiert rekursiv einen Projektordner und schreibt den Projektreport nach stdout",
+        metavar=_t("cli_help_project_metavar"),
+        help=_t("cli_help_project"),
     )
     target_group.add_argument(
         "--stdin",
         action="store_true",
-        help="liest Python-Code aus stdin und behandelt ihn als Snippet",
+        help=_t("cli_help_stdin"),
     )
     parser.add_argument(
         "--json-output",
         nargs="?",
         const=DEFAULT_JSON_REPORT_NAME,
-        metavar="DATEI.json",
-        help=(
-            "schreibt zusätzlich einen JSON-Report im Schema "
-            f"{JSON_SCHEMA_VERSION}; ohne Wert wird {DEFAULT_JSON_REPORT_NAME} genutzt"
+        metavar=_t("cli_help_json_output_metavar"),
+        help=_t("cli_help_json_output").format(
+            schema=JSON_SCHEMA_VERSION,
+            default_name=DEFAULT_JSON_REPORT_NAME,
         ),
     )
     parser.add_argument(

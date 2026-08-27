@@ -62,12 +62,17 @@ class MethodenAnalyserCliTests(unittest.TestCase):
             sample = Path(tmpdir) / "clean_sample.py"
             sample.write_text("print('ok')\n", encoding="utf-8")
             result = self.run_cli("--lang", "en", "--file", str(sample))
-        help_result = self.run_cli("--help")
+        help_result = self.run_cli("--lang", "en", "--help")
 
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertIn("PYTHON CODE ANALYSIS - RESULTS", result.stdout)
         self.assertIn("Unused Imports (0):", result.stdout)
-        self.assertIn("--lang", help_result.stdout)
+        self.assertIn("--file FILE.py", help_result.stdout)
+        self.assertIn("show this help message and exit", help_result.stdout)
+        self.assertIn("analyzes one Python file", help_result.stdout)
+        self.assertIn("reads Python code from stdin", help_result.stdout)
+        self.assertIn("also writes a JSON report", help_result.stdout)
+        self.assertNotIn("analysiert eine einzelne Python-Datei", help_result.stdout)
 
     def test_file_mode_writes_json_report(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
