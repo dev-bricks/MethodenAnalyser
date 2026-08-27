@@ -135,6 +135,12 @@ def _t(key: str) -> str:
     return translator.t(key) if translator is not None else key
 
 
+def set_runtime_language(lang: str) -> bool:
+    """Setzt die Sprache für einen einzelnen nicht-interaktiven Lauf ohne Persistenz."""
+    translator = get_translator()
+    return translator.set_language(lang) if translator is not None else False
+
+
 # Analyse Konfiguration
 SIMILARITY_THRESHOLD = 0.8
 
@@ -1112,22 +1118,22 @@ def generate_report(result: AnalysisResult) -> str:
     report = []
 
     report.append("=" * 70 + "\n")
-    report.append("PYTHON CODE ANALYSE - ERGEBNISSE\n")
+    report.append(_t("cli_report_title") + "\n")
     report.append("=" * 70 + "\n\n")
 
     # Hauptergebnisse
-    report.append("[ANALYSE] HAUPTERGEBNISSE\n")
+    report.append("[ANALYSE] " + _t("cli_main_results").upper() + "\n")
     report.append("-" * 70 + "\n")
-    report.append(f"Fehlende Definitionen ({len(result.missing_defs)}):\n")
-    report.append(f"  {', '.join(result.missing_defs) if result.missing_defs else '(keine)'}\n\n")
+    report.append(f"{_t('cli_missing_definitions')} ({len(result.missing_defs)}):\n")
+    report.append(f"  {', '.join(result.missing_defs) if result.missing_defs else _t('cli_none')}\n\n")
     
-    report.append(f"Ungenutzte Definitionen ({len(result.unused_defs)}):\n")
-    report.append(f"  {', '.join(result.unused_defs) if result.unused_defs else '(keine)'}\n\n")
+    report.append(f"{_t('cli_unused_definitions')} ({len(result.unused_defs)}):\n")
+    report.append(f"  {', '.join(result.unused_defs) if result.unused_defs else _t('cli_none')}\n\n")
     
-    report.append(f"Ungenutzte Imports ({len(result.unused_imports)}):\n")
-    report.append(f"  {', '.join(result.unused_imports) if result.unused_imports else '(keine)'}\n\n")
-    report.append(f"Fehlende Imports ({len(result.missing_imports)}):\n")
-    report.append(f"  {', '.join(result.missing_imports) if result.missing_imports else '(keine)'}\n\n")
+    report.append(f"{_t('cli_unused_imports')} ({len(result.unused_imports)}):\n")
+    report.append(f"  {', '.join(result.unused_imports) if result.unused_imports else _t('cli_none')}\n\n")
+    report.append(f"{_t('cli_missing_imports')} ({len(result.missing_imports)}):\n")
+    report.append(f"  {', '.join(result.missing_imports) if result.missing_imports else _t('cli_none')}\n\n")
 
     # Import-Analyse
     if result.import_scopes:
@@ -1534,14 +1540,14 @@ def analyze_project(folder_path: str, progress_callback=None) -> ProjectAnalysis
 
 def generate_project_report(result: ProjectAnalysisResult) -> str:
     """Generiert einen formatierten Projekt-Report."""
-    report = ["=" * 70 + "\n", "PROJEKT CODE ANALYSE\n", "=" * 70 + "\n\n"]
-    report.append(f"Projekt: {os.path.basename(result.folder_path)}\n\n")
-    report.append(f"Dateien: {result.files_analyzed} | Zeilen: {result.total_lines:,}\n")
-    report.append(f"Definitionen: {result.total_defs:,} | Imports: {result.total_imports:,}\n\n")
+    report = ["=" * 70 + "\n", _t("cli_project_report_title") + "\n", "=" * 70 + "\n\n"]
+    report.append(f"{_t('cli_project')}: {os.path.basename(result.folder_path)}\n\n")
+    report.append(f"{_t('cli_files')}: {result.files_analyzed} | {_t('cli_lines')}: {result.total_lines:,}\n")
+    report.append(f"{_t('cli_definitions')}: {result.total_defs:,} | {_t('cli_imports')}: {result.total_imports:,}\n\n")
     
     total_ui = sum(len(v) for v in result.all_unused_imports.values())
     total_ud = sum(len(v) for v in result.all_unused_defs.values())
-    report.append(f"Ungenutzte Imports: {total_ui} | Ungenutzte Defs: {total_ud}\n\n")
+    report.append(f"{_t('cli_unused_imports')}: {total_ui} | {_t('cli_unused_definitions')}: {total_ud}\n\n")
     
     if result.all_unused_imports:
         report.append("UNGENUTZTE IMPORTS:\n" + "-" * 50 + "\n")
@@ -2133,9 +2139,9 @@ def _write_cli_json_if_requested(report: Dict[str, Any], output_path: Optional[s
     try:
         written_path = write_json_report(report, output_path)
     except Exception as exc:
-        print(f"[FEHLER] JSON-Export fehlgeschlagen: {exc}", file=sys.stderr)
+        print(f"[FEHLER] {_t('cli_json_export_failed')}: {exc}", file=sys.stderr)
         return False
-    print(f"[OK] JSON gespeichert: {written_path}", file=sys.stderr)
+    print(f"[OK] {_t('cli_json_saved')}: {written_path}", file=sys.stderr)
     return True
 
 
@@ -2157,13 +2163,13 @@ def _run_cli_file(path: str, json_output: Optional[str] = None) -> int:
 def _run_cli_project(path: str, json_output: Optional[str] = None) -> int:
     """Führt eine Projektanalyse ohne GUI aus."""
     if not os.path.isdir(path):
-        print(f"[FEHLER] Projektordner nicht gefunden: {path}", file=sys.stderr)
+        print(f"[FEHLER] {_t('cli_project_not_found')}: {path}", file=sys.stderr)
         return EXIT_ANALYSIS_ERROR
 
     try:
         result = analyze_project(path)
     except Exception as exc:
-        print(f"[FEHLER] Projektanalyse fehlgeschlagen: {exc}", file=sys.stderr)
+        print(f"[FEHLER] {_t('cli_project_analysis_failed')}: {exc}", file=sys.stderr)
         return EXIT_ANALYSIS_ERROR
 
     _emit_cli_report(generate_project_report(result))
@@ -2194,7 +2200,7 @@ def _run_cli_snippet(code: str, json_output: Optional[str] = None) -> int:
 def build_cli_parser() -> argparse.ArgumentParser:
     """Erstellt den Argument-Parser für den CLI-Modus."""
     parser = argparse.ArgumentParser(
-        description="Analysiert Python-Dateien oder ganze Projektordner ohne GUI.",
+        description=_t("cli_help_description"),
     )
     target_group = parser.add_mutually_exclusive_group()
     target_group.add_argument(
@@ -2222,11 +2228,21 @@ def build_cli_parser() -> argparse.ArgumentParser:
             f"{JSON_SCHEMA_VERSION}; ohne Wert wird {DEFAULT_JSON_REPORT_NAME} genutzt"
         ),
     )
+    parser.add_argument(
+        "--lang",
+        choices=SUPPORTED_LANGUAGES,
+        default=DEFAULT_LANGUAGE,
+        help=_t("cli_help_language"),
+    )
     return parser
 
 
 def main(argv: Optional[List[str]] = None) -> int:
     """Startet GUI oder CLI je nach Argumenten."""
+    language_parser = argparse.ArgumentParser(add_help=False)
+    language_parser.add_argument("--lang", choices=SUPPORTED_LANGUAGES, default=DEFAULT_LANGUAGE)
+    initial_args, _ = language_parser.parse_known_args(argv)
+    set_runtime_language(initial_args.lang)
     parser = build_cli_parser()
     args = parser.parse_args(argv)
 

@@ -4,6 +4,10 @@ Stand: 2026-08-11
 
 Die lokale Weboberfläche ist ein Hilfs-/Demo-Modus für schnelle Snippet-, Einzeldatei- und kleine ZIP-Analysen auf demselben Rechner. Sie ersetzt nicht die Desktop-App für ganze Projektordner, ist keine Companion-App und keine eigene Mobile-Produktlinie. Sie nutzt denselben Analysekern und dasselbe JSON-Format wie CLI und GUI.
 
+## Sprache
+
+Die sichtbaren Kernsteuerelemente der Weboberfläche lassen sich über die Sprachauswahl auf Deutsch, Englisch, Spanisch, Chinesisch, Japanisch oder Russisch umstellen. Der Browser lädt die Texte über `GET /api/translations?lang=<code>` aus derselben `locales/translations.json`-Quelle wie GUI und CLI und speichert nur den gewählten Sprachcode im lokalen Browserprofil. Für CLI-Hilfe und Textreports steht derselbe Katalog über `--lang <code>` bereit, zum Beispiel `python MethodenAnalyser3.py --lang en --file beispiel.py`.
+
 ## Start
 
 ```bash

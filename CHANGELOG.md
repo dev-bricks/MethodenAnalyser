@@ -5,6 +5,10 @@ Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
 ## [Unreleased]
 
+### Internationalisierung [2026-08-27]
+- **MA-I18N-05:** CLI erhält `--lang` für Hilfe und die zentralen Textreport-Zusammenfassungen. Der lokale Web-Hilfsmodus bietet eine sichtbare Sechs-Sprachen-Auswahl und lädt den flachen `web_*`-Katalog über den lokalen Endpunkt `GET /api/translations` aus der gemeinsamen `locales/translations.json`-Quelle. Keine Cloud-Abhängigkeit, keine neue Produktlinie.
+- **Regressionen:** CLI-Sprachwahl, gemeinsamer Web-Katalog, HTTP-Endpunkt und die bestehende persistente Report-Wiederherstellung sind automatisiert abgesichert.
+
 ### Sicherheit [2026-08-25]
 - **Inerte statische Analyse:** Modulnamen aus analysiertem Quelltext werden nicht mehr dynamisch importiert. Attributprüfungen verwenden ausschließlich statische Exporttabellen oder bereits geladene Module; ein Regressionstest belegt, dass Import-Nebeneffekte aus Eingabecode nicht ausgeführt werden.
 

@@ -21,6 +21,7 @@ from webapp.server import (
     _resolve_under,
     analyze_payload,
     build_runtime_info,
+    get_web_translations,
 )
 from MethodenAnalyser3 import analyze_project, build_json_report
 
@@ -132,6 +133,11 @@ class MethodenAnalyserWebappServerTests(unittest.TestCase):
         self.assertFalse(info["lan_enabled"])
         self.assertFalse(info["candidate_urls"])
         self.assertEqual(info["mobile_command"], "python webapp/server.py --host 0.0.0.0 --port 8765")
+
+    def test_web_translations_use_the_shared_catalog(self) -> None:
+        payload = get_web_translations("en")
+        self.assertEqual(payload["language"], "en")
+        self.assertEqual(payload["translations"]["web_analyze"], "Analyze")
 
     def test_runtime_info_for_wildcard_server_includes_lan_urls(self) -> None:
         info = build_runtime_info(
@@ -311,6 +317,8 @@ class MethodenAnalyserStaticHttpTests(unittest.TestCase):
         self.assertIn('id="refreshPwaStatus"', body)
         self.assertIn('id="copyPwaStatus"', body)
         self.assertIn('id="pwaServerValue"', body)
+        self.assertIn('id="languageSelect"', body)
+        self.assertIn('/api/translations?lang=', (PROJECT_ROOT / "webapp" / "static" / "app.js").read_text(encoding="utf-8"))
 
     def test_source_mode_buttons_expose_pressed_state(self) -> None:
         with urlopen(self.build_url("/")) as response:
@@ -333,6 +341,14 @@ class MethodenAnalyserStaticHttpTests(unittest.TestCase):
         self.assertIn('"local_url": "http://127.0.0.1:', payload)
         self.assertIn('"mobile_command": "python webapp/server.py --host 0.0.0.0 --port', payload)
         self.assertIn('"lan_enabled": false', payload)
+
+    def test_translation_endpoint_returns_requested_language(self) -> None:
+        with urlopen(self.build_url("/api/translations?lang=en")) as response:
+            payload = json.loads(response.read().decode("utf-8"))
+
+        self.assertTrue(payload["ok"])
+        self.assertEqual(payload["language"], "en")
+        self.assertEqual(payload["translations"]["web_analyze"], "Analyze")
 
     def test_documentation_matches_the_lan_security_boundary(self) -> None:
         webapp_doc = (PROJECT_ROOT / "WEBAPP.md").read_text(encoding="utf-8")

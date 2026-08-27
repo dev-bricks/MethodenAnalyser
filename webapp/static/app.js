@@ -36,6 +36,7 @@ const elements = {
   pwaStorageValue: document.querySelector("#pwaStorageValue"),
   pwaViewportValue: document.querySelector("#pwaViewportValue"),
   pwaServerValue: document.querySelector("#pwaServerValue"),
+  languageSelect: document.querySelector("#languageSelect"),
 };
 
 const sampleCode = `import os
@@ -51,14 +52,9 @@ print(area(3))
 `;
 
 const singleFileMetricLabels = [
-  ["definitions", "Definitionen"],
-  ["imports", "Imports"],
-  ["unused_imports", "Ungenutzte Imports"],
-  ["unused_definitions", "Tote Definitionen"],
-  ["missing_imports", "Fehlende Imports"],
-  ["missing_definitions", "Fehlende Definitionen"],
-  ["duplicate_imports", "Doppelte Imports"],
-  ["todos", "TODOs"],
+  ["definitions", "web_definitions"], ["imports", "web_imports"], ["unused_imports", "web_unused_imports"],
+  ["unused_definitions", "web_unused_definitions"], ["missing_imports", "web_missing_imports"],
+  ["missing_definitions", "web_missing_definitions"], ["duplicate_imports", "web_duplicate_imports"], ["todos", "web_todos"],
 ];
 
 const projectMetricLabels = [
@@ -99,6 +95,44 @@ let installPromptEvent = null;
 let isRestoringDraft = false;
 let runtimeInfo = null;
 let latestPwaStatus = null;
+let activeLanguage = localStorage.getItem("methodenanalyser-webapp-language") || "de";
+let translations = {};
+
+function t(key, fallback = key) {
+  return translations[key] || fallback;
+}
+
+function applyTranslations() {
+  if (document.documentElement) document.documentElement.lang = activeLanguage;
+  document.title = t("web_title", "MethodenAnalyser Web Companion");
+  const staticText = {
+    ".brand p": "web_companion", "#inputTitle": "web_source", "#resultTitle": "web_result",
+    "label[for='sourceCode']": "web_python_code", "#analyzeButton": "web_analyze",
+    "#sampleButton": "web_load_example", "#clearButton": "web_clear", "#importJson": "web_load_json",
+    "#downloadJson": "web_save_json", "#installButton": "web_install_app", "#snippetMode": "web_snippet",
+    "#fileMode": "web_file", "#mobileGuideTitle": "web_mobile_test_path", "#pwaStatusTitle": "web_pwa_status",
+    "#refreshPwaStatus": "web_refresh_status", "#copyPwaStatus": "web_copy_status",
+  };
+  Object.entries(staticText).forEach(([selector, key]) => {
+    const element = document.querySelector(selector);
+    if (element) element.textContent = t(key, element.textContent);
+  });
+}
+
+async function loadTranslations(language = activeLanguage) {
+  try {
+    const response = await fetch(`/api/translations?lang=${encodeURIComponent(language)}`);
+    const payload = await response.json();
+    if (!response.ok || !payload.ok) throw new Error("translations");
+    activeLanguage = payload.language;
+    translations = payload.translations || {};
+    localStorage.setItem("methodenanalyser-webapp-language", activeLanguage);
+  } catch {
+    activeLanguage = "de";
+  }
+  elements.languageSelect.value = activeLanguage;
+  applyTranslations();
+}
 
 function isPlainObject(value) {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -378,7 +412,7 @@ function renderSummary(summary = {}, report = null) {
     const metric = document.createElement("div");
     metric.className = "metric";
     const caption = document.createElement("span");
-    caption.textContent = label;
+    caption.textContent = t(label, label);
     const value = document.createElement("strong");
     value.textContent = String(summary[key] ?? 0);
     metric.append(caption, value);
@@ -893,6 +927,11 @@ elements.refreshPwaStatus.addEventListener("click", () => {
 elements.copyPwaStatus.addEventListener("click", () => {
   copyPwaStatus();
 });
+elements.languageSelect.addEventListener("change", async (event) => {
+  await loadTranslations(event.target.value);
+  setMode(sourceKind);
+  renderSummary(lastReport?.summary, lastReport);
+});
 elements.sourceFile.addEventListener("change", (event) => {
   loadSelectedFile(event.target.files?.[0]);
 });
@@ -922,11 +961,19 @@ if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("/service-worker.js").catch(() => {});
 }
 
-renderSummary();
-loadRuntimeInfo();
-restoreDraft();
-restoreLastReport();
-setMode(sourceKind);
-syncConnectivityLabel();
-updateInstallUi();
-refreshPwaStatus();
+function initialize() {
+  renderSummary();
+  loadRuntimeInfo();
+  restoreDraft();
+  restoreLastReport();
+  setMode(sourceKind);
+  syncConnectivityLabel();
+  updateInstallUi();
+  refreshPwaStatus();
+  loadTranslations().then(() => {
+    setMode(sourceKind);
+    renderSummary(lastReport?.summary, lastReport);
+  });
+}
+
+initialize();

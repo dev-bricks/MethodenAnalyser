@@ -136,6 +136,9 @@ python MethodenAnalyser3.py --file pfad/zur/datei.py
 python MethodenAnalyser3.py --project pfad/zum/projekt
 python MethodenAnalyser3.py --file pfad/zur/datei.py --json-output
 type pfad\zur\datei.py | python MethodenAnalyser3.py --stdin --json-output snippet.json
+
+# CLI-Hilfe und Textreport auf Englisch ausgeben (de, en, es, zh, ja, ru)
+python MethodenAnalyser3.py --lang en --file pfad/zur/datei.py
 ```
 
 `--json-output` schreibt zusätzlich den maschinenlesbaren Report `methodenanalyser-report-v1.json`. Mit eigenem Dateinamen kann der Report gezielt abgelegt werden; das Format ist in [EXPORTFORMAT.md](EXPORTFORMAT.md) dokumentiert.
@@ -153,7 +156,7 @@ matrix steht in [EXPORTFORMAT.md](EXPORTFORMAT.md) und [WEBAPP.md](WEBAPP.md).
 python webapp/server.py
 ```
 
-Unter Windows startet `START_WEBAPP.bat` denselben lokalen Server. Die Oberfläche läuft standardmäßig unter `http://127.0.0.1:8765/`, nutzt den bestehenden Analysekern und zeigt Text- sowie JSON-Reports an. ZIP-Uploads werden lokal an den Python-Prozess geschickt, dort temporär entpackt und als kleines Projekt analysiert. Zusätzlich kann die lokale Weboberfläche bestehende `methodenanalyser-report-v1.json`-Dateien importieren. Sie ist ein Hilfs-/Demo-Modus für denselben Rechner, keine Companion-App und keine eigene Mobile-Produktlinie. Details stehen in [WEBAPP.md](WEBAPP.md).
+Unter Windows startet `START_WEBAPP.bat` denselben lokalen Server. Die Oberfläche läuft standardmäßig unter `http://127.0.0.1:8765/`, nutzt den bestehenden Analysekern und zeigt Text- sowie JSON-Reports an. Ihre sichtbaren Kernsteuerelemente verwenden denselben Sechs-Sprachen-Katalog wie die Desktop-App; die Auswahl bleibt im lokalen Browserprofil. ZIP-Uploads werden lokal an den Python-Prozess geschickt, dort temporär entpackt und als kleines Projekt analysiert. Zusätzlich kann die lokale Weboberfläche bestehende `methodenanalyser-report-v1.json`-Dateien importieren. Sie ist ein Hilfs-/Demo-Modus für denselben Rechner, keine Companion-App und keine eigene Mobile-Produktlinie. Details stehen in [WEBAPP.md](WEBAPP.md).
 
 Die PWA speichert den aktuellen Entwurf und den letzten JSON-Report lokal im Browser, bietet einen Install-Flow für Chromium-basierte Browser und hält die bereits geladene Oberfläche per Service Worker offline verfügbar. Für neue Analysen muss der lokale Python-Server trotzdem laufen.
 

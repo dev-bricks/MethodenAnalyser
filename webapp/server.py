@@ -36,6 +36,7 @@ from MethodenAnalyser3 import (  # noqa: E402
     generate_project_report,
     generate_report,
 )
+from translator import TranslationSystem  # noqa: E402
 
 
 LOCAL_ONLY_HOSTS = {"127.0.0.1", "::1", "localhost"}
@@ -278,6 +279,20 @@ def get_runtime_info(server: Any) -> dict[str, Any]:
     return build_runtime_info(str(host), int(port))
 
 
+def get_web_translations(language: str) -> dict[str, Any]:
+    """Liefert den flachen UI-Katalog aus der gemeinsamen P-006-Quelle."""
+    translator = TranslationSystem(language)
+    selected = translator.get_language()
+    return {
+        "language": selected,
+        "translations": {
+            key: translator.t(key)
+            for key in translator.translations
+            if key.startswith(("web_", "cli_"))
+        },
+    }
+
+
 class MethodenAnalyserPwaHandler(BaseHTTPRequestHandler):
     server_version = "MethodenAnalyserPWA/0.3"
 
@@ -288,6 +303,10 @@ class MethodenAnalyserPwaHandler(BaseHTTPRequestHandler):
             return
         if path == "/api/runtime":
             self._send_json({"ok": True, "runtime": get_runtime_info(self.server)})
+            return
+        if path == "/api/translations":
+            language = urlparse(self.path).query.partition("lang=")[2].split("&", 1)[0] or "de"
+            self._send_json({"ok": True, **get_web_translations(language)})
             return
         if path.startswith("/assets/"):
             asset_name = unquote(path.removeprefix("/assets/"))

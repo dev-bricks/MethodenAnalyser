@@ -140,6 +140,9 @@ python MethodenAnalyser3.py --file path/to/file.py --json-output
 
 # Analyze via stdin and pipe output to a JSON file
 type path\to\file.py | python MethodenAnalyser3.py --stdin --json-output snippet.json
+
+# Render CLI help and text reports in English (de, en, es, zh, ja, ru)
+python MethodenAnalyser3.py --lang en --file path/to/file.py
 ```
 
 The `--json-output` flag exports a machine-readable report named `methodenanalyser-report-v1.json` (or a custom name if specified). Its structure is documented in [EXPORTFORMAT.md](EXPORTFORMAT.md).
@@ -158,7 +161,7 @@ the optional local helper. It is not a cloud service or a mobile product:
 python webapp/server.py
 ```
 
-Or double-click `START_WEBAPP.bat` on Windows. The server runs at `http://127.0.0.1:8765/` by default and utilizes the same AST analysis engine. 
+Or double-click `START_WEBAPP.bat` on Windows. The server runs at `http://127.0.0.1:8765/` by default and utilizes the same AST analysis engine. Its visible core controls can use the shared six-language catalog; the selected language stays in the local browser profile.
 *   **PWA Support:** It acts as a Progressive Web App (PWA) with offline capabilities (service worker) and local browser draft saving.
 *   **Report Import:** You can import existing `methodenanalyser-report-v1.json` files to view them in the browser.
 *   **LAN Access:** For cross-device testing (e.g. previewing on mobile devices), make the server listen on your local network:
