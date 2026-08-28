@@ -74,6 +74,22 @@ class MethodenAnalyserCliTests(unittest.TestCase):
         self.assertIn("also writes a JSON report", help_result.stdout)
         self.assertNotIn("analysiert eine einzelne Python-Datei", help_result.stdout)
 
+    def test_cli_localizes_mutually_exclusive_target_error(self) -> None:
+        expected_errors = {
+            "de": "Argument --project darf nicht zusammen mit --file verwendet werden",
+            "en": "argument --project cannot be used with --file",
+        }
+
+        for language, expected_error in expected_errors.items():
+            with self.subTest(language=language):
+                result = self.run_cli(
+                    "--lang", language, "--file", "example.py", "--project", "example"
+                )
+
+                self.assertEqual(result.returncode, 2)
+                self.assertIn(expected_error, result.stderr)
+                self.assertNotIn("not allowed with argument", result.stderr)
+
     def test_file_mode_writes_json_report(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             tmp_path = Path(tmpdir)

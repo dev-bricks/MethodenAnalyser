@@ -2197,9 +2197,23 @@ def _run_cli_snippet(code: str, json_output: Optional[str] = None) -> int:
     return EXIT_FINDINGS if _file_has_findings(result) else EXIT_OK
 
 
+class LocalizedArgumentParser(argparse.ArgumentParser):
+    """Ersetzt den nutzerrelevanten Zielkonflikt durch den aktiven Sprachtext."""
+
+    _MUTUALLY_EXCLUSIVE_ERROR = re.compile(
+        r"argument (?P<argument>--[\w-]+): not allowed with argument (?P<other>--[\w-]+)"
+    )
+
+    def error(self, message: str) -> None:
+        match = self._MUTUALLY_EXCLUSIVE_ERROR.fullmatch(message)
+        if match:
+            message = _t("cli_error_mutually_exclusive").format(**match.groupdict())
+        super().error(message)
+
+
 def build_cli_parser() -> argparse.ArgumentParser:
     """Erstellt den Argument-Parser für den CLI-Modus."""
-    parser = argparse.ArgumentParser(
+    parser = LocalizedArgumentParser(
         description=_t("cli_help_description"),
         add_help=False,
     )

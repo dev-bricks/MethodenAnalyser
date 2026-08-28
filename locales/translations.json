@@ -320,6 +320,9 @@
   "cli_help_json_output": {
     "de": "schreibt zusätzlich einen JSON-Report im Schema {schema}; ohne Wert wird {default_name} genutzt", "en": "also writes a JSON report in schema {schema}; without a value, {default_name} is used", "es": "también escribe un informe JSON con el esquema {schema}; sin valor se usa {default_name}", "zh": "额外写入采用 {schema} 架构的 JSON 报告；未提供值时使用 {default_name}", "ja": "{schema} スキーマの JSON レポートも出力します。値がない場合は {default_name} を使用します", "ru": "также создаёт JSON-отчёт по схеме {schema}; без значения используется {default_name}"
   },
+  "cli_error_mutually_exclusive": {
+    "de": "Argument {argument} darf nicht zusammen mit {other} verwendet werden", "en": "argument {argument} cannot be used with {other}", "es": "el argumento {argument} no se puede usar junto con {other}", "zh": "参数 {argument} 不能与 {other} 一起使用", "ja": "{argument} は {other} と同時に使用できません", "ru": "аргумент {argument} нельзя использовать вместе с {other}"
+  },
   "web_title": {
     "de": "MethodenAnalyser Web Companion", "en": "MethodenAnalyser Web Companion", "es": "Web Companion de MethodenAnalyser", "zh": "MethodenAnalyser 网页助手", "ja": "MethodenAnalyser Web コンパニオン", "ru": "Веб-помощник MethodenAnalyser"
   },
