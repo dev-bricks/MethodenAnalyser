@@ -5,6 +5,13 @@ Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
 ## [Unreleased]
 
+### Repository-Hygiene & CI-Matrix-Härtung (Pfad A) [2026-09-07]
+- **CI-Matrix-Härtung (`.github/workflows/tests.yml`)**: Concurrency-Steuerung (`cancel-in-progress`) integriert, Matrix um Python 3.13 erweitert, automatisierte Testausführung via `pytest -v` und Ruff Linting standardisiert.
+- **PEP 621 Standard-Metadaten (`pyproject.toml`)**: Vollständige `[project.urls]` (Homepage, Documentation, Repository, Issues, Changelog, Security, Umbrella) deklariert, Python 3.13 sowie OS-Klassifikatoren (Linux, Windows, MacOS) ergänzt, CLI- und GUI-Entrypoints (`[project.scripts]`, `[project.gui-scripts]`) hinterlegt.
+- **Zweisprachige Sicherheitsrichtlinie (`SECURITY.md`)**: Umfassende zweisprachige Richtlinie (English & Deutsch) mit klaren Garantien für Local-First, Zero-Egress, Schreibschutz bei Quelltextanalysen (Read-Only), Unprivileged User-Mode und inerte statische Analyse ohne dynamische Code-Ausführung; koordinierte Meldewege via GitHub Private Vulnerability Reporting und dedizierte Sicherheitskontaktadressen hinterlegt.
+- **Vertragstest-Erweiterung (`tests/test_metadata.py`)**: 3 neue automatisierte Vertragstests für PEP 621 URLs/Metadaten, zweisprachige Sicherheitsrichtlinie und CI-Workflow-Integrität hinzugefügt (Gesamttestsuite auf 124 Tests / 15 Subtests erhöht, 100% grün).
+- **Synchronisation von Dokumenten und Badges**: Test- und Python-Badges in `README.md` und `README_de.md` auf 124 Tests (Python 3.10 - 3.13) aktualisiert, `llms.txt` Zeitstempel auf 2026-09-07 synchronisiert.
+
 ### Internationalisierung [2026-08-27]
 - **MA-I18N-05:** CLI erhält `--lang` für Hilfe und die zentralen Textreport-Zusammenfassungen. Der lokale Web-Hilfsmodus bietet eine sichtbare Sechs-Sprachen-Auswahl und lädt den flachen `web_*`-Katalog über den lokalen Endpunkt `GET /api/translations` aus der gemeinsamen `locales/translations.json`-Quelle. Keine Cloud-Abhängigkeit, keine neue Produktlinie.
 - **Regressionen:** CLI-Sprachwahl, gemeinsamer Web-Katalog, HTTP-Endpunkt und die bestehende persistente Report-Wiederherstellung sind automatisiert abgesichert.

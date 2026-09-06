@@ -30,13 +30,32 @@ classifiers = [
     "Intended Audience :: Developers",
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
+    "Operating System :: POSIX :: Linux",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: MacOS",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Topic :: Software Development :: Quality Assurance",
     "Topic :: Software Development :: Testing",
 ]
+
+[project.scripts]
+methodenanalyser = "MethodenAnalyser3:main"
+
+[project.gui-scripts]
+methodenanalyser-gui = "MethodenAnalyser3:main"
+
+[project.urls]
+Homepage = "https://github.com/dev-bricks/MethodenAnalyser"
+Documentation = "https://github.com/dev-bricks/MethodenAnalyser#readme"
+Repository = "https://github.com/dev-bricks/MethodenAnalyser"
+Issues = "https://github.com/dev-bricks/MethodenAnalyser/issues"
+Changelog = "https://github.com/dev-bricks/MethodenAnalyser/blob/master/CHANGELOG.md"
+Security = "https://github.com/dev-bricks/MethodenAnalyser/blob/master/SECURITY.md"
+Umbrella = "https://github.com/open-bricks/open-bricks"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

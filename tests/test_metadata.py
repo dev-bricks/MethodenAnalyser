@@ -95,3 +95,98 @@ def test_export_format_constants():
     assert m3.EXIT_ANALYSIS_ERROR == 1
     assert m3.EXIT_FINDINGS == 2
     assert m3.EXIT_PARTIAL_ERROR == 3
+
+
+def test_pep621_metadata_and_project_urls():
+    """Verify pyproject.toml adheres to PEP 621 with full URLs and classifiers."""
+    pyproject_path = ROOT / "pyproject.toml"
+    assert pyproject_path.exists()
+    content = pyproject_path.read_text(encoding="utf-8")
+
+    # Project URLs
+    assert "[project.urls]" in content
+    expected_urls = [
+        'Homepage = "https://github.com/dev-bricks/MethodenAnalyser"',
+        'Documentation = "https://github.com/dev-bricks/MethodenAnalyser#readme"',
+        'Repository = "https://github.com/dev-bricks/MethodenAnalyser"',
+        'Issues = "https://github.com/dev-bricks/MethodenAnalyser/issues"',
+        'Changelog = "https://github.com/dev-bricks/MethodenAnalyser/blob/master/CHANGELOG.md"',
+        'Security = "https://github.com/dev-bricks/MethodenAnalyser/blob/master/SECURITY.md"',
+        'Umbrella = "https://github.com/open-bricks/open-bricks"',
+    ]
+    for url_entry in expected_urls:
+        assert url_entry in content, f"Missing URL entry: {url_entry}"
+
+    # Classifiers
+    for py_ver in ["3.10", "3.11", "3.12", "3.13"]:
+        assert f'"Programming Language :: Python :: {py_ver}"' in content
+
+    for os_target in [
+        "Operating System :: OS Independent",
+        "Operating System :: POSIX :: Linux",
+        "Operating System :: Microsoft :: Windows",
+        "Operating System :: MacOS",
+    ]:
+        assert f'"{os_target}"' in content
+
+    # Entrypoints
+    assert "[project.scripts]" in content
+    assert 'methodenanalyser = "MethodenAnalyser3:main"' in content
+    assert "[project.gui-scripts]" in content
+    assert 'methodenanalyser-gui = "MethodenAnalyser3:main"' in content
+
+
+def test_security_policy_bilingual_and_invariants():
+    """Verify SECURITY.md contains bilingual policy, guarantees and reporting channels."""
+    sec_path = ROOT / "SECURITY.md"
+    assert sec_path.exists()
+    content = sec_path.read_text(encoding="utf-8")
+
+    # Bilingual navigation and sections
+    assert "# Security Policy / Sicherheitsrichtlinie" in content
+    assert "[English](#english)" in content
+    assert "[Deutsch](#deutsch)" in content
+    assert '<a name="english"></a>' in content
+    assert '<a name="deutsch"></a>' in content
+
+    # Security guarantees & invariants
+    assert "Local-First & Zero Network Egress" in content
+    assert "Local-First & Zero-Egress" in content
+    assert "Read-Only Source Code Analysis" in content
+    assert "Schreibschutz bei Analysen" in content
+    assert "Inert Static Analysis" in content
+    assert "Inerte statische Analyse" in content
+    assert "Unprivileged User-Mode Execution" in content
+    assert "Ausführung mit Benutzerrechten" in content
+
+    # Supported versions and reporting channels
+    assert "| 3.0.x   | :white_check_mark: |" in content
+    assert "https://github.com/dev-bricks/MethodenAnalyser/security/advisories/new" in content
+    assert "security@open-bricks.org" in content
+    assert "support@lukasgeiger.com" in content
+
+
+def test_ci_workflow_matrix_and_concurrency():
+    """Verify CI workflow tests.yml includes concurrency, Python 3.13 and multi-OS runners."""
+    ci_path = ROOT / ".github" / "workflows" / "tests.yml"
+    assert ci_path.exists()
+    content = ci_path.read_text(encoding="utf-8")
+
+    # Concurrency
+    assert "concurrency:" in content
+    assert "cancel-in-progress: true" in content
+
+    # Matrix coverage
+    assert 'python-version: "3.10"' in content
+    assert 'python-version: "3.11"' in content
+    assert 'python-version: "3.12"' in content
+    assert 'python-version: "3.13"' in content
+
+    # Runner targets
+    assert "windows-2025-vs2026" in content
+    assert "ubuntu-latest" in content
+    assert "macos-26" in content
+
+    # Steps
+    assert "pytest -v" in content
+    assert "ruff check ." in content
