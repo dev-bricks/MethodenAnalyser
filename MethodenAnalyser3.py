@@ -20,9 +20,12 @@ from dataclasses import dataclass, field
 from functools import lru_cache
 
 try:
-    from translator import TranslationSystem
+    from translator import TranslationSystem, detect_system_language
 except Exception:  # pragma: no cover - Übersetzung ist optional
     TranslationSystem = None
+
+    def detect_system_language(default: str = "de") -> str:
+        return default
 
 # ============================================================================
 # KONSTANTEN
@@ -104,9 +107,12 @@ def save_app_config(config: Dict[str, Any]) -> bool:
 
 
 def get_saved_language() -> str:
-    """Gespeicherte Sprache oder Default, validiert gegen SUPPORTED_LANGUAGES."""
-    lang = load_app_config().get("language", DEFAULT_LANGUAGE)
-    return lang if lang in SUPPORTED_LANGUAGES else DEFAULT_LANGUAGE
+    """Gespeicherte Sprache oder System-Locale, validiert gegen SUPPORTED_LANGUAGES."""
+    config_lang = load_app_config().get("language")
+    if config_lang in SUPPORTED_LANGUAGES:
+        return config_lang
+    detected = detect_system_language(DEFAULT_LANGUAGE)
+    return detected if detected in SUPPORTED_LANGUAGES else DEFAULT_LANGUAGE
 
 
 def set_saved_language(lang: str) -> bool:
@@ -1137,7 +1143,7 @@ def generate_report(result: AnalysisResult) -> str:
 
     # Import-Analyse
     if result.import_scopes:
-        report.append("\n[IMPORTS] IMPORT-SCOPE-ANALYSE\n")
+        report.append(f"\n{_t('cli_section_import_scopes')}\n")
         report.append("-" * 70 + "\n")
         
         scopes = result.import_scopes
@@ -1146,87 +1152,87 @@ def generate_report(result: AnalysisResult) -> str:
         unused_global = scopes.get('unused_global', [])
         
         if multi:
-            report.append(f"Mehrfach lokal importiert:\n  {', '.join(multi)}\n\n")
+            report.append(f"{_t('cli_multi_local_imported')}\n  {', '.join(multi)}\n\n")
         if redundant:
-            report.append(f"Redundant lokal importiert:\n  {', '.join(redundant)}\n\n")
+            report.append(f"{_t('cli_redundant_local_imported')}\n  {', '.join(redundant)}\n\n")
         if unused_global:
-            report.append(f"Ungenutzte globale Imports:\n  {', '.join(unused_global)}\n\n")
+            report.append(f"{_t('cli_unused_global_imports')}\n  {', '.join(unused_global)}\n\n")
 
     # Duplikate
     if result.duplicate_imports:
-        report.append("\n[WARNUNG] DOPPELTE IMPORTS\n")
+        report.append(f"\n{_t('cli_section_duplicate_imports')}\n")
         report.append("-" * 70 + "\n")
         report.append(f"  {', '.join(result.duplicate_imports)}\n\n")
 
     # Dynamische Aufrufe
     if result.dynamic_usage:
-        report.append("\n[DYNAMISCH] DYNAMISCHE AUFRUFE\n")
+        report.append(f"\n{_t('cli_section_dynamic_calls')}\n")
         report.append("-" * 70 + "\n")
-        report.append(f"Erkannte Patterns: {', '.join(result.dynamic_usage)}\n")
+        report.append(f"{_t('cli_detected_patterns')} {', '.join(result.dynamic_usage)}\n")
         if result.dynamic_methods:
-            report.append(f"Extrahierte Methoden: {', '.join(result.dynamic_methods)}\n")
+            report.append(f"{_t('cli_extracted_methods')} {', '.join(result.dynamic_methods)}\n")
         report.append("\n")
 
     # Namens-Matches
     if result.name_matches:
-        report.append("\n[TIPP] ÄHNLICHE NAMEN (mögliche Tippfehler)\n")
+        report.append(f"\n{_t('cli_section_name_matches')}\n")
         report.append("-" * 70 + "\n")
         for call, match in result.name_matches:
-            report.append(f"  '{call}' → vielleicht '{match}'?\n")
+            report.append(f"  '{call}' → {_t('cli_maybe')} '{match}'?\n")
         report.append("\n")
 
     # Statistik
-    report.append("\n[STATS] STATISTIK\n")
+    report.append(f"\n{_t('cli_section_stats')}\n")
     report.append("-" * 70 + "\n")
-    report.append(f"  Aufrufe gesamt: {len(result.calls)}\n")
-    report.append(f"  Definitionen gesamt: {len(result.defs)}\n")
-    report.append(f"  Importierte Definitionen: {len(result.imported_definitions)}\n")
-    report.append(f"  Modul-bereitgestellte Attribute: {len(result.module_provided_attrs)}\n")
-    report.append(f"  Imports gesamt: {len(result.imports)}\n")
-    report.append(f"  Framework-Hooks: {len(result.framework_hooks)}\n")
-    report.append(f"  Type-Hints: {len(result.typehints)}\n")
+    report.append(f"  {_t('cli_total_calls')} {len(result.calls)}\n")
+    report.append(f"  {_t('cli_total_definitions')} {len(result.defs)}\n")
+    report.append(f"  {_t('cli_imported_definitions')} {len(result.imported_definitions)}\n")
+    report.append(f"  {_t('cli_module_provided_attrs')} {len(result.module_provided_attrs)}\n")
+    report.append(f"  {_t('cli_total_imports')} {len(result.imports)}\n")
+    report.append(f"  {_t('cli_framework_hooks')} {len(result.framework_hooks)}\n")
+    report.append(f"  {_t('cli_typehints')} {len(result.typehints)}\n")
 
     # Optional: Zeige importierte Definitionen wenn gewünscht
     if result.imported_definitions:
-        report.append("\n[IMPORTS] IMPORTIERTE DEFINITIONEN\n")
+        report.append(f"\n{_t('cli_section_imported_definitions')}\n")
         report.append("-" * 70 + "\n")
         # Gruppiere nach Typ für bessere Lesbarkeit
         classes = [name for name in result.imported_definitions if name[0].isupper()]
         functions = [name for name in result.imported_definitions if name[0].islower()]
         
         if classes:
-            report.append(f"  Klassen/Typen ({len(classes)}): {', '.join(sorted(classes)[:20])}")
+            report.append(f"  {_t('cli_classes_types')} ({len(classes)}): {', '.join(sorted(classes)[:20])}")
             if len(classes) > 20:
-                report.append(f" ... +{len(classes) - 20} weitere")
+                report.append(f" ... +{len(classes) - 20} {_t('cli_more')}")
             report.append("\n")
         
         if functions:
-            report.append(f"  Funktionen ({len(functions)}): {', '.join(sorted(functions)[:20])}")
+            report.append(f"  {_t('cli_functions')} ({len(functions)}): {', '.join(sorted(functions)[:20])}")
             if len(functions) > 20:
-                report.append(f" ... +{len(functions) - 20} weitere")
+                report.append(f" ... +{len(functions) - 20} {_t('cli_more')}")
             report.append("\n")
 
     # NEU: Zeige Modul-Attribut Usage
     if result.module_attribute_usage:
-        report.append("\n[MODULE] MODUL-ATTRIBUT VERWENDUNG\n")
+        report.append(f"\n{_t('cli_section_module_attr_usage')}\n")
         report.append("-" * 70 + "\n")
-        report.append("  Zeigt welche Attribute von importierten Modulen verwendet werden:\n\n")
+        report.append(f"  {_t('cli_module_attr_desc')}\n\n")
         
         for module, attrs in sorted(result.module_attribute_usage.items())[:10]:
             attrs_str = ', '.join(sorted(attrs)[:10])
             if len(attrs) > 10:
-                attrs_str += f' ... +{len(attrs) - 10} weitere'
+                attrs_str += f' ... +{len(attrs) - 10} ' + _t('cli_more')
             report.append(f"  {module}: {attrs_str}\n")
         
         if len(result.module_attribute_usage) > 10:
-            report.append(f"  ... und {len(result.module_attribute_usage) - 10} weitere Module\n")
+            report.append(f"  ... und {len(result.module_attribute_usage) - 10} {_t('cli_more')}\n")
 
     # TODO-Kommentare
     if result.todo_comments:
-        report.append(f"\n[TODO] TODO-KOMMENTARE ({len(result.todo_comments)})\n")
+        report.append(f"\n{_t('cli_section_todos')} ({len(result.todo_comments)})\n")
         report.append("-" * 70 + "\n")
         for lineno, tag, text in result.todo_comments:
-            report.append(f"  Zeile {lineno:4d}: [{tag}] {text}\n")
+            report.append(f"  {_t('cli_line')} {lineno:4d}: [{tag}] {text}\n")
 
     report.append("\n" + "=" * 70 + "\n")
 
@@ -1550,37 +1556,37 @@ def generate_project_report(result: ProjectAnalysisResult) -> str:
     report.append(f"{_t('cli_unused_imports')}: {total_ui} | {_t('cli_unused_definitions')}: {total_ud}\n\n")
     
     if result.all_unused_imports:
-        report.append("UNGENUTZTE IMPORTS:\n" + "-" * 50 + "\n")
+        report.append(f"{_t('cli_unused_imports').upper()}:\n" + "-" * 50 + "\n")
         for fp, imps in sorted(result.all_unused_imports.items()):
             report.append(f"  {fp}: {', '.join(imps)}\n")
     
     if result.all_unused_defs:
-        report.append("\nUNGENUTZTE DEFINITIONEN:\n" + "-" * 50 + "\n")
+        report.append(f"\n{_t('cli_unused_definitions').upper()}:\n" + "-" * 50 + "\n")
         for fp, defs in sorted(result.all_unused_defs.items()):
             report.append(f"  {fp}: {', '.join(defs)}\n")
 
     if result.all_missing_defs:
-        report.append("\nFEHLENDE DEFINITIONEN:\n" + "-" * 50 + "\n")
+        report.append(f"\n{_t('cli_missing_definitions').upper()}:\n" + "-" * 50 + "\n")
         for fp, defs in sorted(result.all_missing_defs.items()):
             report.append(f"  {fp}: {', '.join(defs)}\n")
 
     if result.all_missing_imports:
-        report.append("\nFEHLENDE IMPORTS:\n" + "-" * 50 + "\n")
+        report.append(f"\n{_t('cli_missing_imports').upper()}:\n" + "-" * 50 + "\n")
         for fp, imports in sorted(result.all_missing_imports.items()):
             report.append(f"  {fp}: {', '.join(imports)}\n")
 
     if result.all_duplicate_imports:
-        report.append("\nDOPPELTE IMPORTS:\n" + "-" * 50 + "\n")
+        report.append(f"\n{_t('cli_duplicate_imports_title')}\n" + "-" * 50 + "\n")
         for fp, imports in sorted(result.all_duplicate_imports.items()):
             report.append(f"  {fp}: {', '.join(imports)}\n")
 
     if result.files_with_errors:
-        report.append("\nDATEIEN MIT FEHLERN:\n" + "-" * 50 + "\n")
+        report.append(f"\n{_t('cli_files_with_errors')}:\n" + "-" * 50 + "\n")
         for fp, error in sorted(result.files_with_errors):
             report.append(f"  {fp}: {error}\n")
 
     score = max(0, 100 - total_ui * 2 - total_ud * 2)
-    report.append(f"\n{'=' * 70}\nSCORE: {score}/100\n{'=' * 70}\n")
+    report.append(f"\n{'=' * 70}\n{_t('cli_score')}: {score}/100\n{'=' * 70}\n")
     return "".join(report)
 
 
@@ -2244,10 +2250,11 @@ def build_cli_parser() -> argparse.ArgumentParser:
             default_name=DEFAULT_JSON_REPORT_NAME,
         ),
     )
+    current_lang = get_translator().get_language() if get_translator() is not None else DEFAULT_LANGUAGE
     parser.add_argument(
         "--lang",
         choices=SUPPORTED_LANGUAGES,
-        default=DEFAULT_LANGUAGE,
+        default=current_lang,
         help=_t("cli_help_language"),
     )
     return parser
@@ -2256,9 +2263,15 @@ def build_cli_parser() -> argparse.ArgumentParser:
 def main(argv: Optional[List[str]] = None) -> int:
     """Startet GUI oder CLI je nach Argumenten."""
     language_parser = argparse.ArgumentParser(add_help=False)
-    language_parser.add_argument("--lang", choices=SUPPORTED_LANGUAGES, default=DEFAULT_LANGUAGE)
+    language_parser.add_argument("--lang", choices=SUPPORTED_LANGUAGES, default=None)
     initial_args, _ = language_parser.parse_known_args(argv)
-    set_runtime_language(initial_args.lang)
+
+    if initial_args.lang:
+        chosen_lang = initial_args.lang
+    else:
+        chosen_lang = get_saved_language()
+
+    set_runtime_language(chosen_lang)
     parser = build_cli_parser()
     args = parser.parse_args(argv)
 

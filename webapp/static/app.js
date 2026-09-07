@@ -58,24 +58,24 @@ const singleFileMetricLabels = [
 ];
 
 const projectMetricLabels = [
-  ["files_analyzed", "Dateien"],
-  ["files_with_errors", "Fehlerdateien"],
-  ["total_lines", "Zeilen"],
-  ["total_definitions", "Definitionen"],
-  ["total_imports", "Imports"],
-  ["unused_imports", "Ungenutzte Imports"],
-  ["unused_definitions", "Tote Definitionen"],
-  ["missing_imports", "Fehlende Imports"],
-  ["missing_definitions", "Fehlende Definitionen"],
-  ["duplicate_imports", "Doppelte Imports"],
+  ["files_analyzed", "web_files_analyzed"],
+  ["files_with_errors", "web_files_with_errors"],
+  ["total_lines", "web_total_lines"],
+  ["total_definitions", "web_definitions"],
+  ["total_imports", "web_imports"],
+  ["unused_imports", "web_unused_imports"],
+  ["unused_definitions", "web_unused_definitions"],
+  ["missing_imports", "web_missing_imports"],
+  ["missing_definitions", "web_missing_definitions"],
+  ["duplicate_imports", "web_duplicate_imports"],
 ];
 
 const findingLabels = [
-  ["unused_imports", "Ungenutzte Imports"],
-  ["unused_definitions", "Tote Definitionen"],
-  ["missing_imports", "Fehlende Imports"],
-  ["missing_definitions", "Fehlende Definitionen"],
-  ["duplicate_imports", "Doppelte Imports"],
+  ["unused_imports", "web_unused_imports"],
+  ["unused_definitions", "web_unused_definitions"],
+  ["missing_imports", "web_missing_imports"],
+  ["missing_definitions", "web_missing_definitions"],
+  ["duplicate_imports", "web_duplicate_imports"],
 ];
 
 const STORAGE_KEYS = {
@@ -110,13 +110,28 @@ function applyTranslations() {
     "label[for='sourceCode']": "web_python_code", "#analyzeButton": "web_analyze",
     "#sampleButton": "web_load_example", "#clearButton": "web_clear", "#importJson": "web_load_json",
     "#downloadJson": "web_save_json", "#installButton": "web_install_app", "#snippetMode": "web_snippet",
-    "#fileMode": "web_file", "#mobileGuideTitle": "web_mobile_test_path", "#pwaStatusTitle": "web_pwa_status",
-    "#refreshPwaStatus": "web_refresh_status", "#copyPwaStatus": "web_copy_status",
+    "#fileMode": "web_file", "#zipMode": "web_zip", "#mobileGuideTitle": "web_mobile_test_path",
+    "#pwaStatusTitle": "web_pwa_status", "#refreshPwaStatus": "web_refresh_status",
+    "#copyPwaStatus": "web_copy_status", "#textReportSummary": "web_text_report",
+    "#jsonSummary": "web_json_preview",
   };
   Object.entries(staticText).forEach(([selector, key]) => {
     const element = document.querySelector(selector);
     if (element) element.textContent = t(key, element.textContent);
   });
+  syncInputUi();
+  if (elements.fileName && (elements.fileName.textContent === "Keine Datei gewählt" || elements.fileName.textContent === t("web_no_file_selected", "Keine Datei gewählt"))) {
+    elements.fileName.textContent = t("web_no_file_selected", "Keine Datei gewählt");
+  }
+  if (!lastReport) {
+    if (elements.resultState) elements.resultState.textContent = t("web_state_ready", "Bereit");
+    if (elements.textReport && (elements.textReport.textContent === EMPTY_TEXT_REPORT || elements.textReport.textContent === t("web_empty_text_report", EMPTY_TEXT_REPORT))) {
+      elements.textReport.textContent = t("web_empty_text_report", EMPTY_TEXT_REPORT);
+    }
+  } else {
+    renderSummary(lastReport.summary, lastReport);
+    renderFindings(lastReport);
+  }
 }
 
 async function loadTranslations(language = activeLanguage) {
@@ -363,11 +378,11 @@ function syncInputUi() {
     : ".py,text/x-python,text/plain";
 
   if (sourceKind === "snippet") {
-    elements.sourceHint.textContent = "Snippets direkt einfügen oder eine einzelne `.py`-Datei laden.";
+    elements.sourceHint.textContent = t("web_source_hint_snippet", "Snippets direkt einfügen oder eine einzelne `.py`-Datei laden.");
   } else if (sourceKind === "file") {
-    elements.sourceHint.textContent = "Eine einzelne Python-Datei wird direkt im Browser gelesen und lokal analysiert.";
+    elements.sourceHint.textContent = t("web_source_hint_file", "Eine einzelne Python-Datei wird direkt im Browser gelesen und lokal analysiert.");
   } else {
-    elements.sourceHint.textContent = "Kleine ZIP-Archive mit `.py`-Dateien werden lokal an den Python-Prozess gesendet, dort temporär entpackt und als Mini-Projekt analysiert.";
+    elements.sourceHint.textContent = t("web_source_hint_zip", "Kleine ZIP-Archive mit `.py`-Dateien werden lokal an den Python-Prozess gesendet, dort temporär entpackt und als Mini-Projekt analysiert.");
     elements.sourceCode.value = zipPlaceholderText();
   }
 }
@@ -384,7 +399,7 @@ function setMode(nextMode) {
   if (nextMode === "snippet") {
     currentFileName = "<snippet>";
     currentZipBase64 = null;
-    elements.fileName.textContent = "Keine Datei gewählt";
+    elements.fileName.textContent = t("web_no_file_selected", "Keine Datei gewählt");
     elements.sourceFile.value = "";
   } else if (nextMode === "file") {
     if (!currentFileName.endsWith(".py")) {
@@ -422,7 +437,7 @@ function renderSummary(summary = {}, report = null) {
 
 function collectFindings(report) {
   const groups = [];
-  for (const [key, label] of findingLabels) {
+  for (const [key, labelKey] of findingLabels) {
     const byFile = report[key] || {};
     const items = [];
     for (const [file, values] of Object.entries(byFile)) {
@@ -431,13 +446,13 @@ function collectFindings(report) {
       }
     }
     if (items.length > 0) {
-      groups.push({ label, items });
+      groups.push({ label: t(labelKey, labelKey), items });
     }
   }
 
   if (Array.isArray(report.errors) && report.errors.length > 0) {
     groups.push({
-      label: "Dateifehler",
+      label: t("web_file_errors", "Dateifehler"),
       items: report.errors.map((entry) => `${entry.path}: ${entry.message}`),
     });
   }
@@ -508,7 +523,7 @@ function renderFindings(report) {
   if (groups.length === 0) {
     const empty = document.createElement("div");
     empty.className = "finding-empty";
-    empty.textContent = "Keine Findings im aktuellen Report.";
+    empty.textContent = t("web_no_findings", "Keine Findings im aktuellen Report.");
     elements.findingList.append(empty);
     return;
   }
@@ -537,7 +552,10 @@ function renderResult(payload) {
   elements.textReport.textContent = payload.text_report;
   elements.jsonPreview.textContent = JSON.stringify(payload.report, null, 2);
   elements.downloadJson.disabled = false;
-  setState(payload.has_findings ? "Findings" : "Sauber", payload.has_findings ? "state-warning" : "state-ok");
+  setState(
+    payload.has_findings ? t("web_state_findings", "Findings") : t("web_state_clean", "Sauber"),
+    payload.has_findings ? "state-warning" : "state-ok"
+  );
   persistReport();
 }
 
@@ -550,12 +568,15 @@ function renderImportedReport(report, importedFileName) {
   elements.textReport.textContent = describeImportedReport(report, importedFileName);
   elements.jsonPreview.textContent = JSON.stringify(report, null, 2);
   elements.downloadJson.disabled = false;
-  setState(hasFindings ? "Report geladen" : "Report sauber", hasFindings ? "state-warning" : "state-ok");
+  setState(
+    hasFindings ? t("web_state_report_loaded", "Report geladen") : t("web_state_clean", "Sauber"),
+    hasFindings ? "state-warning" : "state-ok"
+  );
   persistReport();
 }
 
 function renderError(message) {
-  setState("Fehler", "state-error");
+  setState(t("web_state_error", "Fehler"), "state-error");
   elements.textReport.textContent = message;
   elements.jsonPreview.textContent = EMPTY_JSON;
   elements.downloadJson.disabled = !lastReport;
@@ -672,7 +693,7 @@ function restoreLastReport() {
 async function analyzeCurrentSource() {
   elements.analyzeButton.disabled = true;
   elements.downloadJson.disabled = true;
-  setState("Analysiert");
+  setState(t("web_state_analyzing", "Analysiert…"));
 
   try {
     let requestBody;
@@ -684,12 +705,14 @@ async function analyzeCurrentSource() {
         source_kind: "zip",
         filename: currentFileName,
         zip_base64: currentZipBase64,
+        lang: activeLanguage,
       };
     } else {
       requestBody = {
         code: elements.sourceCode.value,
         source_kind: sourceKind,
         filename: currentFileName,
+        lang: activeLanguage,
       };
     }
 

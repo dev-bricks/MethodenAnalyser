@@ -240,162 +240,835 @@
     "ru": "Язык переключен на русский."
   },
   "cli_report_title": {
-    "de": "PYTHON CODE ANALYSE - ERGEBNISSE", "en": "PYTHON CODE ANALYSIS - RESULTS", "es": "ANÁLISIS DE CÓDIGO PYTHON - RESULTADOS", "zh": "PYTHON 代码分析 - 结果", "ja": "PYTHON コード分析 - 結果", "ru": "АНАЛИЗ КОДА PYTHON - РЕЗУЛЬТАТЫ"
+    "de": "PYTHON CODE ANALYSE - ERGEBNISSE",
+    "en": "PYTHON CODE ANALYSIS - RESULTS",
+    "es": "ANÁLISIS DE CÓDIGO PYTHON - RESULTADOS",
+    "zh": "PYTHON 代码分析 - 结果",
+    "ja": "PYTHON コード分析 - 結果",
+    "ru": "АНАЛИЗ КОДА PYTHON - РЕЗУЛЬТАТЫ"
   },
   "cli_main_results": {
-    "de": "Hauptergebnisse", "en": "Main Results", "es": "Resultados principales", "zh": "主要结果", "ja": "主な結果", "ru": "Основные результаты"
+    "de": "Hauptergebnisse",
+    "en": "Main Results",
+    "es": "Resultados principales",
+    "zh": "主要结果",
+    "ja": "主な結果",
+    "ru": "Основные результаты"
   },
   "cli_missing_definitions": {
-    "de": "Fehlende Definitionen", "en": "Missing Definitions", "es": "Definiciones faltantes", "zh": "缺失的定义", "ja": "不足している定義", "ru": "Отсутствующие определения"
+    "de": "Fehlende Definitionen",
+    "en": "Missing Definitions",
+    "es": "Definiciones faltantes",
+    "zh": "缺失的定义",
+    "ja": "不足している定義",
+    "ru": "Отсутствующие определения"
   },
   "cli_unused_definitions": {
-    "de": "Ungenutzte Definitionen", "en": "Unused Definitions", "es": "Definiciones no utilizadas", "zh": "未使用的定义", "ja": "未使用の定義", "ru": "Неиспользуемые определения"
+    "de": "Ungenutzte Definitionen",
+    "en": "Unused Definitions",
+    "es": "Definiciones no utilizadas",
+    "zh": "未使用的定义",
+    "ja": "未使用の定義",
+    "ru": "Неиспользуемые определения"
   },
   "cli_unused_imports": {
-    "de": "Ungenutzte Imports", "en": "Unused Imports", "es": "Importaciones no utilizadas", "zh": "未使用的导入", "ja": "未使用のインポート", "ru": "Неиспользуемые импорты"
+    "de": "Ungenutzte Imports",
+    "en": "Unused Imports",
+    "es": "Importaciones no utilizadas",
+    "zh": "未使用的导入",
+    "ja": "未使用のインポート",
+    "ru": "Неиспользуемые импорты"
   },
   "cli_missing_imports": {
-    "de": "Fehlende Imports", "en": "Missing Imports", "es": "Importaciones faltantes", "zh": "缺失的导入", "ja": "不足しているインポート", "ru": "Отсутствующие импорты"
+    "de": "Fehlende Imports",
+    "en": "Missing Imports",
+    "es": "Importaciones faltantes",
+    "zh": "缺失的导入",
+    "ja": "不足しているインポート",
+    "ru": "Отсутствующие импорты"
   },
   "cli_none": {
-    "de": "(keine)", "en": "(none)", "es": "(ninguna)", "zh": "（无）", "ja": "（なし）", "ru": "(нет)"
+    "de": "(keine)",
+    "en": "(none)",
+    "es": "(ninguna)",
+    "zh": "（无）",
+    "ja": "（なし）",
+    "ru": "(нет)"
   },
   "cli_project_report_title": {
-    "de": "PROJEKT CODE ANALYSE", "en": "PROJECT CODE ANALYSIS", "es": "ANÁLISIS DE CÓDIGO DEL PROYECTO", "zh": "项目代码分析", "ja": "プロジェクトコード分析", "ru": "АНАЛИЗ КОДА ПРОЕКТА"
+    "de": "PROJEKT CODE ANALYSE",
+    "en": "PROJECT CODE ANALYSIS",
+    "es": "ANÁLISIS DE CÓDIGO DEL PROYECTO",
+    "zh": "项目代码分析",
+    "ja": "プロジェクトコード分析",
+    "ru": "АНАЛИЗ КОДА ПРОЕКТА"
   },
   "cli_project": {
-    "de": "Projekt", "en": "Project", "es": "Proyecto", "zh": "项目", "ja": "プロジェクト", "ru": "Проект"
+    "de": "Projekt",
+    "en": "Project",
+    "es": "Proyecto",
+    "zh": "项目",
+    "ja": "プロジェクト",
+    "ru": "Проект"
   },
   "cli_files": {
-    "de": "Dateien", "en": "Files", "es": "Archivos", "zh": "文件", "ja": "ファイル", "ru": "Файлы"
+    "de": "Dateien",
+    "en": "Files",
+    "es": "Archivos",
+    "zh": "文件",
+    "ja": "ファイル",
+    "ru": "Файлы"
   },
   "cli_lines": {
-    "de": "Zeilen", "en": "Lines", "es": "Líneas", "zh": "行", "ja": "行", "ru": "Строки"
+    "de": "Zeilen",
+    "en": "Lines",
+    "es": "Líneas",
+    "zh": "行",
+    "ja": "行",
+    "ru": "Строки"
   },
   "cli_definitions": {
-    "de": "Definitionen", "en": "Definitions", "es": "Definiciones", "zh": "定义", "ja": "定義", "ru": "Определения"
+    "de": "Definitionen",
+    "en": "Definitions",
+    "es": "Definiciones",
+    "zh": "定义",
+    "ja": "定義",
+    "ru": "Определения"
   },
   "cli_imports": {
-    "de": "Imports", "en": "Imports", "es": "Importaciones", "zh": "导入", "ja": "インポート", "ru": "Импорты"
+    "de": "Imports",
+    "en": "Imports",
+    "es": "Importaciones",
+    "zh": "导入",
+    "ja": "インポート",
+    "ru": "Импорты"
   },
   "cli_json_export_failed": {
-    "de": "JSON-Export fehlgeschlagen", "en": "JSON export failed", "es": "Falló la exportación JSON", "zh": "JSON 导出失败", "ja": "JSON エクスポートに失敗しました", "ru": "Экспорт JSON не выполнен"
+    "de": "JSON-Export fehlgeschlagen",
+    "en": "JSON export failed",
+    "es": "Falló la exportación JSON",
+    "zh": "JSON 导出失败",
+    "ja": "JSON エクスポートに失敗しました",
+    "ru": "Экспорт JSON не выполнен"
   },
   "cli_json_saved": {
-    "de": "JSON gespeichert", "en": "JSON saved", "es": "JSON guardado", "zh": "JSON 已保存", "ja": "JSON を保存しました", "ru": "JSON сохранён"
+    "de": "JSON gespeichert",
+    "en": "JSON saved",
+    "es": "JSON guardado",
+    "zh": "JSON 已保存",
+    "ja": "JSON を保存しました",
+    "ru": "JSON сохранён"
   },
   "cli_project_not_found": {
-    "de": "Projektordner nicht gefunden", "en": "Project folder not found", "es": "No se encontró la carpeta del proyecto", "zh": "未找到项目文件夹", "ja": "プロジェクトフォルダーが見つかりません", "ru": "Папка проекта не найдена"
+    "de": "Projektordner nicht gefunden",
+    "en": "Project folder not found",
+    "es": "No se encontró la carpeta del proyecto",
+    "zh": "未找到项目文件夹",
+    "ja": "プロジェクトフォルダーが見つかりません",
+    "ru": "Папка проекта не найдена"
   },
   "cli_project_analysis_failed": {
-    "de": "Projektanalyse fehlgeschlagen", "en": "Project analysis failed", "es": "Falló el análisis del proyecto", "zh": "项目分析失败", "ja": "プロジェクト分析に失敗しました", "ru": "Анализ проекта не выполнен"
+    "de": "Projektanalyse fehlgeschlagen",
+    "en": "Project analysis failed",
+    "es": "Falló el análisis del proyecto",
+    "zh": "项目分析失败",
+    "ja": "プロジェクト分析に失敗しました",
+    "ru": "Анализ проекта не выполнен"
   },
   "cli_help_description": {
-    "de": "Analysiert Python-Dateien oder ganze Projektordner ohne GUI.", "en": "Analyzes Python files or complete project folders without a GUI.", "es": "Analiza archivos Python o carpetas de proyecto completas sin interfaz gráfica.", "zh": "无需图形界面即可分析 Python 文件或整个项目文件夹。", "ja": "GUI を使わずに Python ファイルまたはプロジェクトフォルダー全体を分析します。", "ru": "Анализирует файлы Python или целые папки проектов без графического интерфейса."
+    "de": "Analysiert Python-Dateien oder ganze Projektordner ohne GUI.",
+    "en": "Analyzes Python files or complete project folders without a GUI.",
+    "es": "Analiza archivos Python o carpetas de proyecto completas sin interfaz gráfica.",
+    "zh": "无需图形界面即可分析 Python 文件或整个项目文件夹。",
+    "ja": "GUI を使わずに Python ファイルまたはプロジェクトフォルダー全体を分析します。",
+    "ru": "Анализирует файлы Python или целые папки проектов без графического интерфейса."
   },
   "cli_help_language": {
-    "de": "Sprache für Hilfe und Textreport", "en": "language for help and text reports", "es": "idioma para la ayuda y los informes de texto", "zh": "帮助和文本报告的语言", "ja": "ヘルプとテキストレポートの言語", "ru": "язык справки и текстовых отчётов"
+    "de": "Sprache für Hilfe und Textreport",
+    "en": "language for help and text reports",
+    "es": "idioma para la ayuda y los informes de texto",
+    "zh": "帮助和文本报告的语言",
+    "ja": "ヘルプとテキストレポートの言語",
+    "ru": "язык справки и текстовых отчётов"
   },
   "cli_help_help": {
-    "de": "zeigt diese Hilfe und beendet das Programm", "en": "show this help message and exit", "es": "muestra esta ayuda y finaliza", "zh": "显示此帮助并退出", "ja": "このヘルプを表示して終了します", "ru": "показывает эту справку и завершает работу"
+    "de": "zeigt diese Hilfe und beendet das Programm",
+    "en": "show this help message and exit",
+    "es": "muestra esta ayuda y finaliza",
+    "zh": "显示此帮助并退出",
+    "ja": "このヘルプを表示して終了します",
+    "ru": "показывает эту справку и завершает работу"
   },
   "cli_help_file_metavar": {
-    "de": "DATEI.py", "en": "FILE.py", "es": "ARCHIVO.py", "zh": "文件.py", "ja": "ファイル.py", "ru": "ФАЙЛ.py"
+    "de": "DATEI.py",
+    "en": "FILE.py",
+    "es": "ARCHIVO.py",
+    "zh": "文件.py",
+    "ja": "ファイル.py",
+    "ru": "ФАЙЛ.py"
   },
   "cli_help_project_metavar": {
-    "de": "ORDNER", "en": "DIRECTORY", "es": "DIRECTORIO", "zh": "目录", "ja": "ディレクトリ", "ru": "КАТАЛОГ"
+    "de": "ORDNER",
+    "en": "DIRECTORY",
+    "es": "DIRECTORIO",
+    "zh": "目录",
+    "ja": "ディレクトリ",
+    "ru": "КАТАЛОГ"
   },
   "cli_help_json_output_metavar": {
-    "de": "DATEI.json", "en": "FILE.json", "es": "ARCHIVO.json", "zh": "文件.json", "ja": "ファイル.json", "ru": "ФАЙЛ.json"
+    "de": "DATEI.json",
+    "en": "FILE.json",
+    "es": "ARCHIVO.json",
+    "zh": "文件.json",
+    "ja": "ファイル.json",
+    "ru": "ФАЙЛ.json"
   },
   "cli_help_file": {
-    "de": "analysiert eine einzelne Python-Datei und schreibt den Textreport nach stdout", "en": "analyzes one Python file and writes the text report to stdout", "es": "analiza un archivo Python y escribe el informe de texto en stdout", "zh": "分析单个 Python 文件并将文本报告写入 stdout", "ja": "単一の Python ファイルを解析し、テキストレポートを stdout に出力します", "ru": "анализирует один файл Python и выводит текстовый отчёт в stdout"
+    "de": "analysiert eine einzelne Python-Datei und schreibt den Textreport nach stdout",
+    "en": "analyzes one Python file and writes the text report to stdout",
+    "es": "analiza un archivo Python y escribe el informe de texto en stdout",
+    "zh": "分析单个 Python 文件并将文本报告写入 stdout",
+    "ja": "単一の Python ファイルを解析し、テキストレポートを stdout に出力します",
+    "ru": "анализирует один файл Python и выводит текстовый отчёт в stdout"
   },
   "cli_help_project": {
-    "de": "analysiert rekursiv einen Projektordner und schreibt den Projektreport nach stdout", "en": "analyzes a project directory recursively and writes the project report to stdout", "es": "analiza un directorio de proyecto de forma recursiva y escribe el informe del proyecto en stdout", "zh": "递归分析项目目录并将项目报告写入 stdout", "ja": "プロジェクトディレクトリを再帰的に解析し、プロジェクトレポートを stdout に出力します", "ru": "рекурсивно анализирует каталог проекта и выводит отчёт о проекте в stdout"
+    "de": "analysiert rekursiv einen Projektordner und schreibt den Projektreport nach stdout",
+    "en": "analyzes a project directory recursively and writes the project report to stdout",
+    "es": "analiza un directorio de proyecto de forma recursiva y escribe el informe del proyecto en stdout",
+    "zh": "递归分析项目目录并将项目报告写入 stdout",
+    "ja": "プロジェクトディレクトリを再帰的に解析し、プロジェクトレポートを stdout に出力します",
+    "ru": "рекурсивно анализирует каталог проекта и выводит отчёт о проекте в stdout"
   },
   "cli_help_stdin": {
-    "de": "liest Python-Code aus stdin und behandelt ihn als Snippet", "en": "reads Python code from stdin and analyzes it as a snippet", "es": "lee código Python desde stdin y lo analiza como un fragmento", "zh": "从 stdin 读取 Python 代码并将其作为代码片段分析", "ja": "stdin から Python コードを読み込み、スニペットとして解析します", "ru": "читает код Python из stdin и анализирует его как фрагмент"
+    "de": "liest Python-Code aus stdin und behandelt ihn als Snippet",
+    "en": "reads Python code from stdin and analyzes it as a snippet",
+    "es": "lee código Python desde stdin y lo analiza como un fragmento",
+    "zh": "从 stdin 读取 Python 代码并将其作为代码片段分析",
+    "ja": "stdin から Python コードを読み込み、スニペットとして解析します",
+    "ru": "читает код Python из stdin и анализирует его как фрагмент"
   },
   "cli_help_json_output": {
-    "de": "schreibt zusätzlich einen JSON-Report im Schema {schema}; ohne Wert wird {default_name} genutzt", "en": "also writes a JSON report in schema {schema}; without a value, {default_name} is used", "es": "también escribe un informe JSON con el esquema {schema}; sin valor se usa {default_name}", "zh": "额外写入采用 {schema} 架构的 JSON 报告；未提供值时使用 {default_name}", "ja": "{schema} スキーマの JSON レポートも出力します。値がない場合は {default_name} を使用します", "ru": "также создаёт JSON-отчёт по схеме {schema}; без значения используется {default_name}"
+    "de": "schreibt zusätzlich einen JSON-Report im Schema {schema}; ohne Wert wird {default_name} genutzt",
+    "en": "also writes a JSON report in schema {schema}; without a value, {default_name} is used",
+    "es": "también escribe un informe JSON con el esquema {schema}; sin valor se usa {default_name}",
+    "zh": "额外写入采用 {schema} 架构的 JSON 报告；未提供值时使用 {default_name}",
+    "ja": "{schema} スキーマの JSON レポートも出力します。値がない場合は {default_name} を使用します",
+    "ru": "также создаёт JSON-отчёт по схеме {schema}; без значения используется {default_name}"
   },
   "cli_error_mutually_exclusive": {
-    "de": "Argument {argument} darf nicht zusammen mit {other} verwendet werden", "en": "argument {argument} cannot be used with {other}", "es": "el argumento {argument} no se puede usar junto con {other}", "zh": "参数 {argument} 不能与 {other} 一起使用", "ja": "{argument} は {other} と同時に使用できません", "ru": "аргумент {argument} нельзя использовать вместе с {other}"
+    "de": "Argument {argument} darf nicht zusammen mit {other} verwendet werden",
+    "en": "argument {argument} cannot be used with {other}",
+    "es": "el argumento {argument} no se puede usar junto con {other}",
+    "zh": "参数 {argument} 不能与 {other} 一起使用",
+    "ja": "{argument} は {other} と同時に使用できません",
+    "ru": "аргумент {argument} нельзя использовать вместе с {other}"
   },
   "web_title": {
-    "de": "MethodenAnalyser Web Companion", "en": "MethodenAnalyser Web Companion", "es": "Web Companion de MethodenAnalyser", "zh": "MethodenAnalyser 网页助手", "ja": "MethodenAnalyser Web コンパニオン", "ru": "Веб-помощник MethodenAnalyser"
+    "de": "MethodenAnalyser Web Companion",
+    "en": "MethodenAnalyser Web Companion",
+    "es": "Web Companion de MethodenAnalyser",
+    "zh": "MethodenAnalyser 网页助手",
+    "ja": "MethodenAnalyser Web コンパニオン",
+    "ru": "Веб-помощник MethodenAnalyser"
   },
   "web_companion": {
-    "de": "Web Companion", "en": "Web Companion", "es": "Compañero web", "zh": "网页助手", "ja": "Web コンパニオン", "ru": "Веб-помощник"
+    "de": "Web Companion",
+    "en": "Web Companion",
+    "es": "Compañero web",
+    "zh": "网页助手",
+    "ja": "Web コンパニオン",
+    "ru": "Веб-помощник"
   },
   "web_source": {
-    "de": "Quelle", "en": "Source", "es": "Fuente", "zh": "来源", "ja": "ソース", "ru": "Источник"
+    "de": "Quelle",
+    "en": "Source",
+    "es": "Fuente",
+    "zh": "来源",
+    "ja": "ソース",
+    "ru": "Источник"
   },
   "web_result": {
-    "de": "Ergebnis", "en": "Result", "es": "Resultado", "zh": "结果", "ja": "結果", "ru": "Результат"
+    "de": "Ergebnis",
+    "en": "Result",
+    "es": "Resultado",
+    "zh": "结果",
+    "ja": "結果",
+    "ru": "Результат"
   },
   "web_python_code": {
-    "de": "Python-Code", "en": "Python code", "es": "Código Python", "zh": "Python 代码", "ja": "Python コード", "ru": "Код Python"
+    "de": "Python-Code",
+    "en": "Python code",
+    "es": "Código Python",
+    "zh": "Python 代码",
+    "ja": "Python コード",
+    "ru": "Код Python"
   },
   "web_analyze": {
-    "de": "Analysieren", "en": "Analyze", "es": "Analizar", "zh": "分析", "ja": "分析", "ru": "Анализировать"
+    "de": "Analysieren",
+    "en": "Analyze",
+    "es": "Analizar",
+    "zh": "分析",
+    "ja": "分析",
+    "ru": "Анализировать"
   },
   "web_load_example": {
-    "de": "Beispiel laden", "en": "Load example", "es": "Cargar ejemplo", "zh": "加载示例", "ja": "例を読み込む", "ru": "Загрузить пример"
+    "de": "Beispiel laden",
+    "en": "Load example",
+    "es": "Cargar ejemplo",
+    "zh": "加载示例",
+    "ja": "例を読み込む",
+    "ru": "Загрузить пример"
   },
   "web_clear": {
-    "de": "Leeren", "en": "Clear", "es": "Limpiar", "zh": "清除", "ja": "クリア", "ru": "Очистить"
+    "de": "Leeren",
+    "en": "Clear",
+    "es": "Limpiar",
+    "zh": "清除",
+    "ja": "クリア",
+    "ru": "Очистить"
   },
   "web_load_json": {
-    "de": "JSON laden", "en": "Load JSON", "es": "Cargar JSON", "zh": "加载 JSON", "ja": "JSON を読み込む", "ru": "Загрузить JSON"
+    "de": "JSON laden",
+    "en": "Load JSON",
+    "es": "Cargar JSON",
+    "zh": "加载 JSON",
+    "ja": "JSON を読み込む",
+    "ru": "Загрузить JSON"
   },
   "web_save_json": {
-    "de": "JSON speichern", "en": "Save JSON", "es": "Guardar JSON", "zh": "保存 JSON", "ja": "JSON を保存", "ru": "Сохранить JSON"
+    "de": "JSON speichern",
+    "en": "Save JSON",
+    "es": "Guardar JSON",
+    "zh": "保存 JSON",
+    "ja": "JSON を保存",
+    "ru": "Сохранить JSON"
   },
   "web_install_app": {
-    "de": "App installieren", "en": "Install app", "es": "Instalar aplicación", "zh": "安装应用", "ja": "アプリをインストール", "ru": "Установить приложение"
+    "de": "App installieren",
+    "en": "Install app",
+    "es": "Instalar aplicación",
+    "zh": "安装应用",
+    "ja": "アプリをインストール",
+    "ru": "Установить приложение"
   },
   "web_snippet": {
-    "de": "Snippet", "en": "Snippet", "es": "Fragmento", "zh": "代码片段", "ja": "スニペット", "ru": "Фрагмент"
+    "de": "Snippet",
+    "en": "Snippet",
+    "es": "Fragmento",
+    "zh": "代码片段",
+    "ja": "スニペット",
+    "ru": "Фрагмент"
   },
   "web_file": {
-    "de": "Datei", "en": "File", "es": "Archivo", "zh": "文件", "ja": "ファイル", "ru": "Файл"
+    "de": "Datei",
+    "en": "File",
+    "es": "Archivo",
+    "zh": "文件",
+    "ja": "ファイル",
+    "ru": "Файл"
   },
   "web_mobile_test_path": {
-    "de": "Android/iOS-Testpfad", "en": "Android/iOS test path", "es": "Ruta de prueba Android/iOS", "zh": "Android/iOS 测试路径", "ja": "Android/iOS テストパス", "ru": "Путь тестирования Android/iOS"
+    "de": "Android/iOS-Testpfad",
+    "en": "Android/iOS test path",
+    "es": "Ruta de prueba Android/iOS",
+    "zh": "Android/iOS 测试路径",
+    "ja": "Android/iOS テストパス",
+    "ru": "Путь тестирования Android/iOS"
   },
   "web_pwa_status": {
-    "de": "PWA-Testkarte", "en": "PWA test card", "es": "Tarjeta de prueba PWA", "zh": "PWA 测试卡", "ja": "PWA テストカード", "ru": "Карточка теста PWA"
+    "de": "PWA-Testkarte",
+    "en": "PWA test card",
+    "es": "Tarjeta de prueba PWA",
+    "zh": "PWA 测试卡",
+    "ja": "PWA テストカード",
+    "ru": "Карточка теста PWA"
   },
   "web_refresh_status": {
-    "de": "Status aktualisieren", "en": "Refresh status", "es": "Actualizar estado", "zh": "刷新状态", "ja": "状態を更新", "ru": "Обновить статус"
+    "de": "Status aktualisieren",
+    "en": "Refresh status",
+    "es": "Actualizar estado",
+    "zh": "刷新状态",
+    "ja": "状態を更新",
+    "ru": "Обновить статус"
   },
   "web_copy_status": {
-    "de": "Status kopieren", "en": "Copy status", "es": "Copiar estado", "zh": "复制状态", "ja": "状態をコピー", "ru": "Копировать статус"
+    "de": "Status kopieren",
+    "en": "Copy status",
+    "es": "Copiar estado",
+    "zh": "复制状态",
+    "ja": "状態をコピー",
+    "ru": "Копировать статус"
   },
   "web_definitions": {
-    "de": "Definitionen", "en": "Definitions", "es": "Definiciones", "zh": "定义", "ja": "定義", "ru": "Определения"
+    "de": "Definitionen",
+    "en": "Definitions",
+    "es": "Definiciones",
+    "zh": "定义",
+    "ja": "定義",
+    "ru": "Определения"
   },
   "web_imports": {
-    "de": "Imports", "en": "Imports", "es": "Importaciones", "zh": "导入", "ja": "インポート", "ru": "Импорты"
+    "de": "Imports",
+    "en": "Imports",
+    "es": "Importaciones",
+    "zh": "导入",
+    "ja": "インポート",
+    "ru": "Импорты"
   },
   "web_unused_imports": {
-    "de": "Ungenutzte Imports", "en": "Unused imports", "es": "Importaciones no utilizadas", "zh": "未使用的导入", "ja": "未使用のインポート", "ru": "Неиспользуемые импорты"
+    "de": "Ungenutzte Imports",
+    "en": "Unused imports",
+    "es": "Importaciones no utilizadas",
+    "zh": "未使用的导入",
+    "ja": "未使用のインポート",
+    "ru": "Неиспользуемые импорты"
   },
   "web_unused_definitions": {
-    "de": "Tote Definitionen", "en": "Dead definitions", "es": "Definiciones no utilizadas", "zh": "未使用的定义", "ja": "未使用の定義", "ru": "Неиспользуемые определения"
+    "de": "Tote Definitionen",
+    "en": "Dead definitions",
+    "es": "Definiciones no utilizadas",
+    "zh": "未使用的定义",
+    "ja": "未使用の定義",
+    "ru": "Неиспользуемые определения"
   },
   "web_missing_imports": {
-    "de": "Fehlende Imports", "en": "Missing imports", "es": "Importaciones faltantes", "zh": "缺失的导入", "ja": "不足しているインポート", "ru": "Отсутствующие импорты"
+    "de": "Fehlende Imports",
+    "en": "Missing imports",
+    "es": "Importaciones faltantes",
+    "zh": "缺失的导入",
+    "ja": "不足しているインポート",
+    "ru": "Отсутствующие импорты"
   },
   "web_missing_definitions": {
-    "de": "Fehlende Definitionen", "en": "Missing definitions", "es": "Definiciones faltantes", "zh": "缺失的定义", "ja": "不足している定義", "ru": "Отсутствующие определения"
+    "de": "Fehlende Definitionen",
+    "en": "Missing definitions",
+    "es": "Definiciones faltantes",
+    "zh": "缺失的定义",
+    "ja": "不足している定義",
+    "ru": "Отсутствующие определения"
   },
   "web_duplicate_imports": {
-    "de": "Doppelte Imports", "en": "Duplicate imports", "es": "Importaciones duplicadas", "zh": "重复导入", "ja": "重複したインポート", "ru": "Дублирующиеся импорты"
+    "de": "Doppelte Imports",
+    "en": "Duplicate imports",
+    "es": "Importaciones duplicadas",
+    "zh": "重复导入",
+    "ja": "重複したインポート",
+    "ru": "Дублирующиеся импорты"
   },
   "web_todos": {
-    "de": "TODOs", "en": "TODOs", "es": "TODOs", "zh": "待办事项", "ja": "TODO", "ru": "TODO"
+    "de": "TODOs",
+    "en": "TODOs",
+    "es": "TODOs",
+    "zh": "待办事项",
+    "ja": "TODO",
+    "ru": "TODO"
+  },
+  "cli_section_import_scopes": {
+    "de": "[IMPORTS] IMPORT-SCOPE-ANALYSE",
+    "en": "[IMPORTS] IMPORT SCOPE ANALYSIS",
+    "es": "[IMPORTS] ANÁLISIS DE ALCANCE DE IMPORTACIÓN",
+    "zh": "[IMPORTS] 导入作用域分析",
+    "ja": "[IMPORTS] インポートスコープ分析",
+    "ru": "[IMPORTS] АНАЛИЗ ОБЛАСТИ ВИДИМОСТИ ИМПОРТА"
+  },
+  "cli_multi_local_imported": {
+    "de": "Mehrfach lokal importiert:",
+    "en": "Multiple local imports:",
+    "es": "Múltiples importaciones locales:",
+    "zh": "多次局部导入：",
+    "ja": "ローカルで複数回インポート：",
+    "ru": "Многократный локальный импорт:"
+  },
+  "cli_redundant_local_imported": {
+    "de": "Redundant lokal importiert:",
+    "en": "Redundant local imports:",
+    "es": "Importaciones locales redundantes:",
+    "zh": "冗余局部导入：",
+    "ja": "冗長なローカルインポート：",
+    "ru": "Избыточный локальный импорт:"
+  },
+  "cli_unused_global_imports": {
+    "de": "Ungenutzte globale Imports:",
+    "en": "Unused global imports:",
+    "es": "Importaciones globales no utilizadas:",
+    "zh": "未使用的全局导入：",
+    "ja": "未使用のグローバルインポート：",
+    "ru": "Неиспользуемый глобальный импорт:"
+  },
+  "cli_section_duplicate_imports": {
+    "de": "[WARNUNG] DOPPELTE IMPORTS",
+    "en": "[WARNING] DUPLICATE IMPORTS",
+    "es": "[ADVERTENCIA] IMPORTACIONES DUPLICADAS",
+    "zh": "[警告] 重复导入",
+    "ja": "[警告] 重複インポート",
+    "ru": "[ПРЕДУПРЕЖДЕНИЕ] ДУБЛИРУЮЩИЕСЯ ИМПОРТЫ"
+  },
+  "cli_section_dynamic_calls": {
+    "de": "[DYNAMISCH] DYNAMISCHE AUFRUFE",
+    "en": "[DYNAMIC] DYNAMIC CALLS",
+    "es": "[DINÁMICO] LLAMADAS DINÁMICAS",
+    "zh": "[动态] 动态调用",
+    "ja": "[動的] 動的呼び出し",
+    "ru": "[ДИНАМИЧЕСКИЙ] ДИНАМИЧЕСКИЕ ВЫЗОВЫ"
+  },
+  "cli_detected_patterns": {
+    "de": "Erkannte Patterns:",
+    "en": "Detected patterns:",
+    "es": "Patrones detectados:",
+    "zh": "检测到的模式：",
+    "ja": "検出されたパターン：",
+    "ru": "Обнаруженные паттерны:"
+  },
+  "cli_extracted_methods": {
+    "de": "Extrahierte Methoden:",
+    "en": "Extracted methods:",
+    "es": "Métodos extraídos:",
+    "zh": "提取的方法：",
+    "ja": "抽出されたメソッド：",
+    "ru": "Извлечённые методы:"
+  },
+  "cli_section_name_matches": {
+    "de": "[TIPP] ÄHNLICHE NAMEN (mögliche Tippfehler)",
+    "en": "[TIP] SIMILAR NAMES (possible typos)",
+    "es": "[CONSEJO] NOMBRES SIMILARES (posibles errores tipográficos)",
+    "zh": "[提示] 相似名称（可能拼写错误）",
+    "ja": "[ヒント] 類似名（誤字・入力ミスの可能性）",
+    "ru": "[СОВЕТ] ПОХОЖИЕ ИМЕНА (возможные опечатки)"
+  },
+  "cli_maybe": {
+    "de": "vielleicht",
+    "en": "maybe",
+    "es": "quizás",
+    "zh": "可能为",
+    "ja": "候補",
+    "ru": "возможно"
+  },
+  "cli_section_stats": {
+    "de": "[STATS] STATISTIK",
+    "en": "[STATS] STATISTICS",
+    "es": "[ESTADÍSTICAS] ESTADÍSTICAS",
+    "zh": "[统计] 统计数据",
+    "ja": "[統計] 統計情報",
+    "ru": "[СТАТИСТИКА] СТАТИСТИКА"
+  },
+  "cli_total_calls": {
+    "de": "Aufrufe gesamt:",
+    "en": "Total calls:",
+    "es": "Llamadas totales:",
+    "zh": "调用总数：",
+    "ja": "呼び出し総数：",
+    "ru": "Всего вызовов:"
+  },
+  "cli_total_definitions": {
+    "de": "Definitionen gesamt:",
+    "en": "Total definitions:",
+    "es": "Definiciones totales:",
+    "zh": "定义总数：",
+    "ja": "定義総数：",
+    "ru": "Всего определений:"
+  },
+  "cli_imported_definitions": {
+    "de": "Importierte Definitionen:",
+    "en": "Imported definitions:",
+    "es": "Definiciones importadas:",
+    "zh": "导入的定义：",
+    "ja": "インポートされた定義：",
+    "ru": "Импортированные определения:"
+  },
+  "cli_module_provided_attrs": {
+    "de": "Modul-bereitgestellte Attribute:",
+    "en": "Module-provided attributes:",
+    "es": "Atributos proporcionados por el módulo:",
+    "zh": "模块提供的属性：",
+    "ja": "モジュール提供属性：",
+    "ru": "Атрибуты модуля:"
+  },
+  "cli_total_imports": {
+    "de": "Imports gesamt:",
+    "en": "Total imports:",
+    "es": "Importaciones totales:",
+    "zh": "导入总数：",
+    "ja": "インポート総数：",
+    "ru": "Всего импортов:"
+  },
+  "cli_framework_hooks": {
+    "de": "Framework-Hooks:",
+    "en": "Framework hooks:",
+    "es": "Hooks del framework:",
+    "zh": "框架钩子：",
+    "ja": "フレームワークフック：",
+    "ru": "Хуки фреймворка:"
+  },
+  "cli_typehints": {
+    "de": "Type-Hints:",
+    "en": "Type hints:",
+    "es": "Type hints:",
+    "zh": "类型注解：",
+    "ja": "型ヒント：",
+    "ru": "Подсказки типов:"
+  },
+  "cli_section_imported_definitions": {
+    "de": "[IMPORTS] IMPORTIERTE DEFINITIONEN",
+    "en": "[IMPORTS] IMPORTED DEFINITIONS",
+    "es": "[IMPORTS] DEFINICIONES IMPORTADAS",
+    "zh": "[IMPORTS] 导入的定义",
+    "ja": "[IMPORTS] インポートされた定義",
+    "ru": "[IMPORTS] ИМПОРТИРОВАННЫЕ ОПРЕДЕЛЕНИЯ"
+  },
+  "cli_classes_types": {
+    "de": "Klassen/Typen",
+    "en": "Classes/Types",
+    "es": "Clases/Tipos",
+    "zh": "类/类型",
+    "ja": "クラス/型",
+    "ru": "Классы/Типы"
+  },
+  "cli_functions": {
+    "de": "Funktionen",
+    "en": "Functions",
+    "es": "Funciones",
+    "zh": "函数",
+    "ja": "関数",
+    "ru": "Функции"
+  },
+  "cli_more": {
+    "de": "weitere",
+    "en": "more",
+    "es": "más",
+    "zh": "更多",
+    "ja": "その他",
+    "ru": "ещё"
+  },
+  "cli_section_module_attr_usage": {
+    "de": "[MODULE] MODUL-ATTRIBUT VERWENDUNG",
+    "en": "[MODULES] MODULE ATTRIBUTE USAGE",
+    "es": "[MÓDULOS] USO DE ATRIBUTOS DEL MÓDULO",
+    "zh": "[模块] 模块属性使用情况",
+    "ja": "[モジュール] モジュール属性の使用状況",
+    "ru": "[МОДУЛИ] ИСПОЛЬЗОВАНИЕ АТРИБУТОВ МОДУЛЯ"
+  },
+  "cli_module_attr_desc": {
+    "de": "Zeigt welche Attribute von importierten Modulen verwendet werden:",
+    "en": "Shows which attributes of imported modules are used:",
+    "es": "Muestra qué atributos de los módulos importados se utilizan:",
+    "zh": "显示已导入模块中使用的属性：",
+    "ja": "インポートされたモジュールのどの属性が使用されているかを示します：",
+    "ru": "Показывает, какие атрибуты импортированных модулей используются:"
+  },
+  "cli_section_todos": {
+    "de": "[TODO] TODO-KOMMENTARE",
+    "en": "[TODO] TODO COMMENTS",
+    "es": "[TODO] COMENTARIOS TODO",
+    "zh": "[待办] TODO 注释",
+    "ja": "[TODO] TODO コメント",
+    "ru": "[TODO] КОММЕНТАРИИ TODO"
+  },
+  "cli_line": {
+    "de": "Zeile",
+    "en": "Line",
+    "es": "Línea",
+    "zh": "行",
+    "ja": "行",
+    "ru": "Строка"
+  },
+  "cli_duplicate_imports_title": {
+    "de": "DOPPELTE IMPORTS:",
+    "en": "DUPLICATE IMPORTS:",
+    "es": "IMPORTACIONES DUPLICADAS:",
+    "zh": "重复导入：",
+    "ja": "重複インポート：",
+    "ru": "ДУБЛИРУЮЩИЕСЯ ИМПОРТЫ:"
+  },
+  "cli_files_with_errors": {
+    "de": "DATEIEN MIT FEHLERN",
+    "en": "FILES WITH ERRORS",
+    "es": "ARCHIVOS CON ERRORES",
+    "zh": "存在错误的文件",
+    "ja": "エラーのあるファイル",
+    "ru": "ФАЙЛЫ С ОШИБКАМИ"
+  },
+  "cli_score": {
+    "de": "SCORE",
+    "en": "SCORE",
+    "es": "PUNTUACIÓN",
+    "zh": "得分",
+    "ja": "スコア",
+    "ru": "БАЛЛ"
+  },
+  "web_zip": {
+    "de": "ZIP",
+    "en": "ZIP",
+    "es": "ZIP",
+    "zh": "ZIP",
+    "ja": "ZIP",
+    "ru": "ZIP"
+  },
+  "web_file_errors": {
+    "de": "Dateifehler",
+    "en": "File Errors",
+    "es": "Errores de archivo",
+    "zh": "文件错误",
+    "ja": "ファイルエラー",
+    "ru": "Ошибки файлов"
+  },
+  "web_no_findings": {
+    "de": "Keine Findings im aktuellen Report.",
+    "en": "No findings in current report.",
+    "es": "No hay hallazgos en el informe actual.",
+    "zh": "当前报告中没有发现问题。",
+    "ja": "現在のレポートに検出項目はありません。",
+    "ru": "В текущем отчёте замечаний нет."
+  },
+  "web_no_file_selected": {
+    "de": "Keine Datei gewählt",
+    "en": "No file selected",
+    "es": "Ningún archivo seleccionado",
+    "zh": "未选择文件",
+    "ja": "ファイルが選択されていません",
+    "ru": "Файл не выбран"
+  },
+  "web_files_analyzed": {
+    "de": "Dateien",
+    "en": "Files",
+    "es": "Archivos",
+    "zh": "文件",
+    "ja": "ファイル",
+    "ru": "Файлы"
+  },
+  "web_files_with_errors": {
+    "de": "Fehlerdateien",
+    "en": "Error Files",
+    "es": "Archivos con errores",
+    "zh": "错误文件",
+    "ja": "エラーファイル",
+    "ru": "Файлы с ошибками"
+  },
+  "web_total_lines": {
+    "de": "Zeilen",
+    "en": "Lines",
+    "es": "Líneas",
+    "zh": "行",
+    "ja": "行",
+    "ru": "Строки"
+  },
+  "web_state_ready": {
+    "de": "Bereit",
+    "en": "Ready",
+    "es": "Listo",
+    "zh": "就绪",
+    "ja": "準備完了",
+    "ru": "Готово"
+  },
+  "web_state_findings": {
+    "de": "Findings",
+    "en": "Findings",
+    "es": "Hallazgos",
+    "zh": "发现问题",
+    "ja": "検出あり",
+    "ru": "Замечания"
+  },
+  "web_state_clean": {
+    "de": "Sauber",
+    "en": "Clean",
+    "es": "Limpio",
+    "zh": "无问题",
+    "ja": "問題なし",
+    "ru": "Чисто"
+  },
+  "web_state_error": {
+    "de": "Fehler",
+    "en": "Error",
+    "es": "Error",
+    "zh": "错误",
+    "ja": "エラー",
+    "ru": "Ошибка"
+  },
+  "web_state_analyzing": {
+    "de": "Analysiert…",
+    "en": "Analyzing…",
+    "es": "Analizando…",
+    "zh": "分析中…",
+    "ja": "分析中…",
+    "ru": "Анализ…"
+  },
+  "web_state_report_loaded": {
+    "de": "Report geladen",
+    "en": "Report loaded",
+    "es": "Informe cargado",
+    "zh": "报告已加载",
+    "ja": "レポート読み込み完了",
+    "ru": "Отчёт загружен"
+  },
+  "web_text_report": {
+    "de": "Textreport",
+    "en": "Text Report",
+    "es": "Informe de texto",
+    "zh": "文本报告",
+    "ja": "テキストレポート",
+    "ru": "Текстовый отчёт"
+  },
+  "web_json_preview": {
+    "de": "JSON",
+    "en": "JSON",
+    "es": "JSON",
+    "zh": "JSON",
+    "ja": "JSON",
+    "ru": "JSON"
+  },
+  "web_empty_text_report": {
+    "de": "Noch keine Analyse gestartet.",
+    "en": "No analysis started yet.",
+    "es": "Aún no se ha iniciado ningún análisis.",
+    "zh": "尚未开始分析。",
+    "ja": "分析はまだ開始されていません。",
+    "ru": "Анализ ещё не запущен."
+  },
+  "web_source_hint_snippet": {
+    "de": "Snippets direkt einfügen oder eine einzelne .py-Datei laden.",
+    "en": "Paste snippets directly or load a single .py file.",
+    "es": "Pegue fragmentos directamente o cargue un solo archivo .py.",
+    "zh": "直接粘贴代码片段或加载单个 .py 文件。",
+    "ja": "スニペットを直接貼り付けるか、単一の .py ファイルを読み込みます。",
+    "ru": "Вставьте фрагмент кода напрямую или загрузите отдельный файл .py."
+  },
+  "web_source_hint_file": {
+    "de": "Eine einzelne Python-Datei wird direkt im Browser gelesen und lokal analysiert.",
+    "en": "A single Python file is read directly in the browser and analyzed locally.",
+    "es": "Un único archivo Python se lee directamente en el navegador y se analiza localmente.",
+    "zh": "单个 Python 文件将直接在浏览器中读取并在本地进行分析。",
+    "ja": "単一の Python ファイルがブラウザで直接読み込まれ、ローカルで分析されます。",
+    "ru": "Один файл Python считывается прямо в браузере и анализируется локально."
+  },
+  "web_source_hint_zip": {
+    "de": "Kleine ZIP-Archive mit .py-Dateien werden lokal an den Python-Prozess gesendet, dort temporär entpackt und als Mini-Projekt analysiert.",
+    "en": "Small ZIP archives with .py files are sent locally to the Python process, temporarily unpacked, and analyzed as a mini project.",
+    "es": "Los archivos ZIP pequeños con archivos .py se envían localmente al proceso de Python, se descomprimen temporalmente y se analizan como un miniproyecto.",
+    "zh": "包含 .py 文件的较小 ZIP 归档将发送到本地 Python 进程，临时解压并作为迷你项目进行分析。",
+    "ja": ".py ファイルを含む小さな ZIP アーカイブはローカルの Python プロセスに送信され、一時的に解凍されてミニプロジェクトとして分析されます。",
+    "ru": "Небольшие ZIP-архивы с файлами .py отправляются локально процессу Python, временно распаковываются и анализируются как мини-проект."
+  },
+  "web_server_offline": {
+    "de": "Server offline",
+    "en": "Server offline",
+    "es": "Servidor desconectado",
+    "zh": "服务器离线",
+    "ja": "サーバーオフライン",
+    "ru": "Сервер отключён"
+  },
+  "web_device_offline": {
+    "de": "Gerät offline",
+    "en": "Device offline",
+    "es": "Dispositivo desconectado",
+    "zh": "设备离线",
+    "ja": "デバイスオフライン",
+    "ru": "Устройство не в сети"
+  },
+  "web_local_ready": {
+    "de": "Lokal bereit",
+    "en": "Locally ready",
+    "es": "Listo localmente",
+    "zh": "本地就绪",
+    "ja": "ローカル準備完了",
+    "ru": "Локально готов"
   }
 }

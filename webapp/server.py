@@ -35,8 +35,13 @@ from MethodenAnalyser3 import (  # noqa: E402
     build_json_report,
     generate_project_report,
     generate_report,
+    set_runtime_language,
 )
-from translator import TranslationSystem  # noqa: E402
+from translator import (  # noqa: E402
+    TranslationSystem,
+    detect_language_from_header,
+    detect_system_language,
+)
 
 
 LOCAL_ONLY_HOSTS = {"127.0.0.1", "::1", "localhost"}
@@ -132,6 +137,9 @@ def _extract_python_zip(zip_bytes: bytes, target_root: Path) -> int:
 
 
 def _analyze_zip_payload(payload: dict[str, Any], source_kind: str) -> dict[str, Any]:
+    lang = payload.get("lang")
+    if isinstance(lang, str) and lang.strip():
+        set_runtime_language(lang.strip())
     filename = _clean_filename(payload.get("filename"), source_kind)
     zip_bytes = _decode_zip_bytes(payload.get("zip_base64"))
     if not zip_bytes:
@@ -152,6 +160,9 @@ def _analyze_zip_payload(payload: dict[str, Any], source_kind: str) -> dict[str,
 
 def analyze_payload(payload: dict[str, Any]) -> dict[str, Any]:
     """Analyze browser-submitted Python code and return API-ready JSON."""
+    lang = payload.get("lang")
+    if isinstance(lang, str) and lang.strip():
+        set_runtime_language(lang.strip())
     source_kind = payload.get("source_kind", "snippet")
     if source_kind == "zip":
         return _analyze_zip_payload(payload, source_kind)
@@ -305,7 +316,12 @@ class MethodenAnalyserPwaHandler(BaseHTTPRequestHandler):
             self._send_json({"ok": True, "runtime": get_runtime_info(self.server)})
             return
         if path == "/api/translations":
-            language = urlparse(self.path).query.partition("lang=")[2].split("&", 1)[0] or "de"
+            query_lang = urlparse(self.path).query.partition("lang=")[2].split("&", 1)[0]
+            if query_lang:
+                language = query_lang
+            else:
+                accept_lang = self.headers.get("Accept-Language", "")
+                language = detect_language_from_header(accept_lang) or detect_system_language("de")
             self._send_json({"ok": True, **get_web_translations(language)})
             return
         if path.startswith("/assets/"):
@@ -424,11 +440,19 @@ def build_arg_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Startet den lokalen MethodenAnalyser Web/PWA-Companion.")
     parser.add_argument("--host", default="127.0.0.1", help="Host/IP für den lokalen Server")
     parser.add_argument("--port", type=int, default=8765, help="Port für den lokalen Server")
+    parser.add_argument(
+        "--lang",
+        choices=TranslationSystem.SUPPORTED_LANGUAGES,
+        default=None,
+        help="Standardsprache für den lokalen Server (z. B. de, en, es, zh, ja, ru)",
+    )
     return parser
 
 
 def main(argv: list[str] | None = None) -> int:
     args = build_arg_parser().parse_args(argv)
+    if args.lang:
+        set_runtime_language(args.lang)
     server = ThreadingHTTPServer((args.host, args.port), MethodenAnalyserPwaHandler)
     server.runtime_info = build_runtime_info(args.host, args.port)
     url = f"http://{args.host}:{args.port}/"

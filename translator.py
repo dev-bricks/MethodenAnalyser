@@ -17,6 +17,8 @@ translator.set_language('es')
 from __future__ import annotations
 
 import json
+import locale
+import os
 import re
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Set, Union
@@ -192,9 +194,107 @@ class TranslationSystem:
         ]
 
 
+LOCALE_PREFIX_MAP: dict[str, str] = {
+    "de": "de",
+    "ger": "de",
+    "deutsch": "de",
+    "en": "en",
+    "eng": "en",
+    "english": "en",
+    "es": "es",
+    "spa": "es",
+    "spanish": "es",
+    "espanol": "es",
+    "zh": "zh",
+    "chi": "zh",
+    "chinese": "zh",
+    "ja": "ja",
+    "jpn": "ja",
+    "japanese": "ja",
+    "ru": "ru",
+    "rus": "ru",
+    "russian": "ru",
+}
+
+
+def normalize_language_code(code: Optional[str]) -> Optional[str]:
+    """Normalisiert einen Sprachcode oder Bezeichner auf die unterstützten Sprachen."""
+    if not code or not isinstance(code, str):
+        return None
+    cleaned = code.strip().lower().replace("-", "_")
+    if not cleaned:
+        return None
+    short_code = cleaned.split("_")[0]
+    if short_code in TranslationSystem.SUPPORTED_LANGUAGES:
+        return short_code
+    for prefix, mapped in LOCALE_PREFIX_MAP.items():
+        if cleaned.startswith(prefix):
+            return mapped
+    return None
+
+
+def detect_system_language(default: str = "de") -> str:
+    """Ermittelt die bevorzugte Systemsprache aus Umgebungsvariablen oder System-Locale."""
+    for var in ("LC_ALL", "LC_MESSAGES", "LANG"):
+        val = os.environ.get(var)
+        detected = normalize_language_code(val)
+        if detected:
+            return detected
+
+    try:
+        loc = locale.getlocale()[0]
+        detected = normalize_language_code(loc)
+        if detected:
+            return detected
+    except Exception:
+        pass
+
+    try:
+        loc = locale.getdefaultlocale()[0]
+        detected = normalize_language_code(loc)
+        if detected:
+            return detected
+    except Exception:
+        pass
+
+    return default if default in TranslationSystem.SUPPORTED_LANGUAGES else TranslationSystem.DEFAULT_LANGUAGE
+
+
+def detect_language_from_header(accept_language: Optional[str]) -> Optional[str]:
+    """Parst einen HTTP Accept-Language Header und liefert die bevorzugte unterstützte Sprache."""
+    if not accept_language or not isinstance(accept_language, str):
+        return None
+
+    candidates: list[tuple[float, str]] = []
+    for part in accept_language.split(","):
+        segment = part.strip()
+        if not segment:
+            continue
+        subparts = segment.split(";")
+        code = subparts[0].strip()
+        q_val = 1.0
+        for param in subparts[1:]:
+            param = param.strip()
+            if param.startswith("q="):
+                try:
+                    q_val = float(param[2:].strip())
+                except ValueError:
+                    q_val = 0.0
+        normalized = normalize_language_code(code)
+        if normalized:
+            candidates.append((q_val, normalized))
+
+    if not candidates:
+        return None
+
+    candidates.sort(key=lambda x: x[0], reverse=True)
+    return candidates[0][1]
+
+
 if __name__ == "__main__":
     tr = TranslationSystem("de")
     print(f"Sprache: {tr.get_language()}")
     print(f"Unterstützte Sprachen: {tr.get_supported_languages()}")
+    print(f"System-Sprache: {detect_system_language()}")
     result = tr.scan_and_update()
     print(f"Scan: {result['total']} Strings, {len(result['added'])} neu, {len(result['missing'])} ohne EN")

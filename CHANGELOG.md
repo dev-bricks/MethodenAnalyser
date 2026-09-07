@@ -5,6 +5,14 @@ Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
 ## [Unreleased]
 
+### Webapp- & CLI-Lokalisierung (MA-I18N-05) [2026-09-07]
+- **Locale-Erkennung (`translator.py`)**: `detect_system_language()` erkennt System-Locale über Umgebungsvariablen (`LC_ALL`, `LC_MESSAGES`, `LANG`) und `locale.getlocale()`; `detect_language_from_header()` wertet HTTP `Accept-Language`-Header mit Qualitätsfaktoren (`q=...`) aus; `normalize_language_code()` normalisiert Sprachcodes auf die 6 unterstützten Sprachen (`de`, `en`, `es`, `zh`, `ja`, `ru`).
+- **Übersetzungskatalog-Parität (`locales/translations.json`)**: 51 neue Lokalisierungsschlüssel für CLI-Sektionen, Statistiken, Tabellenüberschriften sowie Webapp-Status und Finding-Kategorien ergänzt (Gesamtkatalog auf 134 Keys mit 100% Parität über alle 6 Sprachen angehoben).
+- **CLI-Lokalisierung (`MethodenAnalyser3.py`)**: CLI-Hilfe (`--lang`), Textreports und Projektberichte (`generate_report()`, `generate_project_report()`) dynamisch lokalisiert; Standardwert fällt transparent auf System-Locale zurück.
+- **Webapp-Server & Endpunkte (`webapp/server.py`)**: `/api/translations` wertet `Accept-Language`-Header und Query-Parameter `?lang=` aus; `/api/analyze` erzeugt Textreports in der gewünschten Client-Sprache; `--lang` CLI-Parameter für Server-Start hinzugefügt.
+- **Webapp-Frontend (`webapp/static/index.html`, `webapp/static/app.js`)**: Vollständige Lokalisierung aller UI-Labels, Finding-Kategorien, dynamischen Statusanzeigen und Details-Elemente über `data-i18n` und `t()`.
+- **Testabdeckung & Regressionstests**: Neue Tests in `tests/test_cli.py` (`CliLocalizationTests`) und `tests/test_webapp_server.py` ergänzt (Gesamttestsuite auf 131 Tests / 15 Subtests ausgebaut, 100% grün).
+
 ### Repository-Hygiene & CI-Matrix-Härtung (Pfad A) [2026-09-07]
 - **CI-Matrix-Härtung (`.github/workflows/tests.yml`)**: Concurrency-Steuerung (`cancel-in-progress`) integriert, Matrix um Python 3.13 erweitert, automatisierte Testausführung via `pytest -v` und Ruff Linting standardisiert.
 - **PEP 621 Standard-Metadaten (`pyproject.toml`)**: Vollständige `[project.urls]` (Homepage, Documentation, Repository, Issues, Changelog, Security, Umbrella) deklariert, Python 3.13 sowie OS-Klassifikatoren (Linux, Windows, MacOS) ergänzt, CLI- und GUI-Entrypoints (`[project.scripts]`, `[project.gui-scripts]`) hinterlegt.

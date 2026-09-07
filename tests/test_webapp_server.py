@@ -20,6 +20,7 @@ from webapp.server import (
     _extract_python_zip,
     _resolve_under,
     analyze_payload,
+    build_arg_parser,
     build_runtime_info,
     get_web_translations,
 )
@@ -138,6 +139,11 @@ class MethodenAnalyserWebappServerTests(unittest.TestCase):
         payload = get_web_translations("en")
         self.assertEqual(payload["language"], "en")
         self.assertEqual(payload["translations"]["web_analyze"], "Analyze")
+
+    def test_build_arg_parser_supports_lang(self) -> None:
+        parser = build_arg_parser()
+        args = parser.parse_args(["--lang", "es"])
+        self.assertEqual(args.lang, "es")
 
     def test_runtime_info_for_wildcard_server_includes_lan_urls(self) -> None:
         info = build_runtime_info(
@@ -363,6 +369,36 @@ class MethodenAnalyserStaticHttpTests(unittest.TestCase):
         self.assertIn("ohne Authentifizierung oder TLS", privacy_doc)
         self.assertIn("authentication or TLS", readme_en)
         self.assertIn("Authentifizierung oder TLS", readme_de)
+
+    def test_translation_endpoint_accept_language_header(self) -> None:
+        req = urllib.request.Request(
+            self.build_url("/api/translations"),
+            headers={"Accept-Language": "es-ES,es;q=0.9,en;q=0.8"},
+        )
+        with urlopen(req) as response:
+            payload = json.loads(response.read().decode("utf-8"))
+        self.assertTrue(payload["ok"])
+        self.assertEqual(payload["language"], "es")
+        self.assertEqual(payload["translations"]["web_analyze"], "Analizar")
+
+    def test_analyze_endpoint_respects_lang_param(self) -> None:
+        body = json.dumps({
+            "code": "import os\n\ndef helper():\n    pass\n",
+            "source_kind": "snippet",
+            "filename": "demo.py",
+            "lang": "en",
+        }).encode("utf-8")
+        req = urllib.request.Request(
+            self.build_url("/api/analyze"),
+            data=body,
+            headers={"Content-Type": "application/json"},
+            method="POST",
+        )
+        with urlopen(req) as response:
+            payload = json.loads(response.read().decode("utf-8"))
+        self.assertTrue(payload["ok"])
+        self.assertIn("PYTHON CODE ANALYSIS - RESULTS", payload["text_report"])
+        self.assertIn("Unused Imports", payload["text_report"])
 
 
 if __name__ == "__main__":

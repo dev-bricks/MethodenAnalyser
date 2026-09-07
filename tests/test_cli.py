@@ -1,12 +1,15 @@
 import ast
+import io
 import json
 import os
 import pathlib
+import shutil
 import subprocess
 import sys
 import tempfile
 import textwrap
 import unittest
+from contextlib import redirect_stdout
 from pathlib import Path
 
 
@@ -677,6 +680,52 @@ class GuiShortcutTests(unittest.TestCase):
         self.assertEqual(root.bindings["<Alt-f>"](None), "break")
         self.assertEqual(root.bindings["<F1>"](None), "break")
         self.assertEqual(calls, ["file", "project", "fix", "info"])
+
+
+class CliLocalizationTests(unittest.TestCase):
+    def setUp(self):
+        sys.path.insert(0, str(PROJECT_ROOT))
+        self.temp_dir = tempfile.mkdtemp()
+        self.sample_file = Path(self.temp_dir) / "sample.py"
+        self.sample_file.write_text("def helper():\n    return 42\nprint(helper())\n", encoding="utf-8")
+
+    def tearDown(self):
+        shutil.rmtree(self.temp_dir, ignore_errors=True)
+
+    def test_cli_arg_parser_accepts_lang(self) -> None:
+        from MethodenAnalyser3 import build_cli_parser
+        parser = build_cli_parser()
+        args = parser.parse_args(["--file", str(self.sample_file), "--lang", "es"])
+        self.assertEqual(args.lang, "es")
+
+    def test_cli_main_with_lang_en_outputs_english_report(self) -> None:
+        from MethodenAnalyser3 import main
+        captured = io.StringIO()
+        with redirect_stdout(captured):
+            exit_code = main(["--file", str(self.sample_file), "--lang", "en"])
+        self.assertEqual(exit_code, 0)
+        output = captured.getvalue()
+        self.assertIn("PYTHON CODE ANALYSIS - RESULTS", output)
+        self.assertIn("Unused Definitions (0):", output)
+
+    def test_cli_main_with_lang_de_outputs_german_report(self) -> None:
+        from MethodenAnalyser3 import main
+        captured = io.StringIO()
+        with redirect_stdout(captured):
+            exit_code = main(["--file", str(self.sample_file), "--lang", "de"])
+        self.assertEqual(exit_code, 0)
+        output = captured.getvalue()
+        self.assertIn("PYTHON CODE ANALYSE - ERGEBNISSE", output)
+        self.assertIn("Ungenutzte Definitionen (0):", output)
+
+    def test_cli_main_with_lang_es_outputs_spanish_report(self) -> None:
+        from MethodenAnalyser3 import main
+        captured = io.StringIO()
+        with redirect_stdout(captured):
+            exit_code = main(["--file", str(self.sample_file), "--lang", "es"])
+        self.assertEqual(exit_code, 0)
+        output = captured.getvalue()
+        self.assertIn("ANÁLISIS DE CÓDIGO PYTHON - RESULTADOS", output)
 
 
 if __name__ == "__main__":
