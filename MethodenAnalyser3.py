@@ -551,6 +551,25 @@ class CodeAnalyzer(ast.NodeVisitor):
             self.local_names.add(name)
         self.generic_visit(node)
 
+    def visit_TypeVar(self, node: Any) -> None:
+        """Erfasst PEP 695 TypeVar-Namen ([T]) als lokale Typ-Parameter."""
+        if getattr(node, "name", None):
+            self.local_names.add(node.name)
+        self.generic_visit(node)
+
+    def visit_TypeVarTuple(self, node: Any) -> None:
+        """Erfasst PEP 695 TypeVarTuple-Namen ([*Ts]) als lokale Typ-Parameter."""
+        if getattr(node, "name", None):
+            self.local_names.add(node.name)
+        self.generic_visit(node)
+
+    def visit_ParamSpec(self, node: Any) -> None:
+        """Erfasst PEP 695 ParamSpec-Namen ([**P]) als lokale Typ-Parameter."""
+        if getattr(node, "name", None):
+            self.local_names.add(node.name)
+        self.generic_visit(node)
+
+
 
 # ============================================================================
 # HILFSFUNKTIONEN
@@ -1024,6 +1043,11 @@ def _extract_typehints(tree: ast.AST) -> Set[str]:
             # Python 3.12+ type-Statement (TypeAlias)
             elif hasattr(ast, "TypeAlias") and isinstance(node, ast.TypeAlias) and node.value:
                 for sub in ast.walk(node.value):
+                    if isinstance(sub, ast.Name):
+                        hints.add(sub.id)
+            # Python 3.12+ PEP 695 TypeVar-Bounds
+            elif hasattr(ast, "TypeVar") and isinstance(node, ast.TypeVar) and getattr(node, "bound", None):
+                for sub in ast.walk(node.bound):
                     if isinstance(sub, ast.Name):
                         hints.add(sub.id)
     except Exception as e:
