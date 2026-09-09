@@ -10,8 +10,9 @@ import pathlib
 import pkgutil
 import builtins
 import collections
-import difflib
 import datetime
+import difflib
+import fnmatch
 import sqlite3
 import threading
 import warnings
@@ -1478,24 +1479,83 @@ def auto_fix_unused_imports(output_widget: scrolledtext.ScrolledText, status_wid
 # MULTI-FILE / PROJEKT-ANALYSE
 # ============================================================================
 
-def collect_python_files(folder_path: str, exclude_patterns: List[str] = None) -> List[str]:
+DEFAULT_EXCLUDE_PATTERNS: List[str] = [
+    "__pycache__", ".git", ".venv", "venv", "env",
+    "node_modules", ".eggs", "build", "dist"
+]
+
+
+def _should_exclude_path(
+    py_file: pathlib.Path,
+    rel_posix: str,
+    patterns: List[str],
+    case_insensitive: bool = False,
+) -> bool:
+    """Prüft, ob eine Python-Datei durch Ausschlussmuster ignoriert werden soll."""
+    file_name = py_file.name
+    parts = list(py_file.parts)
+    if case_insensitive:
+        file_name_cmp = file_name.lower()
+        parts_cmp = [p.lower() for p in parts]
+        rel_cmp = rel_posix.lower()
+    else:
+        file_name_cmp = file_name
+        parts_cmp = parts
+        rel_cmp = rel_posix
+
+    for pat in patterns:
+        pat_clean = pat.replace("\\", "/").strip().rstrip("/")
+        if not pat_clean:
+            continue
+        pat_cmp = pat_clean.lower() if case_insensitive else pat_clean
+
+        # 1. Pfad-spezifisches Muster mit Schrägstrich (z.B. 'tests/fixtures', 'build/*', 'docs/html')
+        if "/" in pat_cmp:
+            if fnmatch.fnmatch(rel_cmp, pat_cmp):
+                return True
+            if fnmatch.fnmatch(rel_cmp, f"{pat_cmp}/*"):
+                return True
+            if rel_cmp == pat_cmp or rel_cmp.startswith(f"{pat_cmp}/"):
+                return True
+            continue
+
+        # 2. Einzelner Bezeichner oder Wildcard (z.B. 'build', '__pycache__', 'test_*', '*.tmp.py')
+        for part in parts_cmp:
+            if fnmatch.fnmatch(part, pat_cmp):
+                return True
+
+        if fnmatch.fnmatch(file_name_cmp, pat_cmp):
+            return True
+
+        if fnmatch.fnmatch(rel_cmp, pat_cmp):
+            return True
+
+    return False
+
+
+def collect_python_files(folder_path: str, exclude_patterns: Optional[List[str]] = None) -> List[str]:
     """Sammelt alle Python-Dateien in einem Ordner rekursiv."""
+    if not os.path.exists(folder_path):
+        raise FileNotFoundError(f"Projekt-Verzeichnis nicht gefunden: {folder_path}")
+    if not os.path.isdir(folder_path):
+        raise NotADirectoryError(f"Projekt-Pfad ist kein Verzeichnis: {folder_path}")
+
     if exclude_patterns is None:
-        exclude_patterns = ['__pycache__', '.git', '.venv', 'venv', 'env', 
-                           'node_modules', '.eggs', 'build', 'dist']
-    
+        exclude_patterns = DEFAULT_EXCLUDE_PATTERNS
+
     python_files = []
     folder = pathlib.Path(folder_path)
-    
+    case_insensitive = (os.name == "nt")
+
     for py_file in folder.rglob("*.py"):
-        skip = False
-        for pattern in exclude_patterns:
-            if pattern in py_file.parts:
-                skip = True
-                break
-        if not skip:
-            python_files.append(str(py_file))
-    
+        try:
+            rel_posix = py_file.relative_to(folder).as_posix()
+        except ValueError:
+            rel_posix = py_file.name
+        if _should_exclude_path(py_file, rel_posix, exclude_patterns, case_insensitive=case_insensitive):
+            continue
+        python_files.append(str(py_file))
+
     return sorted(python_files)
 
 
@@ -1516,9 +1576,13 @@ class ProjectAnalysisResult:
     file_results: Dict[str, AnalysisResult]
 
 
-def analyze_project(folder_path: str, progress_callback=None) -> ProjectAnalysisResult:
+def analyze_project(
+    folder_path: str,
+    progress_callback=None,
+    exclude_patterns: Optional[List[str]] = None,
+) -> ProjectAnalysisResult:
     """Analysiert alle Python-Dateien in einem Projektordner."""
-    python_files = collect_python_files(folder_path)
+    python_files = collect_python_files(folder_path, exclude_patterns=exclude_patterns)
     files_with_errors, file_results = [], {}
     all_unused_imports, all_unused_defs = {}, {}
     all_missing_defs, all_missing_imports, all_duplicate_imports = {}, {}, {}
@@ -1607,7 +1671,11 @@ def generate_project_report(result: ProjectAnalysisResult) -> str:
     if result.files_with_errors:
         report.append(f"\n{_t('cli_files_with_errors')}:\n" + "-" * 50 + "\n")
         for fp, error in sorted(result.files_with_errors):
-            report.append(f"  {fp}: {error}\n")
+            try:
+                disp_path = os.path.relpath(fp, result.folder_path) if os.path.isabs(fp) else fp
+            except ValueError:
+                disp_path = fp
+            report.append(f"  {disp_path}: {error}\n")
 
     score = max(0, 100 - total_ui * 2 - total_ud * 2)
     report.append(f"\n{'=' * 70}\n{_t('cli_score')}: {score}/100\n{'=' * 70}\n")
@@ -1758,10 +1826,17 @@ def build_json_report(
         report["duplicate_imports"] = {
             normalize(path): values for path, values in sorted(result.all_duplicate_imports.items())
         }
+        def _safe_relpath(p: str) -> str:
+            if not os.path.isabs(p):
+                return normalize(p)
+            try:
+                return normalize(os.path.relpath(p, source_root))
+            except ValueError:
+                return normalize(p)
+
         report["errors"] = [
             {
-                "path": normalize(os.path.relpath(path, source_root))
-                if os.path.isabs(path) else normalize(path),
+                "path": _safe_relpath(path),
                 "message": message,
             }
             for path, message in result.files_with_errors
