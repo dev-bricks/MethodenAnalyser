@@ -61,6 +61,9 @@ jobs:
       - name: Compile Python files
         run: python -m py_compile MethodenAnalyser3.py manage_translations.py translator.py webapp/server.py
 
+      - name: Validate full repository bytecode compilation
+        run: python -m compileall -q .
+
       - name: Import analyzer module and Tk runtime
         run: python -c "import tkinter as tk; import MethodenAnalyser3 as m; print(f'Tk {tk.TkVersion} / threshold {m.SIMILARITY_THRESHOLD}')"
 

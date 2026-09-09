@@ -5,7 +5,23 @@ Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
 ## [Unreleased]
 
-### Webapp- & CLI-Lokalisierung (MA-I18N-05) [2026-09-07]
+## [3.0.1] - 2026-09-09
+
+### Discoverability, Schnellnavigation & Governance-Härtung (Pfad B)
+- **14-Punkte-Schnellnavigation (`README.md` & `README_de.md`)**: Vollständig paritätische Schnellnavigation mit funktionierenden Ankern für Features, Werkzeugvergleich, Architektur, Lebenszyklus, Governance-Invarianten, Bildschirmfoto, Installation, Bedienung, Web-Begleiter, Exit-Codes, Datenschutz, Sicherheitsrichtlinie, Partner-Ökosystem und Entwicklung/Tests.
+- **Duale Mermaid-Diagramme**: Zweisprachige Systemarchitektur (`flowchart TD`) und detailliertes End-to-End Analyse-Sequenzdiagramm (`sequenceDiagram` mit `autonumber`) zur Visualisierung des AST-Parsings, Scope-Bindings, difflib-Duplikatsuche, JSON-Export und atomaren `.bak`-Backups bei Auto-Fix.
+- **10 Governance- und Laufzeit-Invarianten**: Verbindliche Tabelle der Invarianten INV-LOCAL-01 bis INV-SLA-10 (Local-First, RunAsInvoker, inerte statische Analyse, Latin-1 Fallback, Loopback-Isolation, ZIP-Safety, atomarer Auto-Fix, Cross-Platform-Parität, Lock-Resilienz und 48h SLA).
+- **Erweitertes Partner-Ökosystem**: 16 Partner-Repositories über `dev-bricks`, `ellmos-ai`, `file-bricks`, `doc-bricks` und `open-bricks` referenziert und verlinkt.
+- **Sicherheitsrichtlinie & SLA-Härtung (`SECURITY.md`)**: 48h Erstbestätigungs-SLA, 5-Werktage-Triage-Zusage, koordinierte Offenlegung sowie offizielle Sicherheitskontakte (`security@open-bricks.org`, `security@ellmos.ai`, `support@lukasgeiger.com`, `lukas@open-bricks.org`) verankert.
+- **CI-Matrix-Härtung (`.github/workflows/tests.yml`)**: Zusätzliches Bytecode-Validierungsgate (`python -m compileall -q .`) über das gesamte Repository integriert.
+- **Multi-Agent Lock- & Sync-Schutz (`.gitignore`)**: Standard-Ignorierregeln für Multi-Agent-Locks (`LOCK*`, `*.lock`, `LOCK.permissions.json`) sowie Cloud-Sync-Konfliktdateien (`*-conflict-*`, `*-WORKSTATION-LG*`, `*-ASUS-GEI*`) gehärtet.
+- **Drittanbieter-Transparenz (`THIRD_PARTY_LICENSES.md`)**: Umfassendes Dokument zur Null-Abhängigkeiten-Architektur (100% Python-Standardbibliothek) und abgegrenzten Entwickler-Toolchain (pytest, ruff, pyinstaller) erstellt.
+- **Lokales Marketing-Register (`MARKETING-LOG.txt`)**: Lokales Logbuch mit Wertversprechen, Zielgruppen-Segmentierung, Discoverability-Suchbegriffen und Invarianten angelegt.
+- **PEP 621 Metadaten (`pyproject.toml`)**: Version auf `3.0.1` angehoben; `Parent-Organization`, `Marketing-Log` und `Third-Party-Licenses` in `[project.urls]` ergänzt.
+- **Index-Aktualisierung (`llms.txt`)**: Version 3.0.1, Governance-Invarianten und Zeitstempel auf 2026-09-09 synchronisiert.
+- **Erweiterte Vertragstest-Suite (`tests/test_metadata.py`)**: 7 neue automatisierte Vertragstests für Schnellnavigation, duale Mermaid-Diagramme, Invarianten-Matrix, Partner-Ökosystem, .gitignore-Regeln, Drittanbieter-Deklaration und Marketing-Log (Gesamttestsuite auf 144 Tests / 15 Subtests ausgebaut, 100% grün).
+
+
 - **Locale-Erkennung (`translator.py`)**: `detect_system_language()` erkennt System-Locale über Umgebungsvariablen (`LC_ALL`, `LC_MESSAGES`, `LANG`) und `locale.getlocale()`; `detect_language_from_header()` wertet HTTP `Accept-Language`-Header mit Qualitätsfaktoren (`q=...`) aus; `normalize_language_code()` normalisiert Sprachcodes auf die 6 unterstützten Sprachen (`de`, `en`, `es`, `zh`, `ja`, `ru`).
 - **Übersetzungskatalog-Parität (`locales/translations.json`)**: 51 neue Lokalisierungsschlüssel für CLI-Sektionen, Statistiken, Tabellenüberschriften sowie Webapp-Status und Finding-Kategorien ergänzt (Gesamtkatalog auf 134 Keys mit 100% Parität über alle 6 Sprachen angehoben).
 - **CLI-Lokalisierung (`MethodenAnalyser3.py`)**: CLI-Hilfe (`--lang`), Textreports und Projektberichte (`generate_report()`, `generate_project_report()`) dynamisch lokalisiert; Standardwert fällt transparent auf System-Locale zurück.

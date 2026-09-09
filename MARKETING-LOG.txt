@@ -1,0 +1,70 @@
+================================================================================
+MARKETING & DISCOVERABILITY LOG - METHODENANALYSER (dev-bricks)
+================================================================================
+
+[2026-09-09] PFAD B OVERHAUL & DISCOVERABILITY HARMONIZATION (v3.0.1)
+--------------------------------------------------------------------------------
+Routine: GITHUBBOT_ONE_REPO_MARKETING_AND_DESIGN (Pfad B)
+Target Repository: dev-bricks/MethodenAnalyser
+Maintainer / Author: Lukas Geiger
+Parent Organization: dev-bricks
+Umbrella Organization: open-bricks
+
+1. VALUE PROPOSITION & POSITIONING
+- Primary Pitch: Zero-dependency, offline-first Python AST analyzer providing instantaneous dead code detection, unused import cleanup, and code duplicate detection with an accessible Tkinter GUI, CLI automation, and a local offline PWA companion.
+- Differentiation:
+  * Zero external runtime dependencies (100% Python Standard Library).
+  * Built-in code similarity detection (difflib SequenceMatcher).
+  * Interactive Desktop GUI + Headless CLI + Local PWA companion.
+  * Reversible Auto-Fix with automatic atomic `.bak` backup.
+  * 100% Local-First & Zero Network Egress (privacy guaranteed).
+  * Full 6-language internationalization (de, en, es, zh, ja, ru).
+
+2. AUDIENCE SEGMENTATION
+- Python Refactoring Engineers: Scanning large codebases for dead definitions and unused imports before major refactorings.
+- Solo Developers & Indie Hackers: Lightweight, zero-setup AST tool that works out-of-the-box without configuring complex linters.
+- Enterprise & Air-Gapped Environments: 100% offline, zero-egress, unprivileged user execution (RunAsInvoker) complies with strict security guidelines.
+- CI/CD Automation Teams: Headless CLI returning deterministic exit codes and standard `methodenanalyser-report-v1.json` reports.
+- Students & Python Beginners: Visual GUI inspection of AST structure, method hierarchies, and code duplication.
+
+3. DISCOVERABILITY KEYWORDS & SEARCH PHRASES
+- dev-bricks MethodenAnalyser
+- Python static code analyzer Tkinter GUI
+- unused imports detector Python AST
+- local Python code quality checker no dependencies
+- Python dead code finder GUI Windows
+- AST-based Python code analyzer portable
+- Python import tracker unused definitions finder
+- code similarity detector Python local
+- zero dependency python code analyzer
+- offline python refactoring tool
+
+4. ECOSYSTEM & CROSS-PROMOTION MATRIX
+- dev-bricks/DevCenter (Central developer hub)
+- dev-bricks/CodeBox (Local-first extensible IDE)
+- dev-bricks/CareCenter-for-Codex (System hygiene and agent health center)
+- dev-bricks/app-rotator (Desktop focus and application rotation manager)
+- ellmos-ai/lock-master (Cross-process concurrency safety)
+- ellmos-ai/clutch (Local LLM orchestration & routing)
+- ellmos-ai/assistant-core (Persistence & store backbone)
+- ellmos-ai/decision-clicker (Governance & decision ledger)
+- ellmos-ai/policy-registry (Declarative rule verification)
+- ellmos-ai/ellmos-codecommander-mcp (AST refactoring MCP server)
+- ellmos-ai/ellmos-filecommander-mcp (Safe file operations MCP server)
+- file-bricks/ExplorerPro (Tabbed file manager)
+- file-bricks/ProFiler (Document categorizer)
+- doc-bricks/FormularErstellen (Schema-driven form creator)
+- open-bricks/open-bricks (Open umbrella ecosystem)
+
+5. GOVERNANCE & RUNTIME INVARIANTS COMMITTED
+- INV-LOCAL-01: 100% Local-First & Zero-Egress
+- INV-SECURITY-02: Non-Elevation / RunAsInvoker
+- INV-AST-03: Inert Static AST Parsing (no dynamic code execution)
+- INV-ENCODING-04: Lossless Multi-Encoding Resilience (UTF-8 with Latin-1 fallback)
+- INV-ISOLATION-05: Loopback Web Companion Isolation (127.0.0.1 default)
+- INV-TRAVERSAL-06: Anti-Path-Traversal & ZIP Safety Bounds
+- INV-AUTOFIX-07: Reversible Auto-Fix with Atomic `.bak` Backup
+- INV-PLATFORM-08: Multi-Platform Parity (Windows, Linux, macOS)
+- INV-SYNC-09: Cloud-Sync & Multi-Agent Lock Resilience (fail-closed against `LOCK.*`)
+- INV-SLA-10: 48h Security SLA & 5-Day Triage
+================================================================================

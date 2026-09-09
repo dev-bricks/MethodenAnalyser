@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "MethodenAnalyser"
-version = "3.0.0"
+version = "3.0.1"
 description = "Static Python code analyzer with a local Tkinter GUI: detects unused imports, dead definitions, and similar code blocks using AST analysis."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -56,6 +56,9 @@ Issues = "https://github.com/dev-bricks/MethodenAnalyser/issues"
 Changelog = "https://github.com/dev-bricks/MethodenAnalyser/blob/master/CHANGELOG.md"
 Security = "https://github.com/dev-bricks/MethodenAnalyser/blob/master/SECURITY.md"
 Umbrella = "https://github.com/open-bricks/open-bricks"
+Parent-Organization = "https://github.com/dev-bricks"
+Marketing-Log = "https://github.com/dev-bricks/MethodenAnalyser/blob/master/MARKETING-LOG.txt"
+Third-Party-Licenses = "https://github.com/dev-bricks/MethodenAnalyser/blob/master/THIRD_PARTY_LICENSES.md"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

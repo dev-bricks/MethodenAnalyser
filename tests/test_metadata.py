@@ -16,25 +16,25 @@ def test_version_parity_across_artifacts():
     assert hasattr(m3, "TOOL_VERSION")
     assert hasattr(m3, "__version__")
     assert m3.TOOL_VERSION == "3.0"
-    assert m3.__version__ == "3.0.0"
+    assert m3.__version__ == "3.0.1"
 
     # Check pyproject.toml
     pyproject_path = ROOT / "pyproject.toml"
     assert pyproject_path.exists(), "pyproject.toml must exist"
     pyproject_text = pyproject_path.read_text(encoding="utf-8")
-    assert 'version = "3.0.0"' in pyproject_text
+    assert 'version = "3.0.1"' in pyproject_text
 
     # Check store_package.json
     store_pkg_path = ROOT / "store_package.json"
     if store_pkg_path.exists():
         store_data = json.loads(store_pkg_path.read_text(encoding="utf-8"))
-        assert store_data.get("version", "").startswith("3.0.0")
+        assert store_data.get("version", "").startswith("3.0.1")
 
-    # Check CHANGELOG.md references version 3.0
+    # Check CHANGELOG.md references version 3.0.1
     changelog_path = ROOT / "CHANGELOG.md"
     assert changelog_path.exists()
     changelog_text = changelog_path.read_text(encoding="utf-8")
-    assert "3.0" in changelog_text
+    assert "3.0.1" in changelog_text
 
 
 def test_required_documentation_files_exist():
@@ -45,10 +45,13 @@ def test_required_documentation_files_exist():
         "llms.txt",
         "CHANGELOG.md",
         "LICENSE",
+        "SECURITY.md",
         "PRIVACY_POLICY.md",
         "EXPORTFORMAT.md",
         "WEBAPP.md",
         "BUILD.md",
+        "THIRD_PARTY_LICENSES.md",
+        "MARKETING-LOG.txt",
         "pyproject.toml",
     ]
     for rel_name in required_files:
@@ -113,6 +116,9 @@ def test_pep621_metadata_and_project_urls():
         'Changelog = "https://github.com/dev-bricks/MethodenAnalyser/blob/master/CHANGELOG.md"',
         'Security = "https://github.com/dev-bricks/MethodenAnalyser/blob/master/SECURITY.md"',
         'Umbrella = "https://github.com/open-bricks/open-bricks"',
+        'Parent-Organization = "https://github.com/dev-bricks"',
+        'Marketing-Log = "https://github.com/dev-bricks/MethodenAnalyser/blob/master/MARKETING-LOG.txt"',
+        'Third-Party-Licenses = "https://github.com/dev-bricks/MethodenAnalyser/blob/master/THIRD_PARTY_LICENSES.md"',
     ]
     for url_entry in expected_urls:
         assert url_entry in content, f"Missing URL entry: {url_entry}"
@@ -163,7 +169,15 @@ def test_security_policy_bilingual_and_invariants():
     assert "| 3.0.x   | :white_check_mark: |" in content
     assert "https://github.com/dev-bricks/MethodenAnalyser/security/advisories/new" in content
     assert "security@open-bricks.org" in content
+    assert "security@ellmos.ai" in content
     assert "support@lukasgeiger.com" in content
+    assert "lukas@open-bricks.org" in content
+
+    # SLA commitments
+    assert "48 hours" in content
+    assert "48 Stunden" in content
+    assert "5 business days" in content
+    assert "5 Werktagen" in content
 
 
 def test_ci_workflow_matrix_and_concurrency():
@@ -190,3 +204,129 @@ def test_ci_workflow_matrix_and_concurrency():
     # Steps
     assert "pytest -v" in content
     assert "ruff check ." in content
+    assert "python -m compileall -q ." in content
+
+
+def test_readme_quick_navigation_and_anchor_parity():
+    """Verify both README.md and README_de.md contain quick navigation bars and valid anchors."""
+    for filename in ["README.md", "README_de.md"]:
+        readme_path = ROOT / filename
+        assert readme_path.exists()
+        content = readme_path.read_text(encoding="utf-8")
+
+        # Quick navigation bar exists
+        assert '<p align="center">' in content
+
+        # Check key navigation targets exist in document
+        assert "#features" in content
+        assert "#architecture" in content or "#architektur" in content
+        assert "#governance" in content
+        assert "#screenshot" in content
+        assert "#installation" in content
+        assert "#exit-codes" in content
+
+
+def test_readme_dual_mermaid_diagrams():
+    """Verify both READMEs include dual Mermaid diagrams: flowchart TD and sequenceDiagram."""
+    for filename in ["README.md", "README_de.md"]:
+        readme_path = ROOT / filename
+        content = readme_path.read_text(encoding="utf-8")
+
+        # Flowchart architecture
+        assert "```mermaid" in content
+        assert "flowchart TD" in content
+
+        # Sequence diagram lifecycle
+        assert "sequenceDiagram" in content
+        assert "autonumber" in content
+
+
+def test_readme_governance_invariants_table():
+    """Verify both READMEs define the 10 Governance and Runtime Invariants."""
+    for filename in ["README.md", "README_de.md"]:
+        readme_path = ROOT / filename
+        content = readme_path.read_text(encoding="utf-8")
+
+        for inv_id in [
+            "INV-LOCAL-01",
+            "INV-SECURITY-02",
+            "INV-AST-03",
+            "INV-ENCODING-04",
+            "INV-ISOLATION-05",
+            "INV-TRAVERSAL-06",
+            "INV-AUTOFIX-07",
+            "INV-PLATFORM-08",
+            "INV-SYNC-09",
+            "INV-SLA-10",
+        ]:
+            assert inv_id in content, f"{inv_id} missing in {filename}"
+
+
+def test_readme_sibling_ecosystem_matrix():
+    """Verify both READMEs include sibling ecosystem tools across partner orgs."""
+    for filename in ["README.md", "README_de.md"]:
+        readme_path = ROOT / filename
+        content = readme_path.read_text(encoding="utf-8")
+
+        for partner in [
+            "DevCenter",
+            "CodeBox",
+            "CareCenter-for-Codex",
+            "lock-master",
+            "clutch",
+            "assistant-core",
+            "decision-clicker",
+            "policy-registry",
+            "ellmos-codecommander-mcp",
+            "ellmos-filecommander-mcp",
+            "ExplorerPro",
+            "ProFiler",
+            "FormularErstellen",
+            "open-bricks",
+        ]:
+            assert partner in content, f"{partner} missing in {filename}"
+
+
+def test_gitignore_lock_and_conflict_rules():
+    """Verify .gitignore ignores multi-agent lock patterns and cloud sync conflict files."""
+    gi_path = ROOT / ".gitignore"
+    assert gi_path.exists()
+    content = gi_path.read_text(encoding="utf-8")
+
+    # Locks
+    assert "LOCK" in content
+    assert "LOCK.*" in content
+    assert "*.lock" in content
+    assert "LOCK.permissions.json" in content
+    assert "!LOCK.md" in content
+
+    # Conflicts
+    assert "*-conflict-*" in content
+    assert "*-WORKSTATION-LG*" in content
+    assert "*-ASUS-GEI*" in content
+
+
+def test_third_party_licenses_document():
+    """Verify THIRD_PARTY_LICENSES.md declares zero external runtime dependencies."""
+    tpl_path = ROOT / "THIRD_PARTY_LICENSES.md"
+    assert tpl_path.exists()
+    content = tpl_path.read_text(encoding="utf-8")
+
+    assert "Zero External Dependencies" in content
+    assert "ast" in content
+    assert "tkinter" in content
+    assert "difflib" in content
+    assert "MIT License" in content
+
+
+def test_marketing_log_integrity():
+    """Verify MARKETING-LOG.txt documents discoverability, keywords and audience segmentation."""
+    ml_path = ROOT / "MARKETING-LOG.txt"
+    assert ml_path.exists()
+    content = ml_path.read_text(encoding="utf-8")
+
+    assert "MARKETING & DISCOVERABILITY LOG" in content
+    assert "dev-bricks/MethodenAnalyser" in content
+    assert "AUDIENCE SEGMENTATION" in content
+    assert "DISCOVERABILITY KEYWORDS" in content
+    assert "GOVERNANCE & RUNTIME INVARIANTS" in content

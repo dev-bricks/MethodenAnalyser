@@ -43,14 +43,19 @@ If you discover a security issue or vulnerability, please **do not open a public
 
 - **GitHub Private Vulnerability Reporting**: [Report Advisory](https://github.com/dev-bricks/MethodenAnalyser/security/advisories/new)
 - **Security Contact**: [security@open-bricks.org](mailto:security@open-bricks.org)
+- **Ecosystem Security**: [security@ellmos.ai](mailto:security@ellmos.ai)
 - **Maintainer Support**: [support@lukasgeiger.com](mailto:support@lukasgeiger.com)
+- **Direct Contact**: [lukas@open-bricks.org](mailto:lukas@open-bricks.org)
 
 Please provide:
 - A description of the issue and potential impact
 - Detailed steps to reproduce or a minimal proof of concept
 - Affected versions and environment details
 
-We acknowledge receipt within 48 hours and coordinate fixes prior to public disclosure.
+#### Response & Triage SLA
+- **Initial Acknowledgement**: Within **48 hours** of receiving your report.
+- **Triage & Severity Assessment**: Within **5 business days**, including validation and initial remediation plan.
+- **Coordinated Disclosure**: Fixes and releases will be coordinated prior to public disclosure via a GitHub Security Advisory.
 
 ---
 
@@ -93,6 +98,13 @@ Wenn Sie eine Sicherheitslücke entdecken, öffnen Sie bitte **kein öffentliche
 
 - **GitHub Private Vulnerability Reporting**: [Sicherheitsbericht einreichen](https://github.com/dev-bricks/MethodenAnalyser/security/advisories/new)
 - **Sicherheitskontakt**: [security@open-bricks.org](mailto:security@open-bricks.org)
+- **Ökosystem-Sicherheit**: [security@ellmos.ai](mailto:security@ellmos.ai)
 - **Maintainer**: [support@lukasgeiger.com](mailto:support@lukasgeiger.com)
+- **Direktkontakt**: [lukas@open-bricks.org](mailto:lukas@open-bricks.org)
 
-Bitte fügen Sie eine Beschreibung, Reproduktionsschritte, betroffene Versionen und potenzielle Auswirkungen bei. Wir bestätigen den Eingang innerhalb von 48 Stunden.
+Bitte fügen Sie eine Beschreibung, Reproduktionsschritte, betroffene Versionen und potenzielle Auswirkungen bei.
+
+#### Reaktions- & Triage-SLA
+- **Eingangsbestätigung**: Innerhalb von **48 Stunden** nach Eingang der Meldung.
+- **Triage & Schweregradbewertung**: Innerhalb von **5 Werktagen**, inklusive Validierung und erstem Behebungsplan.
+- **Koordinierte Offenlegung**: Sicherheitsupdates und Releases werden vor der öffentlichen Bekanntgabe über ein GitHub Security Advisory abgestimmt.

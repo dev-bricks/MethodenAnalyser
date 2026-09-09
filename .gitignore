@@ -1,4 +1,4 @@
-﻿# =============================================================================
+# =============================================================================
 # .gitignore Template fuer Software Entwicklung Projekte
 # Kopieren und als .gitignore im Projektroot ablegen
 # Projektspezifische Eintraege am Ende anfuegen
@@ -93,5 +93,20 @@ PORTIERUNGSPLAN.md
 TODO.md
 DONE.md
 
-# Laptop-OneDrive-Konfliktkopien (ASUS-GEI) nicht committen
+# ---- Multi-Agent & File Locks ----
+LOCK
+LOCK.*
+*.lock
+LOCK*.txt
+LOCK.permissions.json
+!LOCK.md
+
+# ---- Cloud-Sync- & Host-Konfliktdateien ----
+*-conflict-*
+*.sync-temp-*
+*.sync-conflict-*
+*.conflict
+*-CONFLIT-*
+*-WORKSTATION-LG*
+*-ASUS-GEI*
 *-ASUS-GEI.py

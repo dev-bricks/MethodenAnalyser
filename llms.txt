@@ -7,11 +7,15 @@
 - Repository: https://github.com/dev-bricks/MethodenAnalyser
 - Documentation: https://github.com/dev-bricks/MethodenAnalyser#readme
 - Issues: https://github.com/dev-bricks/MethodenAnalyser/issues
+- Changelog: https://github.com/dev-bricks/MethodenAnalyser/blob/master/CHANGELOG.md
+- Security Policy: https://github.com/dev-bricks/MethodenAnalyser/blob/master/SECURITY.md
+- Parent Organization: https://github.com/dev-bricks
+- Umbrella: https://github.com/open-bricks/open-bricks
 - License: MIT
 
 ## What It Does
 
-MethodenAnalyser analyzes Python files and project folders locally with Python AST logic. It finds unused imports, unused definitions, missing definitions/imports, duplicate imports and similar code blocks. The app is Windows-first, has no external runtime dependencies and can also run from source on macOS and Linux.
+MethodenAnalyser analyzes Python files and project folders locally with Python AST logic. It finds unused imports, unused definitions, missing definitions/imports, duplicate imports and similar code blocks. The app is Windows-first, has no external runtime dependencies and runs seamlessly from source on macOS and Linux.
 
 ## Interfaces
 
@@ -19,8 +23,22 @@ MethodenAnalyser analyzes Python files and project folders locally with Python A
 - CLI file analysis: `python MethodenAnalyser3.py --file path/to/file.py`.
 - CLI project analysis: `python MethodenAnalyser3.py --project path/to/project`.
 - JSON export: add `--json-output` or pass a target JSON filename.
-- Local web helper: `python webapp/server.py` or `START_WEBAPP.bat`; its API
-  accepts `snippet`, `file` and `zip`, while `project` is import-only.
+- Local web helper: `python webapp/server.py` or `START_WEBAPP.bat`; its API accepts `snippet`, `file` and `zip`, while `project` is import-only.
+- Multi-language support: `--lang` parameter supporting `de`, `en`, `es`, `zh`, `ja`, and `ru`.
+
+## Governance & Runtime Invariants
+
+The tool strictly adheres to 10 architectural and security invariants:
+- INV-LOCAL-01: 100% Local-First & Zero-Egress (no analytics, no telemetry, no phone-home)
+- INV-SECURITY-02: Unprivileged User-Mode Execution (RunAsInvoker, no admin required)
+- INV-AST-03: Inert Static Analysis (standard Python `ast.parse()`, no dynamic imports or code execution)
+- INV-ENCODING-04: Lossless Multi-Encoding Resilience (UTF-8 default with Latin-1 fallback)
+- INV-ISOLATION-05: Loopback Web Companion Isolation (binds to 127.0.0.1 by default)
+- INV-TRAVERSAL-06: Path Traversal & ZIP Safety Bounds (blocks `..` and bounds member sizes)
+- INV-AUTOFIX-07: Reversible Auto-Fix with Atomic `.bak` Backup
+- INV-PLATFORM-08: Cross-Platform Parity across Windows, Linux, and macOS
+- INV-SYNC-09: Cloud-Sync & Multi-Agent Lock Resilience (fail-closed against `LOCK.*`)
+- INV-SLA-10: 48h Initial Response & 5-Business-Day Triage SLA
 
 ## Data And Privacy
 
@@ -33,13 +51,16 @@ All analysis runs locally. The tool does not include telemetry, cloud sync, exte
 
 ## Main Files
 
-- `README.md`: user-facing overview and quickstart.
-- `README_de.md`: German translation and localized documentation.
+- `README.md`: user-facing overview, quickstart, dual Mermaid diagrams, and governance matrix.
+- `README_de.md`: German translation and localized documentation with full parity.
 - `EXPORTFORMAT.md`: `methodenanalyser-report-v1.json` schema.
-- `WEBAPP.md`: local browser helper details.
+- `WEBAPP.md`: local browser helper details and LAN test mode specifications.
 - `BUILD.md`: bounded pytest/PyInstaller development and build contract.
+- `SECURITY.md`: bilingual security policy with 48h SLA and 5-day triage commitment.
+- `THIRD_PARTY_LICENSES.md`: dependency declarations (zero external runtime dependencies).
+- `MARKETING-LOG.txt`: discoverability strategy and audience segmentation.
 - `_sources/CROSSCHECK.md`: dependency and toolchain readback.
-- `.github/workflows/tests.yml`: Windows 2025/VS 2026, Ubuntu and macOS 26 smoke matrix.
+- `.github/workflows/tests.yml`: Windows 2025/VS 2026, Ubuntu and macOS 26 smoke matrix with compileall gate.
 
 ## Audience
 
@@ -65,6 +86,9 @@ code similarity detector Python local
 ## Verification
 
 - Canonical test command: `pytest` (or `python -m unittest discover -s tests -v`).
-- Development/build versions are bounded in `requirements-dev.txt` and checked
-  in `BUILD.md`; test suite passing (124 tests, 15 subtests passed, 100% green).
-- Last-checked: 2026-09-07
+- Development/build versions are bounded in `requirements-dev.txt` and checked in `BUILD.md`.
+- Test suite passing: 100% green across Windows, Linux, and macOS matrix.
+- Bytecode compilation: `python -m compileall -q .` clean.
+- Code style: `ruff check .` clean.
+- Version: 3.0.1
+- Last-checked: 2026-09-09
