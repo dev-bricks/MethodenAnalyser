@@ -2,6 +2,17 @@
 MARKETING & DISCOVERABILITY LOG - METHODENANALYSER (dev-bricks)
 ================================================================================
 
+[2026-09-11] PFAD A TECHNICAL HYGIENE & CI REINFORCEMENT (v3.0.2)
+--------------------------------------------------------------------------------
+Routine: GITHUBBOT_ONE_REPO_CLEANER (Pfad A)
+Target Repository: dev-bricks/MethodenAnalyser
+Maintainer / Author: Lukas Geiger
+Parent Organization: dev-bricks
+Umbrella Organization: open-bricks
+Scope: Version harmonization (v3.0.2), CI matrix test hardening (pytest -ra -v),
+       .gitignore protection against sync conflicts and lockfiles, PEP 621 ecosystem
+       URL expansion, and automated contract test suite reinforcement.
+
 [2026-09-09] PFAD B OVERHAUL & DISCOVERABILITY HARMONIZATION (v3.0.1)
 --------------------------------------------------------------------------------
 Routine: GITHUBBOT_ONE_REPO_MARKETING_AND_DESIGN (Pfad B)

@@ -3,9 +3,9 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/dev-bricks/MethodenAnalyser/releases/tag/v3.0.1"><img src="https://img.shields.io/badge/Version-3.0.1-blue?style=for-the-badge" alt="Version 3.0.1"></a>
+  <a href="https://github.com/dev-bricks/MethodenAnalyser/releases/tag/v3.0.2"><img src="https://img.shields.io/badge/Version-3.0.2-blue?style=for-the-badge" alt="Version 3.0.2"></a>
   <a href="https://github.com/dev-bricks/MethodenAnalyser/actions/workflows/tests.yml"><img src="https://img.shields.io/badge/CI-Passing-success?style=for-the-badge&logo=githubactions&logoColor=white" alt="CI Status"></a>
-  <a href="#development--testing"><img src="https://img.shields.io/badge/Tests-144%20Passed-success?style=for-the-badge&logo=pytest&logoColor=white" alt="Tests 100% Green"></a>
+  <a href="#development--testing"><img src="https://img.shields.io/badge/Tests-154%20Passed-success?style=for-the-badge&logo=pytest&logoColor=white" alt="Tests 100% Green"></a>
   <img src="https://img.shields.io/badge/Python-3.10%20%7C%203.11%20%7C%203.12%20%7C%203.13-yellow?style=for-the-badge&logo=python&logoColor=white" alt="Python 3.10-3.13">
   <img src="https://img.shields.io/badge/Platform-Windows%20%7C%20Linux%20%7C%20macOS-lightgrey?style=for-the-badge" alt="Cross-Platform">
   <img src="https://img.shields.io/badge/GUI-Tkinter%20%2B%20CLI%20%2B%20PWA-orange?style=for-the-badge" alt="GUI Desktop + CLI + PWA">

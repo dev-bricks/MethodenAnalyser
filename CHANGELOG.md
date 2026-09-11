@@ -5,6 +5,16 @@ Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
 ## [Unreleased]
 
+## [3.0.2] - 2026-09-11
+
+### Repository-Hygiene, CI-Matrix-Härtung & Vertragstest-Ausbau (Pfad A)
+- **Versionsharmonisierung (v3.0.2)**: Paritätischer Versions-Bump auf `3.0.2` über alle Projekt-Artefakte hinweg (`MethodenAnalyser3.py`, `pyproject.toml`, `store_package.json`, `llms.txt`, `README.md`, `README_de.md` und `CHANGELOG.md`).
+- **CI-Matrix & Test-Härtung (`.github/workflows/tests.yml` & `pyproject.toml`)**: Standardisierung des Testaufrufs auf `pytest -ra -v` sowohl in der CI-Matrix als auch in `[tool.pytest.ini_options].addopts` für detaillierte Zusammenfassungen bestandener und übersprungener Tests.
+- **Lock- & Sync-Schutzhärtung (`.gitignore`)**: Ergänzung robuster Ignorier-Muster gegen Multi-Agenten-Locks (`uv.lock`), Cloud-Sync-Konfliktdateien (`*-WORKSTATION*`, `* (kopie)*`, `* (copy)*`) sowie Coverage- und Wheelhouse-Caches (`.coverage.*`, `coverage/`, `.wheel-smoke/`, `wheelhouse/`, `.tox/`).
+- **PEP 621 Standard-Metadaten & URL-Aliase (`pyproject.toml`)**: Ergänzung von `Parent Organization` und `Umbrella Ecosystem` in `[project.urls]` zur standardisierten Ökosystem-Vernetzung mit `dev-bricks` und `open-bricks`.
+- **Vertragstest-Erweiterung (`tests/test_metadata.py`)**: 4 neue automatisierte Vertragstests zur kontinuierlichen Verifikation von Test-Flags, Versionsparität, erweitertem `.gitignore`-Schutz und Marketing-Audit-Logs.
+- **Index- und Badges-Aktualisierung (`llms.txt`, `README.md`, `README_de.md`)**: RAG-Index auf Version 3.0.2 und Prüfzeitstempel 2026-09-11 synchronisiert; Test- und Versions-Badges auf den aktuellen Stand aktualisiert.
+
 ## [3.0.1] - 2026-09-09
 
 ### Discoverability, Schnellnavigation & Governance-Härtung (Pfad B)

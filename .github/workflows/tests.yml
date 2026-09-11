@@ -68,4 +68,4 @@ jobs:
         run: python -c "import tkinter as tk; import MethodenAnalyser3 as m; print(f'Tk {tk.TkVersion} / threshold {m.SIMILARITY_THRESHOLD}')"
 
       - name: Run test suite via pytest
-        run: pytest -v
+        run: pytest -ra -v

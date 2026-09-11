@@ -90,5 +90,5 @@ code similarity detector Python local
 - Test suite passing: 100% green across Windows, Linux, and macOS matrix.
 - Bytecode compilation: `python -m compileall -q .` clean.
 - Code style: `ruff check .` clean.
-- Version: 3.0.1
-- Last-checked: 2026-09-09
+- Version: 3.0.2
+- Last-checked: 2026-09-11

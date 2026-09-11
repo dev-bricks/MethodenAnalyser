@@ -16,25 +16,25 @@ def test_version_parity_across_artifacts():
     assert hasattr(m3, "TOOL_VERSION")
     assert hasattr(m3, "__version__")
     assert m3.TOOL_VERSION == "3.0"
-    assert m3.__version__ == "3.0.1"
+    assert m3.__version__ == "3.0.2"
 
     # Check pyproject.toml
     pyproject_path = ROOT / "pyproject.toml"
     assert pyproject_path.exists(), "pyproject.toml must exist"
     pyproject_text = pyproject_path.read_text(encoding="utf-8")
-    assert 'version = "3.0.1"' in pyproject_text
+    assert 'version = "3.0.2"' in pyproject_text
 
     # Check store_package.json
     store_pkg_path = ROOT / "store_package.json"
     if store_pkg_path.exists():
         store_data = json.loads(store_pkg_path.read_text(encoding="utf-8"))
-        assert store_data.get("version", "").startswith("3.0.1")
+        assert store_data.get("version", "").startswith("3.0.2")
 
-    # Check CHANGELOG.md references version 3.0.1
+    # Check CHANGELOG.md references version 3.0.2
     changelog_path = ROOT / "CHANGELOG.md"
     assert changelog_path.exists()
     changelog_text = changelog_path.read_text(encoding="utf-8")
-    assert "3.0.1" in changelog_text
+    assert "3.0.2" in changelog_text
 
 
 def test_required_documentation_files_exist():
@@ -202,7 +202,7 @@ def test_ci_workflow_matrix_and_concurrency():
     assert "macos-26" in content
 
     # Steps
-    assert "pytest -v" in content
+    assert "pytest -ra -v" in content
     assert "ruff check ." in content
     assert "python -m compileall -q ." in content
 
@@ -330,3 +330,46 @@ def test_marketing_log_integrity():
     assert "AUDIENCE SEGMENTATION" in content
     assert "DISCOVERABILITY KEYWORDS" in content
     assert "GOVERNANCE & RUNTIME INVARIANTS" in content
+
+
+def test_pytest_configuration_flags():
+    """Verify pyproject.toml defines standardized -ra -v pytest addopts."""
+    pyproject_path = ROOT / "pyproject.toml"
+    assert pyproject_path.exists()
+    content = pyproject_path.read_text(encoding="utf-8")
+    assert '[tool.pytest.ini_options]' in content
+    assert 'addopts = "-ra -v"' in content
+
+
+def test_changelog_recent_pfad_a_entry():
+    """Verify CHANGELOG.md contains the 3.0.2 release notes with Pfad A hygiene entries."""
+    cl_path = ROOT / "CHANGELOG.md"
+    assert cl_path.exists()
+    content = cl_path.read_text(encoding="utf-8")
+    assert "## [3.0.2] - 2026-09-11" in content
+    assert "Pfad A" in content
+    assert "Versionsharmonisierung (v3.0.2)" in content
+
+
+def test_extended_gitignore_patterns():
+    """Verify .gitignore contains extended lock, conflict, and cache patterns."""
+    gi_path = ROOT / ".gitignore"
+    assert gi_path.exists()
+    content = gi_path.read_text(encoding="utf-8")
+    assert "uv.lock" in content
+    assert "*-WORKSTATION*" in content
+    assert "* (kopie)*" in content
+    assert "* (copy)*" in content
+    assert ".coverage.*" in content
+    assert ".wheel-smoke/" in content
+    assert "wheelhouse/" in content
+
+
+def test_marketing_log_recent_hygiene_entry():
+    """Verify MARKETING-LOG.txt includes the 2026-09-11 Pfad A audit log."""
+    ml_path = ROOT / "MARKETING-LOG.txt"
+    assert ml_path.exists()
+    content = ml_path.read_text(encoding="utf-8")
+    assert "[2026-09-11] PFAD A TECHNICAL HYGIENE" in content
+    assert "v3.0.2" in content
+    assert "GITHUBBOT_ONE_REPO_CLEANER (Pfad A)" in content
