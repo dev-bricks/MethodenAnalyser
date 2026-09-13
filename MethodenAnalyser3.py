@@ -53,13 +53,17 @@ EXIT_PARTIAL_ERROR = 3
 # SPRACHE / KONFIGURATION (Welle-1 U1: sichtbarer DE/EN-Sprachschalter)
 # ============================================================================
 
-SUPPORTED_LANGUAGES = ("de", "en")
+SUPPORTED_LANGUAGES = ("de", "en", "es", "zh", "ja", "ru")
 DEFAULT_LANGUAGE = "de"
 
 # Erste Zeile der Willkommensnachricht je Sprache (fuer Live-Neurendern beim Sprachwechsel)
 _WELCOME_HEADS = (
     "Willkommen beim Python Code Analyzer!",
     "Welcome to Python Code Analyzer!",
+    "¡Bienvenido a Python Code Analyzer!",
+    "欢迎使用 Python Code Analyzer！",
+    "Python Code Analyzer へようこそ！",
+    "Добро пожаловать в Python Code Analyzer!",
 )
 
 
@@ -125,10 +129,17 @@ def get_translator():
     return _TRANSLATOR
 
 
-def _t(key: str) -> str:
+def _t(key: str, **kwargs) -> str:
     """Übersetzt key in die aktuelle Sprache (Fallback: key selbst)."""
     translator = get_translator()
-    return translator.t(key) if translator is not None else key
+    if translator is not None:
+        return translator.t(key, **kwargs)
+    if kwargs:
+        try:
+            return key.format(**kwargs)
+        except Exception:
+            return key
+    return key
 
 
 # Analyse Konfiguration
@@ -1218,7 +1229,7 @@ def run_analysis(output_widget: scrolledtext.ScrolledText) -> None:
         output_widget: ScrolledText-Widget für Ausgabe
     """
     path = filedialog.askopenfilename(
-        title="Python-Datei auswählen",
+        title=_t("dlg_select_file"),
         filetypes=[("Python Dateien", "*.py"), ("Alle Dateien", "*.*")]
     )
     
@@ -1233,17 +1244,17 @@ def run_analysis(output_widget: scrolledtext.ScrolledText) -> None:
     except FileNotFoundError as e:
         output_widget.delete("1.0", tk.END)
         output_widget.insert(tk.END, f"[FEHLER] {e}")
-        messagebox.showerror("Dateifehler", str(e))
+        messagebox.showerror(_t("dlg_title_file_error"), str(e))
         return
     except RuntimeError as e:
         output_widget.delete("1.0", tk.END)
         output_widget.insert(tk.END, f"[FEHLER] {e}")
-        messagebox.showerror("Analysefehler", str(e))
+        messagebox.showerror(_t("dlg_title_analysis_error"), str(e))
         return
     except Exception as e:
         output_widget.delete("1.0", tk.END)
         output_widget.insert(tk.END, f"[FEHLER] Unerwarteter Fehler: {e}")
-        messagebox.showerror("Fehler", f"Unerwarteter Fehler: {e}")
+        messagebox.showerror(_t("dlg_title_error"), f"Unerwarteter Fehler: {e}")
         return
 
     # Ergebnisse anzeigen
@@ -1264,10 +1275,10 @@ def run_analysis(output_widget: scrolledtext.ScrolledText) -> None:
 
     except PermissionError:
         output_widget.insert(tk.END, "\n[WARNUNG] Keine Schreibberechtigung für Export")
-        messagebox.showwarning("Export-Fehler", "Keine Schreibberechtigung")
+        messagebox.showwarning(_t("dlg_title_export_error"), "Keine Schreibberechtigung")
     except Exception as e:
         output_widget.insert(tk.END, f"\n[WARNUNG] Export-Fehler: {e}")
-        messagebox.showwarning("Export-Fehler", str(e))
+        messagebox.showwarning(_t("dlg_title_export_error"), str(e))
 
 
 
@@ -1298,18 +1309,18 @@ def auto_fix_unused_imports(output_widget: scrolledtext.ScrolledText) -> None:
     global _last_analysis_path, _last_analysis_result
     
     if not _last_analysis_path or not _last_analysis_result:
-        messagebox.showwarning("Hinweis", "Bitte erst eine Datei analysieren!")
+        messagebox.showwarning(_t("dlg_title_notice"), _t("msg_no_file_analyzed"))
         return
     
     if not _last_analysis_result.unused_imports:
-        messagebox.showinfo("Info", "Keine ungenutzten Imports gefunden!")
+        messagebox.showinfo(_t("dlg_title_notice"), _t("msg_no_unused_imports"))
         return
     
     # Bestätigung
     unused_list = ", ".join(_last_analysis_result.unused_imports)
     if not messagebox.askyesno(
-        "Auto-Fix bestätigen",
-        f"Folgende Imports werden entfernt:\n\n{unused_list}\n\nFortfahren?"
+        _t("dlg_title_confirm_autofix"),
+        _t("msg_confirm_autofix", imports=unused_list)
     ):
         return
     
@@ -1333,7 +1344,7 @@ def auto_fix_unused_imports(output_widget: scrolledtext.ScrolledText) -> None:
         lines_to_remove = _collect_unused_import_lines(tree, unused_set)
 
         if not lines_to_remove:
-            messagebox.showinfo("Info", "Keine vollständig ungenutzten Import-Zeilen gefunden.\n(Teilweise genutzte Imports müssen manuell bearbeitet werden)")
+            messagebox.showinfo(_t("dlg_title_notice"), _t("msg_no_complete_unused_lines"))
             return
 
         # Backup und Ausgabe im erkannten Encoding — verhindert Korrumpierung von
@@ -1354,10 +1365,10 @@ def auto_fix_unused_imports(output_widget: scrolledtext.ScrolledText) -> None:
         output_widget.insert(tk.END, f"Backup erstellt: {backup_path}\n")
         output_widget.insert(tk.END, "\nBitte Datei erneut analysieren zur Überprüfung.")
         
-        messagebox.showinfo("Erfolg", f"Ungenutzte Imports entfernt!\nBackup: {backup_path}")
+        messagebox.showinfo(_t("dlg_title_success"), _t("msg_autofix_success", backup=backup_path))
         
     except Exception as e:
-        messagebox.showerror("Fehler", f"Auto-Fix fehlgeschlagen: {e}")
+        messagebox.showerror(_t("dlg_title_error"), _t("msg_autofix_error", error=str(e)))
 
 
 
@@ -1685,7 +1696,7 @@ def write_json_report(report: Dict[str, Any], output_path: str) -> str:
 
 def run_project_analysis(output_widget: scrolledtext.ScrolledText) -> None:
     """Ordner-Dialog und Projekt-Analyse."""
-    folder_path = filedialog.askdirectory(title="Projektordner auswählen")
+    folder_path = filedialog.askdirectory(title=_t("dlg_select_folder"))
     if not folder_path:
         return
     
@@ -1708,7 +1719,7 @@ def run_project_analysis(output_widget: scrolledtext.ScrolledText) -> None:
             f.write(generate_project_report(result))
         output_widget.insert(tk.END, f"\nGespeichert: {export_path}")
     except Exception as e:
-        messagebox.showerror("Fehler", str(e))
+        messagebox.showerror(_t("dlg_title_error"), str(e))
 
 
 def _build_welcome_text() -> str:
@@ -1719,7 +1730,7 @@ def _build_welcome_text() -> str:
 def create_gui() -> None:
     """Erstellt und startet die GUI-Anwendung."""
     root = tk.Tk()
-    root.title("Python Code Analyzer v3.0 - Multi-File")
+    root.title(_t("app_title", version=TOOL_VERSION))
     root.geometry(WINDOW_GEOMETRY)
     if os.path.exists(APP_ICON_PATH):
         try:
@@ -1734,7 +1745,7 @@ def create_gui() -> None:
     def show_info_dialog() -> None:
         messagebox.showinfo(
             "Python Code Analyzer",
-            _t("info_body").replace("{version}", TOOL_VERSION),
+            _t("info_body", version=TOOL_VERSION),
         )
 
     # Analyse-Button
@@ -1817,7 +1828,7 @@ def create_gui() -> None:
     # Willkommensnachricht
     output.insert(tk.END, _build_welcome_text())
 
-    # --- Menue "Sprache / Language" (Welle-1 U1: sichtbarer DE/EN-Schalter) ---
+    # --- Menue "Sprache / Language" (P-006: 6 Sprachen) ---
     translator = get_translator()
     current_lang = translator.get_language() if translator is not None else get_saved_language()
     lang_var = tk.StringVar(value=current_lang)
@@ -1828,6 +1839,7 @@ def create_gui() -> None:
             translator.set_language(lang)
         set_saved_language(lang)
         lang_var.set(lang)
+        root.title(_t("app_title", version=TOOL_VERSION))
         btn.config(text=_t("btn_analyze_file"))
         info_btn.config(text=_t("btn_info"))
         fix_btn.config(text=_t("btn_autofix"))
@@ -1837,18 +1849,27 @@ def create_gui() -> None:
         if output.get("1.0", "1.end").strip() in _WELCOME_HEADS:
             output.delete("1.0", tk.END)
             output.insert(tk.END, _build_welcome_text())
-        messagebox.showinfo("Sprache / Language", _t("lang_switched_msg"))
+        messagebox.showinfo(_t("menu_language"), _t("lang_switched_msg"))
 
     menubar = tk.Menu(root)
     lang_menu = tk.Menu(menubar, tearoff=0)
-    lang_menu.add_radiobutton(
-        label="Deutsch", value="de", variable=lang_var,
-        command=lambda: apply_language("de"),
-    )
-    lang_menu.add_radiobutton(
-        label="English", value="en", variable=lang_var,
-        command=lambda: apply_language("en"),
-    )
+    
+    lang_display_names = {
+        "de": "Deutsch",
+        "en": "English",
+        "es": "Español",
+        "zh": "中文",
+        "ja": "日本語",
+        "ru": "Русский",
+    }
+    for code in SUPPORTED_LANGUAGES:
+        label = lang_display_names.get(code, code)
+        lang_menu.add_radiobutton(
+            label=label,
+            value=code,
+            variable=lang_var,
+            command=lambda c=code: apply_language(c),
+        )
     menubar.add_cascade(label=_t("menu_language"), menu=lang_menu)
     root.config(menu=menubar)
 

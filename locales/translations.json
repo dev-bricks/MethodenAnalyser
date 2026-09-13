@@ -1,38 +1,200 @@
 {
+  "app_title": {
+    "de": "Python Code Analyzer v{version} - Multi-File",
+    "en": "Python Code Analyzer v{version} - Multi-File",
+    "es": "Python Code Analyzer v{version} - Multi-archivo",
+    "zh": "Python Code Analyzer v{version} - 多文件",
+    "ja": "Python Code Analyzer v{version} - マルチファイル",
+    "ru": "Python Code Analyzer v{version} - Multi-File"
+  },
   "btn_analyze_file": {
     "de": "📂 Datei analysieren",
-    "en": "📂 Analyze File"
+    "en": "📂 Analyze File",
+    "es": "📂 Analizar archivo",
+    "zh": "📂 分析文件",
+    "ja": "📂 ファイルを解析",
+    "ru": "📂 Анализировать файл"
   },
   "btn_info": {
     "de": "ℹ️  Info",
-    "en": "ℹ️  Info"
+    "en": "ℹ️  Info",
+    "es": "ℹ️  Información",
+    "zh": "ℹ️  信息",
+    "ja": "ℹ️  情報",
+    "ru": "ℹ️  Инфо"
   },
   "btn_autofix": {
     "de": "🔧 Auto-Fix Imports",
-    "en": "🔧 Auto-Fix Imports"
+    "en": "🔧 Auto-Fix Imports",
+    "es": "🔧 Auto-corregir imports",
+    "zh": "🔧 自动修复导入",
+    "ja": "🔧 インポート自動修正",
+    "ru": "🔧 Авто-исправление импортов"
   },
   "btn_analyze_project": {
     "de": "Projekt analysieren",
-    "en": "Analyze Project"
+    "en": "Analyze Project",
+    "es": "Analizar proyecto",
+    "zh": "分析项目",
+    "ja": "プロジェクトを解析",
+    "ru": "Анализировать проект"
   },
   "shortcut_hint": {
     "de": "Tastatur: Alt+D Datei | Alt+P Projekt | Alt+F Auto-Fix | F1 Info",
-    "en": "Keyboard: Alt+D File | Alt+P Project | Alt+F Auto-Fix | F1 Info"
+    "en": "Keyboard: Alt+D File | Alt+P Project | Alt+F Auto-Fix | F1 Info",
+    "es": "Teclado: Alt+D Archivo | Alt+P Proyecto | Alt+F Auto-Fix | F1 Información",
+    "zh": "快捷键: Alt+D 文件 | Alt+P 项目 | Alt+F 自动修复 | F1 信息",
+    "ja": "キーボード: Alt+D ファイル | Alt+P プロジェクト | Alt+F 自動修正 | F1 情報",
+    "ru": "Клавиатура: Alt+D Файл | Alt+P Проект | Alt+F Авто-исправление | F1 Инфо"
   },
   "menu_language": {
     "de": "Sprache / Language",
-    "en": "Sprache / Language"
+    "en": "Language / Sprache",
+    "es": "Idioma / Language",
+    "zh": "语言 / Language",
+    "ja": "言語 / Language",
+    "ru": "Язык / Language"
   },
   "welcome_body": {
     "de": "Willkommen beim Python Code Analyzer!\n\n{shortcut}\n\nKlicken Sie auf 'Datei analysieren', um eine Python-Datei zu untersuchen.\n\nDie Analyse umfasst:\n• Fehlende und ungenutzte Definitionen\n• Import-Analyse und -Optimierung\n• Dynamische Methodenaufrufe\n• Mögliche Tippfehler\n",
-    "en": "Welcome to Python Code Analyzer!\n\n{shortcut}\n\nClick 'Analyze File' to inspect a Python file.\n\nThe analysis covers:\n• Missing and unused definitions\n• Import analysis and optimization\n• Dynamic method calls\n• Possible typos\n"
+    "en": "Welcome to Python Code Analyzer!\n\n{shortcut}\n\nClick 'Analyze File' to inspect a Python file.\n\nThe analysis covers:\n• Missing and unused definitions\n• Import analysis and optimization\n• Dynamic method calls\n• Possible typos\n",
+    "es": "¡Bienvenido a Python Code Analyzer!\n\n{shortcut}\n\nHaga clic en 'Analizar archivo' para examinar un archivo Python.\n\nEl análisis incluye:\n• Definiciones faltantes y no utilizadas\n• Análisis y optimización de importaciones\n• Llamadas a métodos dinámicos\n• Posibles errores tipográficos\n",
+    "zh": "欢迎使用 Python Code Analyzer！\n\n{shortcut}\n\n点击“分析文件”开始检查 Python 文件。\n\n分析范围包括：\n• 缺失与未使用的定义\n• 导入分析与优化\n• 动态方法调用\n• 潜在拼写错误\n",
+    "ja": "Python Code Analyzer へようこそ！\n\n{shortcut}\n\n「ファイルを解析」をクリックして Python ファイルを検査します。\n\n解析内容：\n• 未定義および未使用の定義\n• インポートの解析と最適化\n• 動的メソッド呼び出し\n• タイプミスの可能性\n",
+    "ru": "Добро пожаловать в Python Code Analyzer!\n\n{shortcut}\n\nНажмите 'Анализировать файл', чтобы проверить файл Python.\n\nАнализ включает:\n• Отсутствующие и неиспользуемые определения\n• Анализ и оптимизацию импортов\n• Динамические вызовы методов\n• Возможные опечатки\n"
   },
   "info_body": {
     "de": "Python Code Analyzer v{version}\n\nAnalysiert Python-Dateien auf:\n• Fehlende Definitionen\n• Ungenutzte Definitionen\n• Ungenutzte Imports\n• Dynamische Aufrufe\n• Import-Scope-Probleme\n\n© 2026 - Optimierte Version",
-    "en": "Python Code Analyzer v{version}\n\nAnalyzes Python files for:\n• Missing definitions\n• Unused definitions\n• Unused imports\n• Dynamic calls\n• Import scope issues\n\n© 2026 - Optimized version"
+    "en": "Python Code Analyzer v{version}\n\nAnalyzes Python files for:\n• Missing definitions\n• Unused definitions\n• Unused imports\n• Dynamic calls\n• Import scope issues\n\n© 2026 - Optimized version",
+    "es": "Python Code Analyzer v{version}\n\nAnaliza archivos Python para:\n• Definiciones faltantes\n• Definiciones no utilizadas\n• Importaciones no utilizadas\n• Llamadas dinámicas\n• Problemas de alcance de importaciones\n\n© 2026 - Versión optimizada",
+    "zh": "Python Code Analyzer v{version}\n\n分析 Python 文件的：\n• 缺失定义\n• 未使用定义\n• 未使用导入\n• 动态调用\n• 导入作用域问题\n\n© 2026 - 优化版本",
+    "ja": "Python Code Analyzer v{version}\n\nPython ファイルを解析します：\n• 未定義の定義\n• 未使用の定義\n• 未使用のインポート\n• 動的呼び出し\n• インポートスコープの問題\n\n© 2026 - 最適化バージョン",
+    "ru": "Python Code Analyzer v{version}\n\nАнализирует файлы Python на:\n• Отсутствующие определения\n• Неиспользуемые определения\n• Неиспользуемые импорты\n• Динамические вызовы\n• Проблемы с областью видимости импорта\n\n© 2026 - Оптимизированная версия"
   },
   "lang_switched_msg": {
     "de": "Sprache auf Deutsch umgestellt.",
-    "en": "Language switched to English."
+    "en": "Language switched to English.",
+    "es": "Idioma cambiado a español.",
+    "zh": "语言已切换为中文。",
+    "ja": "言語を日本語に切り替えました。",
+    "ru": "Язык переключен на русский."
+  },
+  "dlg_select_file": {
+    "de": "Python-Datei auswählen",
+    "en": "Select Python File",
+    "es": "Seleccionar archivo Python",
+    "zh": "选择 Python 文件",
+    "ja": "Pythonファイルを選択",
+    "ru": "Выбрать файл Python"
+  },
+  "dlg_select_folder": {
+    "de": "Projektordner auswählen",
+    "en": "Select Project Folder",
+    "es": "Seleccionar carpeta de proyecto",
+    "zh": "选择项目文件夹",
+    "ja": "プロジェクトフォルダを選択",
+    "ru": "Выбрать папку проекта"
+  },
+  "dlg_title_file_error": {
+    "de": "Dateifehler",
+    "en": "File Error",
+    "es": "Error de archivo",
+    "zh": "文件错误",
+    "ja": "ファイルエラー",
+    "ru": "Ошибка файла"
+  },
+  "dlg_title_analysis_error": {
+    "de": "Analysefehler",
+    "en": "Analysis Error",
+    "es": "Error de análisis",
+    "zh": "分析错误",
+    "ja": "解析エラー",
+    "ru": "Ошибка анализа"
+  },
+  "dlg_title_error": {
+    "de": "Fehler",
+    "en": "Error",
+    "es": "Error",
+    "zh": "错误",
+    "ja": "エラー",
+    "ru": "Ошибка"
+  },
+  "dlg_title_export_error": {
+    "de": "Export-Fehler",
+    "en": "Export Error",
+    "es": "Error de exportación",
+    "zh": "导出错误",
+    "ja": "エクスポートエラー",
+    "ru": "Ошибка экспорта"
+  },
+  "dlg_title_notice": {
+    "de": "Hinweis",
+    "en": "Notice",
+    "es": "Aviso",
+    "zh": "提示",
+    "ja": "お知らせ",
+    "ru": "Уведомление"
+  },
+  "dlg_title_confirm_autofix": {
+    "de": "Auto-Fix bestätigen",
+    "en": "Confirm Auto-Fix",
+    "es": "Confirmar auto-corrección",
+    "zh": "确认自动修复",
+    "ja": "自動修正の確認",
+    "ru": "Подтвердить авто-исправление"
+  },
+  "dlg_title_success": {
+    "de": "Erfolg",
+    "en": "Success",
+    "es": "Éxito",
+    "zh": "成功",
+    "ja": "成功",
+    "ru": "Успех"
+  },
+  "msg_no_file_analyzed": {
+    "de": "Bitte erst eine Datei analysieren!",
+    "en": "Please analyze a file first!",
+    "es": "¡Por favor, primero analice un archivo!",
+    "zh": "请先分析一个文件！"
+  },
+  "msg_no_unused_imports": {
+    "de": "Keine ungenutzten Imports gefunden!",
+    "en": "No unused imports found!",
+    "es": "¡No se encontraron imports no utilizados!",
+    "zh": "未发现未使用的导入！",
+    "ja": "未使用のインポートは見つかりませんでした！",
+    "ru": "Неиспользуемых импортов не найдено!"
+  },
+  "msg_confirm_autofix": {
+    "de": "Folgende Imports werden entfernt:\n\n{imports}\n\nFortfahren?",
+    "en": "The following imports will be removed:\n\n{imports}\n\nContinue?",
+    "es": "Se eliminarán los siguientes imports:\n\n{imports}\n\n¿Continuar?",
+    "zh": "将移除以下导入：\n\n{imports}\n\n是否继续？",
+    "ja": "以下のインポートが削除されます：\n\n{imports}\n\n続行しますか？",
+    "ru": "Следующие импорты будут удалены:\n\n{imports}\n\nПродолжить?"
+  },
+  "msg_no_complete_unused_lines": {
+    "de": "Keine vollständig ungenutzten Import-Zeilen gefunden.\n(Teilweise genutzte Imports müssen manuell bearbeitet werden)",
+    "en": "No completely unused import lines found.\n(Partially used imports must be edited manually)",
+    "es": "No se encontraron líneas de importación completamente no utilizadas.\n(Las importaciones parcialmente utilizadas deben editarse manualmente)",
+    "zh": "未找到完全未使用的导入行。\n（部分使用的导入必须手动编辑）",
+    "ja": "完全に未使用のインポート行は見つかりませんでした。\n（一部使用されているインポートは手動で編集する必要があります）",
+    "ru": "Полностью неиспользуемых строк импорта не найдено.\n(Частично используемые импорты необходимо отредактировать вручную)"
+  },
+  "msg_autofix_success": {
+    "de": "Ungenutzte Imports entfernt!\nBackup: {backup}",
+    "en": "Unused imports removed!\nBackup: {backup}",
+    "es": "¡Imports no utilizados eliminados!\nCopia de seguridad: {backup}",
+    "zh": "已移除未使用的导入！\n备份：{backup}",
+    "ja": "未使用のインポートを削除しました！\nバックアップ: {backup}",
+    "ru": "Неиспользуемые импорты удалены!\nРезервная копия: {backup}"
+  },
+  "msg_autofix_error": {
+    "de": "Auto-Fix fehlgeschlagen: {error}",
+    "en": "Auto-Fix failed: {error}",
+    "es": "Auto-corrección falló: {error}",
+    "zh": "自动修复失败：{error}",
+    "ja": "自動修正に失敗しました: {error}",
+    "ru": "Сбой авто-исправления: {error}"
   }
 }
