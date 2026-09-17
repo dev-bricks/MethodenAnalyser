@@ -334,12 +334,19 @@ Vollständige Richtlinie siehe [SECURITY.md](SECURITY.md).
 ## Repository-Hygiene
 
 - GitHub Remote: `dev-bricks/MethodenAnalyser`
-- Vor jedem Commit oder Release ausführen:
-  `git branch --show-current`,
+- Die öffentliche Hygiene-Baseline ist ein benannter Commit oder Tag; diese
+  README erhebt keinen Anspruch auf einen dauerhaft gültigen Snapshot. Vor
+  Release oder Übergabe ausführen: `git branch --show-current`,
   `git rev-list --left-right --count master...origin/master` und
   `git status --short --ignored`.
-- Erwartetes Gate: Branch `master`, `0 0` Ahead/Behind und sauberer Arbeitsbaum.
-- Vor dem Commit: `git status --short`, Secret-Scan und Bytecode-Prüfung via `python -m py_compile MethodenAnalyser3.py manage_translations.py translator.py`.
+- Erwartetes Gate ist Branch `master`, `0 0` Ahead/Behind für die benannte
+  Baseline und ein sauberer Arbeitsbaum. Uncommittete Icon-/Asset-Änderungen
+  bleiben außerhalb dieses Dokumentations-Slices und werden weder übernommen
+  noch verworfen.
+- Für dieselbe benannte Baseline Secret-/Privacy-Scan und Bytecode-Prüfung
+  wiederholen; ein zeitabhängiges Scan-Ergebnis wird hier nicht behauptet.
+- Vor dem Commit: `git status --short`, Secret-Scan und Bytecode-Prüfung via
+  `python -m py_compile MethodenAnalyser3.py manage_translations.py translator.py`.
 
 ---
 

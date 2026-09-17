@@ -226,6 +226,19 @@ def test_readme_quick_navigation_and_anchor_parity():
         assert "#exit-codes" in content
 
 
+def test_readme_repository_hygiene_uses_named_baseline_in_both_languages():
+    """README hygiene guidance must describe a reproducible, current baseline."""
+    english = (ROOT / "README.md").read_text(encoding="utf-8")
+    german = (ROOT / "README_de.md").read_text(encoding="utf-8")
+
+    assert "named commit or tag" in english
+    assert "benannter Commit oder Tag" in german
+    for content in (english, german):
+        assert "git rev-list --left-right --count master...origin/master" in content
+        assert "0 0" in content
+        assert "git status --short --ignored" in content
+
+
 def test_readme_dual_mermaid_diagrams():
     """Verify both READMEs include dual Mermaid diagrams: flowchart TD and sequenceDiagram."""
     for filename in ["README.md", "README_de.md"]:
