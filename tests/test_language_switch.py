@@ -124,3 +124,41 @@ def test_translator_guard_handles_corrupt_entry():
     tr.translations["__broken__"] = "not-a-dict"
     # isinstance-Guard: darf nicht mit AttributeError crashen
     assert tr.t("__broken__") == "__broken__"
+
+
+def test_desktop_ui_dialog_and_filter_keys_all_languages():
+    """Prüft, dass alle neuen Desktop-UI Dialog-, Filter- und Status-Keys in allen 6 Sprachen existieren."""
+    new_ui_keys = (
+        "dialog_filetypes_py",
+        "dialog_filetypes_all",
+        "dialog_file_error_title",
+        "dialog_analysis_error_title",
+        "dialog_error_title",
+        "dialog_unexpected_error",
+        "dialog_export_error_title",
+        "dialog_export_no_permission",
+        "dialog_success_title",
+        "dialog_autofix_success",
+        "dialog_autofix_failed",
+        "dialog_language_title",
+        "dialog_info_title",
+        "gui_analyzed_file",
+        "gui_date",
+        "gui_report_saved",
+        "gui_no_permission_export",
+        "gui_export_error",
+        "gui_analyzing_folder",
+        "gui_saved",
+        "gui_autofix_success_header",
+        "gui_removed_lines",
+        "gui_backup_created",
+        "gui_reanalyze_prompt",
+        "cli_and_more",
+    )
+    for key in new_ui_keys:
+        for lang in ("de", "en", "es", "zh", "ja", "ru"):
+            _reset_language(lang)
+            val = m._t(key)
+            assert val, f"Key '{key}' darf in Sprache '{lang}' nicht leer sein"
+            assert val != key, f"Key '{key}' fehlt in Sprache '{lang}'"
+    _reset_language("de")

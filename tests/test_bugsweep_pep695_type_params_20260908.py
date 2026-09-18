@@ -95,3 +95,40 @@ def test_typevar_bound_extracted_into_typehints():
     assert "int" in result.typehints
     assert "T" not in result.missing_imports
     assert not result.missing_imports
+
+
+@pytest.mark.skipif(sys.version_info < (3, 12), reason="PEP 695 erfordert Python >= 3.12")
+def test_type_alias_registered_as_def_and_callable_without_missing_def():
+    """PEP 695 type Point = tuple[float, float] muss in defs stehen und darf bei Aufruf kein missing_def sein."""
+    code = """type Point = tuple[float, float]
+
+p = Point()
+"""
+    result = m3.analyze_source(code, "test_type_alias_call.py")
+    assert "Point" in result.defs
+    assert "Point" not in result.missing_defs
+    assert not result.missing_defs
+
+
+@pytest.mark.skipif(sys.version_info < (3, 12), reason="PEP 695 erfordert Python >= 3.12")
+def test_type_alias_unused_reported_in_unused_defs():
+    """Unbenutzter PEP 695 Typ-Alias wird in unused_defs registriert."""
+    code = """type UnusedCoord = tuple[int, int]
+"""
+    result = m3.analyze_source(code, "test_unused_alias.py")
+    assert "UnusedCoord" in result.defs
+    assert "UnusedCoord" in result.unused_defs
+
+
+@pytest.mark.skipif(sys.version_info < (3, 12), reason="PEP 695 erfordert Python >= 3.12")
+def test_generic_type_alias_calling_and_defs():
+    """Generischer Typ-Alias type Box[T] = list[T] registriert Box in defs und T nicht als fehlend."""
+    code = """type Box[T] = list[T]
+
+def make_box() -> Box[int]:
+    return Box()
+"""
+    result = m3.analyze_source(code, "test_box_alias.py")
+    assert "Box" in result.defs
+    assert "Box" not in result.missing_defs
+    assert "T" not in result.missing_imports

@@ -5,6 +5,17 @@ Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
 ## [Unreleased]
 
+### Behoben
+- **AST-Analyse & Scope-Erkennung (`MethodenAnalyser3.py`)**: PEP 236 `from __future__ import <feature>` Compiler-Direktiven (z. B. `annotations`, `division`) werden nicht mehr als ungenutzte Runtime-Importe (`unused_imports`) oder ungenutzte globale Definitionen (`unused_global`) fehlgemeldet; `_file_has_findings` und CLI-Exit-Code bleiben bei sauberen Dateien mit Future-Imports verlässlich auf 0 (Bugsweep 2026-09-18).
+- **AST-Analyse & PEP 695 TypeAlias (`MethodenAnalyser3.py`)**: `visit_TypeAlias` registriert `type Name = ...` und generische Typ-Aliase `type Box[T] = ...` als Definitionen in `defs` und `local_names`. Verhindert falsche `missing_defs`-Meldungen bei Aufruf und trackt unreferenzierte Typ-Aliase sauber in `unused_defs`.
+
+### Optimiert
+- **Performance & Verzeichnis-Pruning (`collect_python_files`)**: Umstellung von unselektivem `rglob("*.py")` auf `os.walk` mit top-down in-place Directory-Pruning (`dirs[:] = [...]`). Verhindert unnötigen Plattenzugriff in ausgeschlossene Verzeichnisbäume (`.git`, `.venv`, `node_modules`, `build`, `dist`).
+- **Performance & I/O-Redundanz-Beseitigung (`analyze_project`)**: `AnalysisResult` zählt Zeilen (`total_lines`) direkt bei der AST-Analyse (`analyze_source`), wodurch der redundante zweite Datei-Lese-Durchlauf in `analyze_project` vollständig entfällt.
+
+### Erweitert
+- **Desktop-UI Lokalisierung (`MA-I18N-02`)**: 25 neue Übersetzungsschlüssel in `locales/translations.json` über alle 6 Sprachen (`de`, `en`, `es`, `zh`, `ja`, `ru`), inklusive vollständiger Lokalisierung von Dateidialogen, Statusmeldungen, Export-Benachrichtigungen und Auto-Fix-Bestätigungen in `MethodenAnalyser3.py`.
+
 ## [3.0.2] - 2026-09-11
 
 ### Repository-Hygiene, CI-Matrix-Härtung & Vertragstest-Ausbau (Pfad A)
