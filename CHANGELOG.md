@@ -6,6 +6,7 @@ Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 ## [Unreleased]
 
 ### Behoben
+- **AST-Analyse & False-Positive-Beseitigung (`unused_defs`)**: Dunder/Magic-Methoden (`__init__`, `__str__`, `__enter__`, etc.), Callback-Referenzen (`ast.Load` in Datenstrukturen oder Funktionsargumenten), Klassen-/Typ-Verwendungen in Annotationen (`typehints`), öffentliche Modul-Exporte (`__all__`) sowie öffentliche Methoden exportierter Klassen werden nun verlässlich als genutzt erkannt (`filter_unused_defs`). Beseitigt False Positives in `unused_defs`, verhindert unberechtigte `EXIT_FINDINGS`-Fehlercodes (Exit 2) auf sauberem Code und korrigiert unberechtigte Punktabzüge im Projektreport (Bugsweep 2026-09-22).
 - **AST-Analyse & Scope-Erkennung (`MethodenAnalyser3.py`)**: PEP 236 `from __future__ import <feature>` Compiler-Direktiven (z. B. `annotations`, `division`) werden nicht mehr als ungenutzte Runtime-Importe (`unused_imports`) oder ungenutzte globale Definitionen (`unused_global`) fehlgemeldet; `_file_has_findings` und CLI-Exit-Code bleiben bei sauberen Dateien mit Future-Imports verlässlich auf 0 (Bugsweep 2026-09-18).
 - **AST-Analyse & PEP 695 TypeAlias (`MethodenAnalyser3.py`)**: `visit_TypeAlias` registriert `type Name = ...` und generische Typ-Aliase `type Box[T] = ...` als Definitionen in `defs` und `local_names`. Verhindert falsche `missing_defs`-Meldungen bei Aufruf und trackt unreferenzierte Typ-Aliase sauber in `unused_defs`.
 

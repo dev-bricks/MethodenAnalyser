@@ -415,6 +415,7 @@ class CodeAnalyzer(ast.NodeVisitor):
         # NEU: Track Modul.Attribut Zugriffe
         self.module_attribute_calls: Dict[str, Set[str]] = collections.defaultdict(set)
         self.imported_modules: Set[str] = set()  # Nur Modulnamen (für import X)
+        self.class_methods: Dict[str, Set[str]] = collections.defaultdict(set)
 
     def visit_Call(self, node: ast.Call) -> None:
         """Verarbeitet Funktionsaufrufe und erkennt Modul-Attribut-Zugriffe."""
@@ -462,6 +463,9 @@ class CodeAnalyzer(ast.NodeVisitor):
     def visit_ClassDef(self, node: ast.ClassDef) -> None:
         """Verarbeitet Klassendefinitionen."""
         self.defs.add(node.name)
+        for item in node.body:
+            if isinstance(item, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                self.class_methods[node.name].add(item.name)
         self.generic_visit(node)
 
     def visit_Import(self, node: ast.Import) -> None:
@@ -759,6 +763,59 @@ def filter_missing_defs(
     return sorted(filtered)
 
 
+def filter_unused_defs(
+    defs: Set[str],
+    calls: Set[str],
+    used_names: Set[str],
+    typehints: Set[str],
+    string_refs: Set[str],
+    framework_and_widgets: Set[str],
+    exported_class_methods: Optional[Set[str]] = None,
+) -> List[str]:
+    """
+    Filtert echte ungenutzte Definitionen heraus und eliminiert False Positives.
+
+    Eine Definition gilt als genutzt, wenn:
+    - sie aufgerufen wird (calls)
+    - sie als Name referenziert wird (z.B. Callback, Decorator, Basisklasse in used_names)
+    - sie als Type-Hint verwendet wird (typehints)
+    - sie in String-Literalen (z.B. __all__, Forward-Refs in string_refs) vorkommt
+    - sie eine öffentliche Methode einer exportierten Klasse ist (exported_class_methods)
+    - es sich um eine Magic/Dunder-Methode handelt (__init__, __str__, __enter__, etc.)
+    - es sich um einen Framework-Hook (COMMON_FRAMEWORK_METHODS, on_*, visit_*) handelt
+    """
+    if exported_class_methods is None:
+        exported_class_methods = set()
+
+    unused = []
+    for name in defs:
+        # Aufrufe, Referenzen, Typ-Annotationen, __all__-Exports, Methoden exportierter Klassen
+        if (
+            name in calls
+            or name in used_names
+            or name in typehints
+            or name in string_refs
+            or name in exported_class_methods
+        ):
+            continue
+
+        # Magic / Dunder-Methoden (__init__, __str__, __repr__, __enter__, etc.)
+        if name.startswith("__") and name.endswith("__"):
+            continue
+
+        # Standard Framework-Methoden und Widgets
+        if name in COMMON_FRAMEWORK_METHODS or name in framework_and_widgets:
+            continue
+
+        # Event-Handler und AST-Visitor-Hooks
+        if name.startswith("on_") or name.startswith("visit_"):
+            continue
+
+        unused.append(name)
+
+    return sorted(unused)
+
+
 _TODO_PATTERN = re.compile(
     r"#\s*(TODO|FIXME|HACK|NOTE|XXX)[:\s]+(.*)", re.IGNORECASE
 )
@@ -907,7 +964,6 @@ def analyze_source(code: str, source_name: str = "<snippet>") -> AnalysisResult:
 
     # ERWEITERT: Berücksichtige auch Modul-Attribute
     missing_defs = (calls - defs) - BUILTINS - framework_and_widgets - module_provided_attrs
-    unused_defs = analyzer.defs - calls  # Nur echte Definitionen, nicht Imports
 
     # VERBESSERT: Nur tatsächliche Import-Namen vergleichen
     # FIX: Namen, die NUR als String-Literal vorkommen (z.B. __all__ = ["Foo"] oder
@@ -920,6 +976,25 @@ def analyze_source(code: str, source_name: str = "<snippet>") -> AnalysisResult:
         if isinstance(_n, ast.Constant) and isinstance(_n.value, str):
             _string_refs.update(re.findall(r"[A-Za-z_][A-Za-z0-9_]*", _n.value))
     unused_imports = analyzer.import_names - analyzer.used_names - _string_refs
+
+    # Öffentliche Methoden exportierter Klassen (in __all__) erfassen
+    exported_class_methods: Set[str] = set()
+    for cls_name in (analyzer.defs & _string_refs):
+        for method_name in analyzer.class_methods.get(cls_name, set()):
+            if not method_name.startswith("_"):
+                exported_class_methods.add(method_name)
+
+    # BUGSWEEP 2026-09-22: False Positives bei unused_defs herausfiltern (Dunders,
+    # Callbacks/Referenzen, TypeHints, __all__-Exports und Framework-Hooks)
+    unused_defs = filter_unused_defs(
+        defs=analyzer.defs,
+        calls=calls,
+        used_names=analyzer.used_names,
+        typehints=typehints,
+        string_refs=_string_refs,
+        framework_and_widgets=framework_and_widgets,
+        exported_class_methods=exported_class_methods,
+    )
 
     # Whitelist und False-Positive-Checks
     whitelist = build_stdlib_whitelist()
@@ -1092,18 +1167,19 @@ def _find_name_matches(calls: Set[str], defs: Set[str]) -> List[Tuple[str, str]]
         Liste von Tupeln (aufruf, ähnliche_definition)
     """
     matches = []
-    for call in calls:
+    sorted_defs = sorted(defs)
+    for call in sorted(calls):
         if call in defs:
             continue
         
         similar = difflib.get_close_matches(
-            call, defs, n=1, cutoff=SIMILARITY_THRESHOLD
+            call, sorted_defs, n=1, cutoff=SIMILARITY_THRESHOLD
         )
         
         if similar:
             matches.append((call, similar[0]))
     
-    return matches
+    return sorted(matches)
 
 
 def _analyze_import_scopes(
