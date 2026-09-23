@@ -1735,10 +1735,31 @@ def analyze_project(
     )
 
 
-def generate_project_report(result: ProjectAnalysisResult) -> str:
+def _extract_project_display_name(path: str) -> str:
+    """Extrahiert einen sauberen Anzeigenamen für ein Projektverzeichnis."""
+    if not path or not path.strip():
+        return ""
+    clean = path.strip()
+    norm = os.path.normpath(clean)
+    base = os.path.basename(norm)
+    if not base or base == ".":
+        abs_norm = os.path.normpath(os.path.abspath(clean))
+        base = os.path.basename(abs_norm)
+    return base
+
+
+def generate_project_report(
+    result: ProjectAnalysisResult,
+    project_name: Optional[str] = None,
+) -> str:
     """Generiert einen formatierten Projekt-Report."""
+    proj_name = (
+        project_name.strip()
+        if project_name and project_name.strip()
+        else _extract_project_display_name(result.folder_path)
+    )
     report = ["=" * 70 + "\n", _t("cli_project_report_title") + "\n", "=" * 70 + "\n\n"]
-    report.append(f"{_t('cli_project')}: {os.path.basename(result.folder_path)}\n\n")
+    report.append(f"{_t('cli_project')}: {proj_name}\n\n")
     report.append(f"{_t('cli_files')}: {result.files_analyzed} | {_t('cli_lines')}: {result.total_lines:,}\n")
     report.append(f"{_t('cli_definitions')}: {result.total_defs:,} | {_t('cli_imports')}: {result.total_imports:,}\n\n")
     
@@ -1904,7 +1925,10 @@ def build_json_report(
 
     if isinstance(result, ProjectAnalysisResult):
         source_root = result.folder_path
-        source_label = os.path.basename(source_name) if source_name else os.path.basename(source_root)
+        if source_name and source_name.strip():
+            source_label = _extract_project_display_name(source_name)
+        else:
+            source_label = _extract_project_display_name(source_root)
 
         def normalize(value: str) -> str:
             return value.replace("\\", "/")
@@ -1949,7 +1973,7 @@ def build_json_report(
 
     file_key = source_name or ("<snippet>" if source_kind == "snippet" else "file.py")
     if source_kind == "file":
-        file_key = os.path.basename(file_key)
+        file_key = os.path.basename(os.path.normpath(file_key)) or os.path.basename(file_key)
 
     report["files"] = [_json_file_entry(file_key, result)]
     report["unused_imports"] = {file_key: result.unused_imports}
