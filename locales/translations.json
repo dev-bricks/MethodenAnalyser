@@ -1070,5 +1070,205 @@
     "zh": "本地就绪",
     "ja": "ローカル準備完了",
     "ru": "Локально готов"
+  },
+  "dialog_filetypes_py": {
+    "de": "Python-Dateien (*.py)",
+    "en": "Python Files (*.py)",
+    "es": "Archivos Python (*.py)",
+    "zh": "Python 文件 (*.py)",
+    "ja": "Python ファイル (*.py)",
+    "ru": "Файлы Python (*.py)"
+  },
+  "dialog_filetypes_all": {
+    "de": "Alle Dateien (*.*)",
+    "en": "All Files (*.*)",
+    "es": "Todos los archivos (*.*)",
+    "zh": "所有文件 (*.*)",
+    "ja": "すべてのファイル (*.*)",
+    "ru": "Все файлы (*.*)"
+  },
+  "dialog_file_error_title": {
+    "de": "Dateifehler",
+    "en": "File Error",
+    "es": "Error de archivo",
+    "zh": "文件错误",
+    "ja": "ファイルエラー",
+    "ru": "Ошибка файла"
+  },
+  "dialog_analysis_error_title": {
+    "de": "Analysefehler",
+    "en": "Analysis Error",
+    "es": "Error de análisis",
+    "zh": "分析错误",
+    "ja": "分析エラー",
+    "ru": "Ошибка анализа"
+  },
+  "dialog_error_title": {
+    "de": "Fehler",
+    "en": "Error",
+    "es": "Error",
+    "zh": "错误",
+    "ja": "エラー",
+    "ru": "Ошибка"
+  },
+  "dialog_unexpected_error": {
+    "de": "Unerwarteter Fehler",
+    "en": "Unexpected error",
+    "es": "Error inesperado",
+    "zh": "意外错误",
+    "ja": "予期しないエラー",
+    "ru": "Неожиданная ошибка"
+  },
+  "dialog_export_error_title": {
+    "de": "Export-Fehler",
+    "en": "Export Error",
+    "es": "Error de exportación",
+    "zh": "导出错误",
+    "ja": "エクスポートエラー",
+    "ru": "Ошибка экспорта"
+  },
+  "dialog_export_no_permission": {
+    "de": "Keine Schreibberechtigung",
+    "en": "No write permission",
+    "es": "Sin permiso de escritura",
+    "zh": "没有写入权限",
+    "ja": "書き込み権限がありません",
+    "ru": "Нет разрешения на запись"
+  },
+  "dialog_success_title": {
+    "de": "Erfolg",
+    "en": "Success",
+    "es": "Éxito",
+    "zh": "成功",
+    "ja": "成功",
+    "ru": "Успех"
+  },
+  "dialog_autofix_success": {
+    "de": "Ungenutzte Imports entfernt!",
+    "en": "Unused imports removed!",
+    "es": "¡Imports no utilizados eliminados!",
+    "zh": "已移除未使用的导入！",
+    "ja": "未使用のインポートを削除しました！",
+    "ru": "Неиспользуемые импорты удалены!"
+  },
+  "dialog_autofix_failed": {
+    "de": "Auto-Fix fehlgeschlagen",
+    "en": "Auto-fix failed",
+    "es": "Auto-corrección fallida",
+    "zh": "自动修复失败",
+    "ja": "自動修正に失敗しました",
+    "ru": "Сбой авто-исправления"
+  },
+  "dialog_language_title": {
+    "de": "Sprache / Language",
+    "en": "Language / Sprache",
+    "es": "Idioma / Language",
+    "zh": "语言 / Language",
+    "ja": "言語 / Language",
+    "ru": "Язык / Language"
+  },
+  "dialog_info_title": {
+    "de": "Python Code Analyzer",
+    "en": "Python Code Analyzer",
+    "es": "Python Code Analyzer",
+    "zh": "Python 代码分析器",
+    "ja": "Python コードアナライザー",
+    "ru": "Python Code Analyzer"
+  },
+  "gui_analyzed_file": {
+    "de": "[DATEI] Analysierte Datei",
+    "en": "[FILE] Analyzed file",
+    "es": "[ARCHIVO] Archivo analizado",
+    "zh": "[文件] 已分析文件",
+    "ja": "[ファイル] 分析されたファイル",
+    "ru": "[ФАЙЛ] Проанализированный файл"
+  },
+  "gui_date": {
+    "de": "Datum",
+    "en": "Date",
+    "es": "Fecha",
+    "zh": "日期",
+    "ja": "日付",
+    "ru": "Дата"
+  },
+  "gui_report_saved": {
+    "de": "[OK] Report gespeichert",
+    "en": "[OK] Report saved",
+    "es": "[OK] Informe guardado",
+    "zh": "[OK] 报告已保存",
+    "ja": "[OK] レポートが保存されました",
+    "ru": "[OK] Отчёт сохранён"
+  },
+  "gui_no_permission_export": {
+    "de": "[WARNUNG] Keine Schreibberechtigung für Export",
+    "en": "[WARNING] No write permission for export",
+    "es": "[ADVERTENCIA] Sin permiso de escritura para exportar",
+    "zh": "[警告] 没有导出写入权限",
+    "ja": "[警告] エクスポートの書き込み権限がありません",
+    "ru": "[ПРЕДУПРЕЖДЕНИЕ] Нет разрешения на запись для экспорта"
+  },
+  "gui_export_error": {
+    "de": "[WARNUNG] Export-Fehler",
+    "en": "[WARNING] Export error",
+    "es": "[ADVERTENCIA] Error de exportación",
+    "zh": "[警告] 导出错误",
+    "ja": "[警告] エクスポートエラー",
+    "ru": "[ПРЕДУПРЕЖДЕНИЕ] Ошибка экспорта"
+  },
+  "gui_analyzing_folder": {
+    "de": "Analysiere",
+    "en": "Analyzing",
+    "es": "Analizando",
+    "zh": "正在分析",
+    "ja": "分析中",
+    "ru": "Анализ"
+  },
+  "gui_saved": {
+    "de": "Gespeichert",
+    "en": "Saved",
+    "es": "Guardado",
+    "zh": "已保存",
+    "ja": "保存完了",
+    "ru": "Сохранено"
+  },
+  "gui_autofix_success_header": {
+    "de": "[OK] AUTO-FIX ERFOLGREICH",
+    "en": "[OK] AUTO-FIX SUCCESSFUL",
+    "es": "[OK] AUTOCORRECCIÓN EXITOSA",
+    "zh": "[OK] 自动修复成功",
+    "ja": "[OK] 自動修正が成功しました",
+    "ru": "[OK] АВТО-ИСПРАВЛЕНИЕ УСПЕШНО"
+  },
+  "gui_removed_lines": {
+    "de": "Entfernte Zeilen",
+    "en": "Removed lines",
+    "es": "Líneas eliminadas",
+    "zh": "已移除行",
+    "ja": "削除された行",
+    "ru": "Удалённые строки"
+  },
+  "gui_backup_created": {
+    "de": "Backup erstellt",
+    "en": "Backup created",
+    "es": "Copia de seguridad creada",
+    "zh": "已创建备份",
+    "ja": "バックアップ作成済み",
+    "ru": "Резервная копия создана"
+  },
+  "gui_reanalyze_prompt": {
+    "de": "Bitte Datei erneut analysieren zur Überprüfung.",
+    "en": "Please re-analyze the file for verification.",
+    "es": "Por favor, vuelva a analizar el archivo para verificar.",
+    "zh": "请重新分析文件以进行验证。",
+    "ja": "確認のためにファイルを再分析してください。",
+    "ru": "Пожалуйста, повторно проанализируйте файл для проверки."
+  },
+  "cli_and_more": {
+    "de": "und",
+    "en": "and",
+    "es": "y",
+    "zh": "和",
+    "ja": "および",
+    "ru": "и"
   }
 }

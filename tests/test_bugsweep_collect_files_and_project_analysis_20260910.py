@@ -107,3 +107,33 @@ class CollectFilesAndProjectAnalysisTests(unittest.TestCase):
         report = build_json_report("project", dummy_result)
         self.assertEqual(len(report["errors"]), 1)
         self.assertEqual(report["errors"][0]["path"], "broken.py")
+
+    def test_collect_python_files_prunes_excluded_directories(self) -> None:
+        """collect_python_files prunes excluded directory trees like .venv, .git, and node_modules."""
+        (self.base / "app").mkdir(parents=True)
+        (self.base / "app" / "main.py").write_text("x = 1\n", encoding="utf-8")
+
+        venv_dir = self.base / ".venv" / "Lib" / "site-packages"
+        venv_dir.mkdir(parents=True)
+        (venv_dir / "dep.py").write_text("y = 2\n", encoding="utf-8")
+
+        git_dir = self.base / ".git" / "hooks"
+        git_dir.mkdir(parents=True)
+        (git_dir / "hook.py").write_text("z = 3\n", encoding="utf-8")
+
+        node_dir = self.base / "node_modules" / "sub"
+        node_dir.mkdir(parents=True)
+        (node_dir / "tool.py").write_text("w = 4\n", encoding="utf-8")
+
+        files = collect_python_files(str(self.base))
+        self.assertEqual(len(files), 1)
+        self.assertTrue(files[0].endswith("main.py"))
+
+    def test_analyze_project_computes_total_lines_from_results(self) -> None:
+        """analyze_project calculates total_lines accurately via AnalysisResult.total_lines."""
+        (self.base / "file1.py").write_text("a = 1\nb = 2\nc = 3\n", encoding="utf-8")
+        (self.base / "file2.py").write_text("def f():\n    return 42\n", encoding="utf-8")
+
+        result = analyze_project(str(self.base))
+        self.assertEqual(result.files_analyzed, 2)
+        self.assertEqual(result.total_lines, 5)

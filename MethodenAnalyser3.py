@@ -339,6 +339,7 @@ class AnalysisResult:
     typehints: List[str] = field(default_factory=list)
     module_attribute_usage: Dict[str, List[str]] = field(default_factory=dict)  # NEU: Modul → Attribute Mapping
     todo_comments: List[Tuple[int, str, str]] = field(default_factory=list)  # (Zeile, Typ, Text)
+    total_lines: int = 0
 
 
 # ============================================================================
@@ -362,6 +363,9 @@ class ImportScopeAnalyzer(ast.NodeVisitor):
 
     def visit_ImportFrom(self, node: ast.ImportFrom) -> None:
         """Verarbeitet From-Import-Statements."""
+        if node.module == "__future__":
+            self.generic_visit(node)
+            return
         names = {alias.asname or alias.name for alias in node.names if alias.name != "*"}
         if names:
             self._assign_imports(names)
@@ -411,6 +415,7 @@ class CodeAnalyzer(ast.NodeVisitor):
         # NEU: Track Modul.Attribut Zugriffe
         self.module_attribute_calls: Dict[str, Set[str]] = collections.defaultdict(set)
         self.imported_modules: Set[str] = set()  # Nur Modulnamen (für import X)
+        self.class_methods: Dict[str, Set[str]] = collections.defaultdict(set)
 
     def visit_Call(self, node: ast.Call) -> None:
         """Verarbeitet Funktionsaufrufe und erkennt Modul-Attribut-Zugriffe."""
@@ -458,6 +463,9 @@ class CodeAnalyzer(ast.NodeVisitor):
     def visit_ClassDef(self, node: ast.ClassDef) -> None:
         """Verarbeitet Klassendefinitionen."""
         self.defs.add(node.name)
+        for item in node.body:
+            if isinstance(item, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                self.class_methods[node.name].add(item.name)
         self.generic_visit(node)
 
     def visit_Import(self, node: ast.Import) -> None:
@@ -492,6 +500,12 @@ class CodeAnalyzer(ast.NodeVisitor):
                     self.imported_modules.add(module_base)
                     self.imported_modules.add(alias.name)
         
+        # __future__-Features (z.B. 'annotations', 'division') sind Compiler-Direktiven,
+        # keine aufrufbaren Symbole oder Variablen. Sie dürfen nicht als import_names
+        # registriert werden, da sie sonst fälschlich als ungenutzt gemeldet werden.
+        if node.module == "__future__":
+            return
+
         # Füge die importierten Namen hinzu
         for alias in node.names:
             # Überspringe Wildcard-Imports
@@ -568,6 +582,17 @@ class CodeAnalyzer(ast.NodeVisitor):
         """Erfasst PEP 695 ParamSpec-Namen ([**P]) als lokale Typ-Parameter."""
         if getattr(node, "name", None):
             self.local_names.add(node.name)
+        self.generic_visit(node)
+
+    def visit_TypeAlias(self, node: Any) -> None:
+        """Erfasst PEP 695 TypeAlias-Definitionen (type X = ...) als Definition."""
+        alias_name = getattr(node, "name", None)
+        if isinstance(alias_name, ast.Name):
+            self.defs.add(alias_name.id)
+            self.local_names.add(alias_name.id)
+        elif isinstance(alias_name, str):
+            self.defs.add(alias_name)
+            self.local_names.add(alias_name)
         self.generic_visit(node)
 
 
@@ -738,6 +763,59 @@ def filter_missing_defs(
     return sorted(filtered)
 
 
+def filter_unused_defs(
+    defs: Set[str],
+    calls: Set[str],
+    used_names: Set[str],
+    typehints: Set[str],
+    string_refs: Set[str],
+    framework_and_widgets: Set[str],
+    exported_class_methods: Optional[Set[str]] = None,
+) -> List[str]:
+    """
+    Filtert echte ungenutzte Definitionen heraus und eliminiert False Positives.
+
+    Eine Definition gilt als genutzt, wenn:
+    - sie aufgerufen wird (calls)
+    - sie als Name referenziert wird (z.B. Callback, Decorator, Basisklasse in used_names)
+    - sie als Type-Hint verwendet wird (typehints)
+    - sie in String-Literalen (z.B. __all__, Forward-Refs in string_refs) vorkommt
+    - sie eine öffentliche Methode einer exportierten Klasse ist (exported_class_methods)
+    - es sich um eine Magic/Dunder-Methode handelt (__init__, __str__, __enter__, etc.)
+    - es sich um einen Framework-Hook (COMMON_FRAMEWORK_METHODS, on_*, visit_*) handelt
+    """
+    if exported_class_methods is None:
+        exported_class_methods = set()
+
+    unused = []
+    for name in defs:
+        # Aufrufe, Referenzen, Typ-Annotationen, __all__-Exports, Methoden exportierter Klassen
+        if (
+            name in calls
+            or name in used_names
+            or name in typehints
+            or name in string_refs
+            or name in exported_class_methods
+        ):
+            continue
+
+        # Magic / Dunder-Methoden (__init__, __str__, __repr__, __enter__, etc.)
+        if name.startswith("__") and name.endswith("__"):
+            continue
+
+        # Standard Framework-Methoden und Widgets
+        if name in COMMON_FRAMEWORK_METHODS or name in framework_and_widgets:
+            continue
+
+        # Event-Handler und AST-Visitor-Hooks
+        if name.startswith("on_") or name.startswith("visit_"):
+            continue
+
+        unused.append(name)
+
+    return sorted(unused)
+
+
 _TODO_PATTERN = re.compile(
     r"#\s*(TODO|FIXME|HACK|NOTE|XXX)[:\s]+(.*)", re.IGNORECASE
 )
@@ -886,7 +964,6 @@ def analyze_source(code: str, source_name: str = "<snippet>") -> AnalysisResult:
 
     # ERWEITERT: Berücksichtige auch Modul-Attribute
     missing_defs = (calls - defs) - BUILTINS - framework_and_widgets - module_provided_attrs
-    unused_defs = analyzer.defs - calls  # Nur echte Definitionen, nicht Imports
 
     # VERBESSERT: Nur tatsächliche Import-Namen vergleichen
     # FIX: Namen, die NUR als String-Literal vorkommen (z.B. __all__ = ["Foo"] oder
@@ -899,6 +976,25 @@ def analyze_source(code: str, source_name: str = "<snippet>") -> AnalysisResult:
         if isinstance(_n, ast.Constant) and isinstance(_n.value, str):
             _string_refs.update(re.findall(r"[A-Za-z_][A-Za-z0-9_]*", _n.value))
     unused_imports = analyzer.import_names - analyzer.used_names - _string_refs
+
+    # Öffentliche Methoden exportierter Klassen (in __all__) erfassen
+    exported_class_methods: Set[str] = set()
+    for cls_name in (analyzer.defs & _string_refs):
+        for method_name in analyzer.class_methods.get(cls_name, set()):
+            if not method_name.startswith("_"):
+                exported_class_methods.add(method_name)
+
+    # BUGSWEEP 2026-09-22: False Positives bei unused_defs herausfiltern (Dunders,
+    # Callbacks/Referenzen, TypeHints, __all__-Exports und Framework-Hooks)
+    unused_defs = filter_unused_defs(
+        defs=analyzer.defs,
+        calls=calls,
+        used_names=analyzer.used_names,
+        typehints=typehints,
+        string_refs=_string_refs,
+        framework_and_widgets=framework_and_widgets,
+        exported_class_methods=exported_class_methods,
+    )
 
     # Whitelist und False-Positive-Checks
     whitelist = build_stdlib_whitelist()
@@ -966,6 +1062,7 @@ def analyze_source(code: str, source_name: str = "<snippet>") -> AnalysisResult:
             if mod in analyzer.imported_modules or mod in analyzer.import_names
         },
         todo_comments=todo_comments,
+        total_lines=len(code.splitlines()),
     )
 
 
@@ -1070,18 +1167,19 @@ def _find_name_matches(calls: Set[str], defs: Set[str]) -> List[Tuple[str, str]]
         Liste von Tupeln (aufruf, ähnliche_definition)
     """
     matches = []
-    for call in calls:
+    sorted_defs = sorted(defs)
+    for call in sorted(calls):
         if call in defs:
             continue
         
         similar = difflib.get_close_matches(
-            call, defs, n=1, cutoff=SIMILARITY_THRESHOLD
+            call, sorted_defs, n=1, cutoff=SIMILARITY_THRESHOLD
         )
         
         if similar:
             matches.append((call, similar[0]))
     
-    return matches
+    return sorted(matches)
 
 
 def _analyze_import_scopes(
@@ -1250,7 +1348,7 @@ def generate_report(result: AnalysisResult) -> str:
             report.append(f"  {module}: {attrs_str}\n")
         
         if len(result.module_attribute_usage) > 10:
-            report.append(f"  ... und {len(result.module_attribute_usage) - 10} {_t('cli_more')}\n")
+            report.append(f"  ... {_t('cli_and_more')} {len(result.module_attribute_usage) - 10} {_t('cli_more')}\n")
 
     # TODO-Kommentare
     if result.todo_comments:
@@ -1302,7 +1400,7 @@ def run_analysis(output_widget: scrolledtext.ScrolledText, status_widget: Option
     """
     path = filedialog.askopenfilename(
         title=_t("dialog_select_file"),
-        filetypes=[("Python Dateien", "*.py"), ("Alle Dateien", "*.*")]
+        filetypes=[(_t("dialog_filetypes_py"), "*.py"), (_t("dialog_filetypes_all"), "*.*")]
     )
     
     if not path:
@@ -1321,26 +1419,26 @@ def run_analysis(output_widget: scrolledtext.ScrolledText, status_widget: Option
         output_widget.insert(tk.END, f"[FEHLER] {e}")
         if status_widget is not None:
             status_widget.config(text=f"[FEHLER] {e}")
-        messagebox.showerror("Dateifehler", str(e))
+        messagebox.showerror(_t("dialog_file_error_title"), str(e))
         return
     except RuntimeError as e:
         output_widget.delete("1.0", tk.END)
         output_widget.insert(tk.END, f"[FEHLER] {e}")
         if status_widget is not None:
             status_widget.config(text=f"[FEHLER] {e}")
-        messagebox.showerror("Analysefehler", str(e))
+        messagebox.showerror(_t("dialog_analysis_error_title"), str(e))
         return
     except Exception as e:
         output_widget.delete("1.0", tk.END)
-        output_widget.insert(tk.END, f"[FEHLER] Unerwarteter Fehler: {e}")
+        output_widget.insert(tk.END, f"[FEHLER] {_t('dialog_unexpected_error')}: {e}")
         if status_widget is not None:
             status_widget.config(text=f"[FEHLER] {e}")
-        messagebox.showerror("Fehler", f"Unerwarteter Fehler: {e}")
+        messagebox.showerror(_t("dialog_error_title"), f"{_t('dialog_unexpected_error')}: {e}")
         return
 
-    # Ergebnisse anzeigen
+    # Ergebnisse anzeigen ([DATEI]-Tag via _t('gui_analyzed_file'))
     output_widget.delete("1.0", tk.END)
-    output_widget.insert(tk.END, f"[DATEI] Analysierte Datei: {os.path.basename(path)}\n\n")
+    output_widget.insert(tk.END, f"{_t('gui_analyzed_file')}: {os.path.basename(path)}\n\n")
     output_widget.insert(tk.END, generate_report(result))
 
     # Export mit Bestätigung
@@ -1348,24 +1446,24 @@ def run_analysis(output_widget: scrolledtext.ScrolledText, status_widget: Option
         export_path = create_safe_filename(path, "_analysis.txt")
         
         with open(export_path, "w", encoding="utf-8") as f:
-            f.write(f"Analysierte Datei: {path}\n")
-            f.write(f"Datum: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n")
+            f.write(f"{_t('gui_analyzed_file')}: {path}\n")
+            f.write(f"{_t('gui_date')}: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n")
             f.write(generate_report(result))
         
-        output_widget.insert(tk.END, f"\n[OK] Report gespeichert: {export_path}")
+        output_widget.insert(tk.END, f"\n{_t('gui_report_saved')}: {export_path}")
         if status_widget is not None:
             status_widget.config(text=f"{_t('status_analysis_done')} {os.path.basename(path)}")
 
     except PermissionError:
-        output_widget.insert(tk.END, "\n[WARNUNG] Keine Schreibberechtigung für Export")
+        output_widget.insert(tk.END, f"\n{_t('gui_no_permission_export')}")
         if status_widget is not None:
-            status_widget.config(text="[WARNUNG] Keine Schreibberechtigung für Export")
-        messagebox.showwarning("Export-Fehler", "Keine Schreibberechtigung")
+            status_widget.config(text=_t("gui_no_permission_export"))
+        messagebox.showwarning(_t("dialog_export_error_title"), _t("dialog_export_no_permission"))
     except Exception as e:
-        output_widget.insert(tk.END, f"\n[WARNUNG] Export-Fehler: {e}")
+        output_widget.insert(tk.END, f"\n{_t('gui_export_error')}: {e}")
         if status_widget is not None:
-            status_widget.config(text=f"[WARNUNG] Export-Fehler: {e}")
-        messagebox.showwarning("Export-Fehler", str(e))
+            status_widget.config(text=f"{_t('gui_export_error')}: {e}")
+        messagebox.showwarning(_t("dialog_export_error_title"), str(e))
 
 
 
@@ -1458,19 +1556,19 @@ def auto_fix_unused_imports(output_widget: scrolledtext.ScrolledText, status_wid
             f.writelines(new_lines)
         
         # Ausgabe
-        output_widget.insert(tk.END, "\n\n[OK] AUTO-FIX ERFOLGREICH\n")
-        output_widget.insert(tk.END, f"Entfernte Zeilen: {sorted(lines_to_remove)}\n")
-        output_widget.insert(tk.END, f"Backup erstellt: {backup_path}\n")
-        output_widget.insert(tk.END, "\nBitte Datei erneut analysieren zur Überprüfung.")
+        output_widget.insert(tk.END, f"\n\n{_t('gui_autofix_success_header')}\n")
+        output_widget.insert(tk.END, f"{_t('gui_removed_lines')}: {sorted(lines_to_remove)}\n")
+        output_widget.insert(tk.END, f"{_t('gui_backup_created')}: {backup_path}\n")
+        output_widget.insert(tk.END, f"\n{_t('gui_reanalyze_prompt')}")
         if status_widget is not None:
             status_widget.config(text=_t("status_autofix_done"))
         
-        messagebox.showinfo("Erfolg", f"Ungenutzte Imports entfernt!\nBackup: {backup_path}")
+        messagebox.showinfo(_t("dialog_success_title"), f"{_t('dialog_autofix_success')}\nBackup: {backup_path}")
         
     except Exception as e:
         if status_widget is not None:
             status_widget.config(text=f"[FEHLER] {e}")
-        messagebox.showerror("Fehler", f"Auto-Fix fehlgeschlagen: {e}")
+        messagebox.showerror(_t("dialog_error_title"), f"{_t('dialog_autofix_failed')}: {e}")
 
 
 
@@ -1534,7 +1632,7 @@ def _should_exclude_path(
 
 
 def collect_python_files(folder_path: str, exclude_patterns: Optional[List[str]] = None) -> List[str]:
-    """Sammelt alle Python-Dateien in einem Ordner rekursiv."""
+    """Sammelt alle Python-Dateien in einem Ordner rekursiv mit Verzeichnis-Pruning."""
     if not os.path.exists(folder_path):
         raise FileNotFoundError(f"Projekt-Verzeichnis nicht gefunden: {folder_path}")
     if not os.path.isdir(folder_path):
@@ -1544,17 +1642,32 @@ def collect_python_files(folder_path: str, exclude_patterns: Optional[List[str]]
         exclude_patterns = DEFAULT_EXCLUDE_PATTERNS
 
     python_files = []
-    folder = pathlib.Path(folder_path)
+    folder = pathlib.Path(folder_path).resolve()
     case_insensitive = (os.name == "nt")
 
-    for py_file in folder.rglob("*.py"):
+    for root, dirs, files in os.walk(folder):
+        root_path = pathlib.Path(root)
         try:
-            rel_posix = py_file.relative_to(folder).as_posix()
+            rel_dir_posix = root_path.relative_to(folder).as_posix()
         except ValueError:
-            rel_posix = py_file.name
-        if _should_exclude_path(py_file, rel_posix, exclude_patterns, case_insensitive=case_insensitive):
-            continue
-        python_files.append(str(py_file))
+            rel_dir_posix = ""
+
+        # In-Place Directory-Pruning: überspringe unerwünschte Verzeichnisse vor dem Betreten
+        pruned_dirs = []
+        for d in dirs:
+            dir_path = root_path / d
+            rel_sub_posix = f"{rel_dir_posix}/{d}" if rel_dir_posix and rel_dir_posix != "." else d
+            if not _should_exclude_path(dir_path, rel_sub_posix, exclude_patterns, case_insensitive=case_insensitive):
+                pruned_dirs.append(d)
+        dirs[:] = pruned_dirs
+
+        for f in files:
+            if not f.endswith(".py"):
+                continue
+            py_file = root_path / f
+            rel_posix = f"{rel_dir_posix}/{f}" if rel_dir_posix and rel_dir_posix != "." else f
+            if not _should_exclude_path(py_file, rel_posix, exclude_patterns, case_insensitive=case_insensitive):
+                python_files.append(str(py_file))
 
     return sorted(python_files)
 
@@ -1596,17 +1709,7 @@ def analyze_project(
             file_results[file_path] = result
             total_defs += len(result.defs)
             total_imports += len(result.imports)
-            try:
-                with open(file_path, 'r', encoding='utf-8') as f:
-                    total_lines += len(f.readlines())
-            except UnicodeDecodeError:
-                try:
-                    with open(file_path, 'r', encoding='latin-1') as f:
-                        total_lines += len(f.readlines())
-                except (IOError, OSError):
-                    pass
-            except (IOError, OSError):
-                pass
+            total_lines += getattr(result, "total_lines", 0)
             rel_path = os.path.relpath(file_path, folder_path)
             if result.unused_imports:
                 all_unused_imports[rel_path] = result.unused_imports
@@ -1944,7 +2047,7 @@ def run_project_analysis(output_widget: scrolledtext.ScrolledText, status_widget
         status_widget.update_idletasks()
 
     output_widget.delete("1.0", tk.END)
-    output_widget.insert(tk.END, f"Analysiere: {folder_path}\n\n")
+    output_widget.insert(tk.END, f"{_t('gui_analyzing_folder')}: {folder_path}\n\n")
     output_widget.update_idletasks()  # nur Render-Jobs, keine User-Events (Re-entranz-Schutz)
 
     def progress_cb(cur, tot, fp):
@@ -1963,13 +2066,13 @@ def run_project_analysis(output_widget: scrolledtext.ScrolledText, status_widget
         export_path = os.path.join(folder_path, "project_analysis.txt")
         with open(export_path, "w", encoding="utf-8") as f:
             f.write(generate_project_report(result))
-        output_widget.insert(tk.END, f"\nGespeichert: {export_path}")
+        output_widget.insert(tk.END, f"\n{_t('gui_saved')}: {export_path}")
         if status_widget is not None:
             status_widget.config(text=f"{_t('status_analysis_done')} {os.path.basename(folder_path)}")
     except Exception as e:
         if status_widget is not None:
             status_widget.config(text=f"[FEHLER] {e}")
-        messagebox.showerror("Fehler", str(e))
+        messagebox.showerror(_t("dialog_error_title"), str(e))
 
 
 def _build_welcome_text() -> str:
@@ -2009,7 +2112,7 @@ def create_gui() -> None:
     
     def show_info_dialog() -> None:
         messagebox.showinfo(
-            "Python Code Analyzer",
+            _t("dialog_info_title"),
             _t("info_body").replace("{version}", TOOL_VERSION),
         )
 
@@ -2142,7 +2245,7 @@ def create_gui() -> None:
         if output.get("1.0", "1.end").strip() in _WELCOME_HEADS:
             output.delete("1.0", tk.END)
             output.insert(tk.END, _build_welcome_text())
-        messagebox.showinfo("Sprache / Language", _t("lang_switched_msg"))
+        messagebox.showinfo(_t("dialog_language_title"), _t("lang_switched_msg"))
 
     menubar = tk.Menu(root)
     lang_menu = tk.Menu(menubar, tearoff=0)
