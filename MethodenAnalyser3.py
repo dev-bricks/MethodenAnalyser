@@ -2456,11 +2456,23 @@ def _emit_cli_report(report: str) -> None:
         sys.stdout.write("\n")
 
 
-def _write_cli_json_if_requested(report: dict[str, Any], output_path: str | None) -> bool:
+def _write_cli_json_if_requested(
+    report: dict[str, Any], output_path: str | None,
+    protected_paths: list[str] | None = None,
+) -> bool:
     """Schreibt optional den JSON-Report; Fehler gehen nach stderr."""
     if not output_path:
         return True
     try:
+        target = os.path.normcase(os.path.realpath(output_path))
+        for source in protected_paths or []:
+            same_path = target == os.path.normcase(os.path.realpath(source))
+            same_file = (
+                os.path.exists(output_path) and os.path.exists(source)
+                and os.path.samefile(output_path, source)
+            )
+            if same_path or same_file:
+                raise ValueError("JSON-Ausgabe darf keine analysierte Quelldatei ersetzen.")
         written_path = write_json_report(report, output_path)
     except Exception as exc:  # noqa: BLE001 -- CLI boundary reports export failures and returns a failure result
         print(f"[FEHLER] {_t('cli_json_export_failed')}: {exc}", file=sys.stderr)
@@ -2479,7 +2491,7 @@ def _run_cli_file(path: str, json_output: str | None = None) -> int:
 
     _emit_cli_report(generate_report(result))
     json_report = build_json_report("file", result, source_name=path)
-    if not _write_cli_json_if_requested(json_report, json_output):
+    if not _write_cli_json_if_requested(json_report, json_output, [path]):
         return EXIT_ANALYSIS_ERROR
     return EXIT_FINDINGS if _file_has_findings(result) else EXIT_OK
 
@@ -2498,7 +2510,8 @@ def _run_cli_project(path: str, json_output: str | None = None) -> int:
 
     _emit_cli_report(generate_project_report(result, project_name=_extract_project_display_name(path)))
     json_report = build_json_report("project", result, source_name=path)
-    if not _write_cli_json_if_requested(json_report, json_output):
+    protected_paths = list(result.file_results) + [p for p, _ in result.files_with_errors]
+    if not _write_cli_json_if_requested(json_report, json_output, protected_paths):
         return EXIT_ANALYSIS_ERROR
 
     if result.files_with_errors:
