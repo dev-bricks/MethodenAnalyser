@@ -5,13 +5,16 @@ import collections
 import datetime
 import difflib
 import fnmatch
+import io
 import json
 import os
 import pathlib
 import pkgutil
 import re
 import sqlite3
+import stat
 import sys
+import tempfile
 import threading
 import tkinter as tk
 import warnings
@@ -1519,6 +1522,64 @@ def _remove_unused_imports(source: str, tree: ast.AST, unused_set: set[str]) -> 
     return updated, changed_lines
 
 
+def _stage_auto_fix_bytes(path: pathlib.Path, data: bytes) -> pathlib.Path:
+    """Fully write and flush a same-directory temporary file."""
+    staged = None
+    complete = False
+    try:
+        with tempfile.NamedTemporaryFile(mode="wb", dir=path.parent,
+                                         prefix=f".{path.name}.autofix-", delete=False) as handle:
+            staged = pathlib.Path(handle.name)
+            if handle.write(data) != len(data):
+                raise OSError("Incomplete Auto-Fix write")
+            handle.flush()
+            os.fsync(handle.fileno())
+        complete = True
+        return staged
+    finally:
+        if staged is not None and not complete:
+            staged.unlink(missing_ok=True)
+
+
+def _commit_auto_fix(path: str, original: bytes, updated: bytes) -> str:
+    """Publish a complete backup exclusively, then atomically replace the source."""
+    source = pathlib.Path(path).resolve(strict=True)
+    mode = stat.S_IMODE(source.stat().st_mode)
+    staged_source = staged_backup = None
+    try:
+        staged_source = _stage_auto_fix_bytes(source, updated)
+        staged_backup = _stage_auto_fix_bytes(source, original)
+        if source.read_bytes() != original:
+            raise OSError("Source changed during Auto-Fix")
+        index = 0
+        while True:
+            suffix = f".bak.{index}" if index else ".bak"
+            backup = pathlib.Path(str(source) + suffix)
+            try:
+                # Same-directory hard-link publication is atomic and exclusive:
+                # an existing or concurrently created recovery copy is preserved.
+                os.link(staged_backup, backup)
+            except FileExistsError:
+                index += 1
+            else:
+                break
+        os.chmod(staged_source, mode)
+        if source.read_bytes() != original:
+            raise OSError("Source changed during Auto-Fix")
+        os.replace(staged_source, source)
+        return str(backup)
+    finally:
+        for staged in (staged_source, staged_backup):
+            if staged is not None:
+                try:
+                    # A staged source may carry the original read-only flag.
+                    # Clear it only on our temporary path before cleanup.
+                    staged.chmod(stat.S_IRUSR | stat.S_IWUSR)
+                except FileNotFoundError:
+                    continue
+                staged.unlink(missing_ok=True)
+
+
 def auto_fix_unused_imports(output_widget: scrolledtext.ScrolledText, status_widget: tk.Label | None = None) -> None:
     """
     Entfernt ungenutzte Imports aus der zuletzt analysierten Datei.
@@ -1551,13 +1612,15 @@ def auto_fix_unused_imports(output_widget: scrolledtext.ScrolledText, status_wid
     try:
         # Datei lesen mit Encoding-Fallback — erkanntes Encoding für Schreibzugriff merken
         detected_encoding = "utf-8"
+        original_bytes = pathlib.Path(_last_analysis_path).read_bytes()
         try:
-            with open(_last_analysis_path, "r", encoding="utf-8") as f:
-                lines = f.readlines()
+            original_text = original_bytes.decode("utf-8")
         except UnicodeDecodeError:
             detected_encoding = "latin-1"
-            with open(_last_analysis_path, "r", encoding="latin-1") as f:
-                lines = f.readlines()
+            original_text = original_bytes.decode("latin-1")
+        # Universal newline conversion keeps AST positions aligned, including
+        # CR-only files; form-feed remains within its original physical line.
+        lines = io.StringIO(original_text, newline=None).readlines()
 
         # AST parsen (readlines() beibehalten — splitlines() würde bei \x0c
         # Zeilennummern gegenüber AST-lineno verschieben und falsche Zeilen löschen)
@@ -1581,13 +1644,10 @@ def auto_fix_unused_imports(output_widget: scrolledtext.ScrolledText, status_wid
 
         # Backup und Ausgabe im erkannten Encoding — verhindert Korrumpierung von
         # latin-1-Dateien mit nicht-ASCII-Zeichen und # coding: latin-1 Deklaration
-        backup_path = _last_analysis_path + ".bak"
-        with open(backup_path, "w", encoding=detected_encoding) as f:
-            f.writelines(lines)
-
-        # Neue Datei ohne ungenutzte Imports
-        with open(_last_analysis_path, "w", encoding=detected_encoding) as f:
-            f.write(updated_source)
+        newline_match = re.search(r"\r\n|\r|\n", original_text)
+        newline = newline_match.group() if newline_match else "\n"
+        updated_bytes = updated_source.replace("\n", newline).encode(detected_encoding)
+        backup_path = _commit_auto_fix(_last_analysis_path, original_bytes, updated_bytes)
         
         # Ausgabe
         output_widget.insert(tk.END, f"\n\n{_t('gui_autofix_success_header')}\n")
