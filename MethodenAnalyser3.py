@@ -1,6 +1,7 @@
 import argparse
 import ast
 import builtins
+import codecs
 import collections
 import datetime
 import difflib
@@ -1092,7 +1093,7 @@ def analyze_file(path: str) -> AnalysisResult:
 
     # Datei lesen
     try:
-        with open(path, "r", encoding="utf-8") as f:
+        with open(path, "r", encoding="utf-8-sig") as f:
             code = f.read()
     except UnicodeDecodeError:
         try:
@@ -1611,8 +1612,10 @@ def auto_fix_unused_imports(output_widget: scrolledtext.ScrolledText, status_wid
         # Datei lesen mit Encoding-Fallback — erkanntes Encoding für Schreibzugriff merken
         detected_encoding = "utf-8"
         original_bytes = pathlib.Path(_last_analysis_path).read_bytes()
+        if original_bytes.startswith(codecs.BOM_UTF8):
+            detected_encoding = "utf-8-sig"
         try:
-            original_text = original_bytes.decode("utf-8")
+            original_text = original_bytes.decode(detected_encoding)
         except UnicodeDecodeError:
             detected_encoding = "latin-1"
             original_text = original_bytes.decode("latin-1")
