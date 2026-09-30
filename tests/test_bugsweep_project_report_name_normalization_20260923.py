@@ -58,7 +58,7 @@ class ProjectReportNameNormalizationTests(unittest.TestCase):
             file_results={},
         )
         report = generate_project_report(dummy_result)
-        current_dir_name = pathlib.Path(".").resolve().name
+        current_dir_name = pathlib.Path.cwd().name
         self.assertIn(current_dir_name, report)
         self.assertNotIn("Projekt: .\n", report, "Projektname sollte aufgelöst werden statt '.' anzuzeigen")
 

@@ -1,8 +1,7 @@
 """Regression contracts for the documented Windows build path."""
 
-from pathlib import Path
 import unittest
-
+from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 

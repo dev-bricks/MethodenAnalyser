@@ -3,13 +3,14 @@ from __future__ import annotations
 
 import sys
 from pathlib import Path
+
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-import MethodenAnalyser3 as m3  # noqa: E402
+import MethodenAnalyser3 as m3
 
 
 @pytest.mark.skipif(sys.version_info < (3, 12), reason="PEP 695 erfordert Python >= 3.12")

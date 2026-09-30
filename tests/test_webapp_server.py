@@ -11,6 +11,7 @@ from http.server import ThreadingHTTPServer
 from pathlib import Path
 from urllib.request import urlopen
 
+from MethodenAnalyser3 import analyze_project, build_json_report
 from webapp.server import (
     MAX_REQUEST_SIZE,
     MAX_ZIP_FILE_COUNT,
@@ -24,8 +25,6 @@ from webapp.server import (
     build_runtime_info,
     get_web_translations,
 )
-from MethodenAnalyser3 import analyze_project, build_json_report
-
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 

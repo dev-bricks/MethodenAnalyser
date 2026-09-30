@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Regressionstests Bugsweep 2026-06-23 (Desktop, /bugsweep-Loop Run 8/15).
 
 BS-1: Auto-Fix loeschte Imports, die nur in __all__-Strings oder String-/Forward-Ref-
@@ -11,8 +10,8 @@ from pathlib import Path
 ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(ROOT))
 
-import MethodenAnalyser3 as m3  # noqa: E402
-import translator as tl  # noqa: E402
+import MethodenAnalyser3 as m3
+import translator as tl
 
 
 def test_all_referenced_import_not_reported_unused():
