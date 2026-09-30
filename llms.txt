@@ -23,6 +23,7 @@ MethodenAnalyser analyzes Python files and project folders locally with Python A
 - CLI file analysis: `python MethodenAnalyser3.py --file path/to/file.py`.
 - CLI project analysis: `python MethodenAnalyser3.py --project path/to/project`.
 - JSON export: add `--json-output` or pass a target JSON filename.
+- JSON report publication serializes first, writes and fsyncs a same-directory temporary file, then replaces the destination atomically. Failures before replacement preserve previous bytes; read-only destinations are rejected. Existing report symlinks remain links; replacement changes the destination inode and does not update other hard-link names. This is not a concurrent-writer lock or a directory-fsync crash-durability guarantee.
 - CLI JSON export rejects targets that alias analyzed sources (including hard links, symbolic links, and project files with analysis errors); exit code 1, no source write. This check does not lock against concurrent path changes.
 - Local web helper: `python webapp/server.py` or `START_WEBAPP.bat`; its API accepts `snippet`, `file` and `zip`, while `project` is import-only.
 - Multi-language support: `--lang` parameter supporting `de`, `en`, `es`, `zh`, `ja`, and `ru`.
