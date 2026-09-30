@@ -145,3 +145,13 @@ def test_removing_only_import_can_publish_empty_file(monkeypatch, tmp_path):
     dialogs.showerror.assert_not_called()
     assert path.read_bytes() == b""
     assert path.with_suffix(".py.bak").read_bytes() == raw
+
+
+def test_mixed_newlines_preserve_untouched_bytes(monkeypatch, tmp_path):
+    path = tmp_path / "source.py"
+    raw = b"import os\r\nanswer = 42\nlabel = 'ok'\r"
+    dialogs = prepare(monkeypatch, path, raw)
+    m.auto_fix_unused_imports(Mock())
+    dialogs.showerror.assert_not_called()
+    assert path.read_bytes() == b"answer = 42\nlabel = 'ok'\r"
+    assert path.with_suffix(".py.bak").read_bytes() == raw

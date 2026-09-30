@@ -5,7 +5,6 @@ import collections
 import datetime
 import difflib
 import fnmatch
-import io
 import json
 import os
 import pathlib
@@ -1493,10 +1492,9 @@ def _remove_unused_imports(source: str, tree: ast.AST, unused_set: set[str]) -> 
     """Remove AST import spans without deleting neighboring executable code."""
     raw = source.encode("utf-8")
     offsets = [0]
-    # AST columns count UTF-8 bytes; only LF advances AST line numbers.
-    # str.splitlines() would incorrectly count form-feed as a new line.
-    for line in raw.split(b"\n")[:-1]:
-        offsets.append(offsets[-1] + len(line) + 1)
+    # AST columns count UTF-8 bytes. Recognize physical CR/LF boundaries
+    # without counting form-feed or rewriting untouched newline sequences.
+    offsets.extend(match.end() for match in re.finditer(rb"\r\n|\r|\n", raw))
     nodes = sorted(_unused_import_nodes(tree, unused_set),
                    key=lambda node: (node.lineno, node.col_offset), reverse=True)
     changed_lines: set[int] = set()
@@ -1618,20 +1616,16 @@ def auto_fix_unused_imports(output_widget: scrolledtext.ScrolledText, status_wid
         except UnicodeDecodeError:
             detected_encoding = "latin-1"
             original_text = original_bytes.decode("latin-1")
-        # Universal newline conversion keeps AST positions aligned, including
-        # CR-only files; form-feed remains within its original physical line.
-        lines = io.StringIO(original_text, newline=None).readlines()
-
-        # AST parsen (readlines() beibehalten — splitlines() würde bei \x0c
-        # Zeilennummern gegenüber AST-lineno verschieben und falsche Zeilen löschen)
-        tree = ast.parse("".join(lines))
+        # Parse the original text; physical byte offsets preserve mixed
+        # newline sequences and avoid treating form-feed as a new line.
+        tree = ast.parse(original_text)
 
         # Import-Zeilen markieren die entfernt werden sollen
         # Findings may be stale after an editor change or the confirmation
         # dialog. Remove only names approved earlier AND still unused now.
-        current_result = analyze_source("".join(lines), _last_analysis_path)
+        current_result = analyze_source(original_text, _last_analysis_path)
         unused_set = set(_last_analysis_result.unused_imports) & set(current_result.unused_imports)
-        updated_source, lines_to_remove = _remove_unused_imports("".join(lines), tree, unused_set)
+        updated_source, lines_to_remove = _remove_unused_imports(original_text, tree, unused_set)
 
         if not lines_to_remove:
             if status_widget is not None:
@@ -1644,9 +1638,7 @@ def auto_fix_unused_imports(output_widget: scrolledtext.ScrolledText, status_wid
 
         # Backup und Ausgabe im erkannten Encoding — verhindert Korrumpierung von
         # latin-1-Dateien mit nicht-ASCII-Zeichen und # coding: latin-1 Deklaration
-        newline_match = re.search(r"\r\n|\r|\n", original_text)
-        newline = newline_match.group() if newline_match else "\n"
-        updated_bytes = updated_source.replace("\n", newline).encode(detected_encoding)
+        updated_bytes = updated_source.encode(detected_encoding)
         backup_path = _commit_auto_fix(_last_analysis_path, original_bytes, updated_bytes)
         
         # Ausgabe
