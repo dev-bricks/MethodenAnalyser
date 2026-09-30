@@ -1531,7 +1531,10 @@ def auto_fix_unused_imports(output_widget: scrolledtext.ScrolledText, status_wid
         tree = ast.parse("".join(lines))
 
         # Import-Zeilen markieren die entfernt werden sollen
-        unused_set = set(_last_analysis_result.unused_imports)
+        # Findings may be stale after an editor change or the confirmation
+        # dialog. Remove only names approved earlier AND still unused now.
+        current_result = analyze_source("".join(lines), _last_analysis_path)
+        unused_set = set(_last_analysis_result.unused_imports) & set(current_result.unused_imports)
         lines_to_remove = _collect_unused_import_lines(tree, unused_set)
 
         if not lines_to_remove:
