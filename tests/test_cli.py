@@ -24,6 +24,8 @@ class MethodenAnalyserCliTests(unittest.TestCase):
     ) -> subprocess.CompletedProcess[str]:
         env = os.environ.copy()
         env["PYTHONIOENCODING"] = "utf-8"
+        if "--lang" not in args:
+            args = ("--lang", "de", *args)
         return subprocess.run(
             [sys.executable, str(SCRIPT_PATH), *args],
             input=input_text,

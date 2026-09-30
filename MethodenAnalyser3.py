@@ -1729,6 +1729,9 @@ def analyze_project(
     exclude_patterns: list[str] | None = None,
 ) -> ProjectAnalysisResult:
     """Analysiert alle Python-Dateien in einem Projektordner."""
+    # The collector resolves aliases (e.g. /var -> /private/var on macOS,
+    # or Windows junctions). Reports must use the same canonical base.
+    folder_path = str(pathlib.Path(folder_path).resolve())
     python_files = collect_python_files(folder_path, exclude_patterns=exclude_patterns)
     files_with_errors, file_results = [], {}
     all_unused_imports, all_unused_defs = {}, {}
@@ -2123,7 +2126,7 @@ def run_project_analysis(output_widget: scrolledtext.ScrolledText, status_widget
         
         export_path = os.path.join(folder_path, "project_analysis.txt")
         with open(export_path, "w", encoding="utf-8") as f:
-            f.write(generate_project_report(result))
+            f.write(generate_project_report(result, project_name=_extract_project_display_name(folder_path)))
         output_widget.insert(tk.END, f"\n{_t('gui_saved')}: {export_path}")
         if status_widget is not None:
             status_widget.config(text=f"{_t('status_analysis_done')} {os.path.basename(folder_path)}")
@@ -2438,7 +2441,7 @@ def _run_cli_project(path: str, json_output: str | None = None) -> int:
         print(f"[FEHLER] {_t('cli_project_analysis_failed')}: {exc}", file=sys.stderr)
         return EXIT_ANALYSIS_ERROR
 
-    _emit_cli_report(generate_project_report(result))
+    _emit_cli_report(generate_project_report(result, project_name=_extract_project_display_name(path)))
     json_report = build_json_report("project", result, source_name=path)
     if not _write_cli_json_if_requested(json_report, json_output):
         return EXIT_ANALYSIS_ERROR

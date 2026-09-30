@@ -87,8 +87,9 @@ def test_welcome_text_substitutes_shortcut_and_switches():
 def test_config_language_roundtrip(tmp_path, monkeypatch):
     cfg_dir = tmp_path / "cfg"
     monkeypatch.setattr(m, "_config_dir", lambda: cfg_dir)
-    # Nichts gespeichert -> Default
-    assert m.get_saved_language() == m.DEFAULT_LANGUAGE
+    monkeypatch.setattr(m, "detect_system_language", lambda default: "en")
+    # Nichts gespeichert -> System-Locale, unabhängig vom Test-Host.
+    assert m.get_saved_language() == "en"
     # Speichern + erneut lesen
     for lang in ("en", "es", "zh", "ja", "ru", "de"):
         assert m.set_saved_language(lang) is True
@@ -107,7 +108,8 @@ def test_unknown_saved_language_falls_back_to_default(tmp_path, monkeypatch):
     cfg_dir.mkdir()
     (cfg_dir / "config.json").write_text('{"language": "xx"}', encoding="utf-8")
     monkeypatch.setattr(m, "_config_dir", lambda: cfg_dir)
-    assert m.get_saved_language() == m.DEFAULT_LANGUAGE
+    monkeypatch.setattr(m, "detect_system_language", lambda default: "en")
+    assert m.get_saved_language() == "en"
 
 
 def test_corrupt_config_is_tolerated(tmp_path, monkeypatch):
@@ -115,8 +117,9 @@ def test_corrupt_config_is_tolerated(tmp_path, monkeypatch):
     cfg_dir.mkdir()
     (cfg_dir / "config.json").write_text("{ this is not valid json", encoding="utf-8")
     monkeypatch.setattr(m, "_config_dir", lambda: cfg_dir)
-    # Darf nicht crashen, fällt auf Default zurück
-    assert m.get_saved_language() == m.DEFAULT_LANGUAGE
+    monkeypatch.setattr(m, "detect_system_language", lambda default: "en")
+    # Darf nicht crashen, fällt auf System-Locale zurück.
+    assert m.get_saved_language() == "en"
 
 
 def test_translator_guard_handles_corrupt_entry():

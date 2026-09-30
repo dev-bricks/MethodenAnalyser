@@ -35,7 +35,7 @@ def make_zip_payload(files: dict[str, str | bytes], filename: str = "sample.zip"
         for path, content in files.items():
             archive.writestr(path, content)
     encoded = base64.b64encode(buffer.getvalue()).decode("ascii")
-    return {"source_kind": "zip", "filename": filename, "zip_base64": encoded}
+    return {"source_kind": "zip", "filename": filename, "zip_base64": encoded, "lang": "de"}
 
 
 class MethodenAnalyserWebappServerTests(unittest.TestCase):
