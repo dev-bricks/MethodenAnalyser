@@ -230,7 +230,7 @@ type path\to\file.py | python MethodenAnalyser3.py --stdin --json-output snippet
 python MethodenAnalyser3.py --lang en --file path/to/file.py
 ```
 
-The `--json-output` flag exports a machine-readable report named `methodenanalyser-report-v1.json` (or a custom name if specified). Its structure is documented in [EXPORTFORMAT.md](EXPORTFORMAT.md).
+The `--json-output` flag exports a machine-readable report named `methodenanalyser-report-v1.json` (or a custom name if specified). Its structure is documented in [EXPORTFORMAT.md](EXPORTFORMAT.md). Export targets that refer to an analyzed source file, including symbolic links and hard links, are rejected with exit code 1 before writing. This also protects project files that failed analysis.
 
 The local `POST /api/analyze` helper accepts `source_kind` `snippet`, `file`,
 and `zip`. A `project` POST is intentionally rejected; project reports are
