@@ -5,7 +5,7 @@
 <p align="center">
   <a href="https://github.com/dev-bricks/MethodenAnalyser/releases/tag/v3.0.2"><img src="https://img.shields.io/badge/Version-3.0.2-blue?style=for-the-badge" alt="Version 3.0.2"></a>
   <a href="https://github.com/dev-bricks/MethodenAnalyser/actions/workflows/tests.yml"><img src="https://img.shields.io/badge/CI-Bestanden-success?style=for-the-badge&logo=githubactions&logoColor=white" alt="CI-Status"></a>
-  <a href="#entwicklung--tests"><img src="https://img.shields.io/badge/Tests-215%20Bestanden-success?style=for-the-badge&logo=pytest&logoColor=white" alt="Tests 100% Grün"></a>
+  <a href="#entwicklung--tests"><img src="https://img.shields.io/badge/Tests-225%20Bestanden-success?style=for-the-badge&logo=pytest&logoColor=white" alt="Tests 100% Grün"></a>
   <img src="https://img.shields.io/badge/Python-3.10%20%7C%203.11%20%7C%203.12%20%7C%203.13-yellow?style=for-the-badge&logo=python&logoColor=white" alt="Python 3.10-3.13">
   <img src="https://img.shields.io/badge/Plattform-Windows%20%7C%20Linux%20%7C%20macOS-lightgrey?style=for-the-badge" alt="Plattformübergreifend">
   <img src="https://img.shields.io/badge/GUI-Tkinter%20%2B%20CLI%20%2B%20PWA-orange?style=for-the-badge" alt="GUI Desktop + CLI + PWA">
@@ -230,7 +230,7 @@ type pfad\zur\datei.py | python MethodenAnalyser3.py --stdin --json-output snipp
 python MethodenAnalyser3.py --lang de --file pfad/zur/datei.py
 ```
 
-Das Flag `--json-output` exportiert einen maschinenlesbaren Bericht namens `methodenanalyser-report-v1.json` (oder unter dem übergebenen Dateinamen). Das Schema ist in [EXPORTFORMAT.md](EXPORTFORMAT.md) beschrieben. Ausgabeziele, die auf eine analysierte Quelldatei zeigen, werden vor dem Schreiben mit Exit-Code 1 abgelehnt; das gilt auch für symbolische Links und Hard Links sowie für Projektdateien mit Analysefehlern.
+Das Flag `--json-output` exportiert einen maschinenlesbaren Bericht namens `methodenanalyser-report-v1.json` (oder unter dem übergebenen Dateinamen). Das Schema ist in [EXPORTFORMAT.md](EXPORTFORMAT.md) beschrieben. Ausgabeziele, die auf eine analysierte Quelldatei zeigen, werden vor dem Schreiben mit Exit-Code 1 abgelehnt; das gilt auch für symbolische Links und Hard Links sowie für Projektdateien mit Analysefehlern. JSON wird vollständig serialisiert und in eine temporäre Datei geschrieben, bevor diese das Ziel atomar ersetzt. Bei Serialisierungs- oder Schreibfehlern bleibt ein vorhandener Bericht erhalten. Schreibgeschützte Ziele werden abgelehnt; bestehende Dateimodi und symbolische Links auf Berichtsziele bleiben erhalten.
 
 Der lokale `POST /api/analyze`-Endpunkt akzeptiert `source_kind` `snippet`, `file`
 und `zip`. Ein `project`-POST wird bewusst abgewiesen; Projektberichte entstehen

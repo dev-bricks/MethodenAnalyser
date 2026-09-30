@@ -5,7 +5,7 @@
 <p align="center">
   <a href="https://github.com/dev-bricks/MethodenAnalyser/releases/tag/v3.0.2"><img src="https://img.shields.io/badge/Version-3.0.2-blue?style=for-the-badge" alt="Version 3.0.2"></a>
   <a href="https://github.com/dev-bricks/MethodenAnalyser/actions/workflows/tests.yml"><img src="https://img.shields.io/badge/CI-Passing-success?style=for-the-badge&logo=githubactions&logoColor=white" alt="CI Status"></a>
-  <a href="#development--testing"><img src="https://img.shields.io/badge/Tests-215%20Passed-success?style=for-the-badge&logo=pytest&logoColor=white" alt="Tests 100% Green"></a>
+  <a href="#development--testing"><img src="https://img.shields.io/badge/Tests-225%20Passed-success?style=for-the-badge&logo=pytest&logoColor=white" alt="Tests 100% Green"></a>
   <img src="https://img.shields.io/badge/Python-3.10%20%7C%203.11%20%7C%203.12%20%7C%203.13-yellow?style=for-the-badge&logo=python&logoColor=white" alt="Python 3.10-3.13">
   <img src="https://img.shields.io/badge/Platform-Windows%20%7C%20Linux%20%7C%20macOS-lightgrey?style=for-the-badge" alt="Cross-Platform">
   <img src="https://img.shields.io/badge/GUI-Tkinter%20%2B%20CLI%20%2B%20PWA-orange?style=for-the-badge" alt="GUI Desktop + CLI + PWA">
@@ -230,7 +230,7 @@ type path\to\file.py | python MethodenAnalyser3.py --stdin --json-output snippet
 python MethodenAnalyser3.py --lang en --file path/to/file.py
 ```
 
-The `--json-output` flag exports a machine-readable report named `methodenanalyser-report-v1.json` (or a custom name if specified). Its structure is documented in [EXPORTFORMAT.md](EXPORTFORMAT.md). Export targets that refer to an analyzed source file, including symbolic links and hard links, are rejected with exit code 1 before writing. This also protects project files that failed analysis.
+The `--json-output` flag exports a machine-readable report named `methodenanalyser-report-v1.json` (or a custom name if specified). Its structure is documented in [EXPORTFORMAT.md](EXPORTFORMAT.md). Export targets that refer to an analyzed source file, including symbolic links and hard links, are rejected with exit code 1 before writing. This also protects project files that failed analysis. JSON is fully serialized and flushed to a temporary file before atomic replacement: serialization or write failures preserve an existing report. Read-only targets are rejected; existing file modes and symbolic links to report destinations are preserved.
 
 The local `POST /api/analyze` helper accepts `source_kind` `snippet`, `file`,
 and `zip`. A `project` POST is intentionally rejected; project reports are

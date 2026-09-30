@@ -2078,14 +2078,33 @@ def build_json_report(
 
 
 def write_json_report(report: dict[str, Any], output_path: str) -> str:
-    """Schreibt einen JSON-Report und gibt den absoluten Pfad zurück."""
+    """Veröffentlicht einen vollständigen JSON-Report per atomarem Dateitausch."""
+    data = (json.dumps(report, indent=2, ensure_ascii=False) + "\n").encode("utf-8")
     target = os.path.abspath(output_path)
-    target_dir = os.path.dirname(target)
-    if target_dir:
-        os.makedirs(target_dir, exist_ok=True)
-    with open(target, "w", encoding="utf-8") as f:
-        json.dump(report, f, indent=2, ensure_ascii=False)
-        f.write("\n")
+    destination = pathlib.Path(target).resolve()
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    mode = stat.S_IMODE(destination.stat().st_mode) if destination.exists() else None
+    if mode is not None and not mode & (stat.S_IWUSR | stat.S_IWGRP | stat.S_IWOTH):
+        raise PermissionError("JSON report target is read-only")
+    staged = None
+    try:
+        with tempfile.NamedTemporaryFile(
+            mode="wb", dir=destination.parent,
+            prefix=f".{destination.name}.json-", delete=False,
+        ) as handle:
+            staged = pathlib.Path(handle.name)
+            if handle.write(data) != len(data):
+                raise OSError("Incomplete JSON report write")
+            handle.flush()
+            os.fsync(handle.fileno())
+        if mode is not None:
+            staged.chmod(mode)
+        os.replace(staged, destination)
+        staged = None
+    finally:
+        if staged is not None:
+            staged.chmod(stat.S_IRUSR | stat.S_IWUSR)
+            staged.unlink(missing_ok=True)
     return target
 
 
