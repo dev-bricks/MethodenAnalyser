@@ -1468,9 +1468,9 @@ def run_analysis(output_widget: scrolledtext.ScrolledText, status_widget: Option
 
 
 
-def _collect_unused_import_lines(tree: ast.AST, unused_set: Set[str]) -> Set[int]:
-    """Gibt die Zeilennummern zurück, die zu vollständig ungenutzten Imports gehören."""
-    lines_to_remove: Set[int] = set()
+def _unused_import_nodes(tree: ast.AST, unused_set: set[str]) -> list[ast.stmt]:
+    """Find fully unused imports, excluding wildcard and future imports."""
+    nodes: list[ast.stmt] = []
     for node in ast.walk(tree):
         if isinstance(node, (ast.Import, ast.ImportFrom)):
             # __future__-Imports niemals entfernen — sie aendern Python-Semantik
@@ -1480,8 +1480,47 @@ def _collect_unused_import_lines(tree: ast.AST, unused_set: Set[str]) -> Set[int
             names = [alias.asname or alias.name.split(".")[0] for alias in node.names
                      if alias.name != "*"]
             if names and all(name in unused_set for name in names):
-                lines_to_remove.update(range(node.lineno, node.end_lineno + 1))
-    return lines_to_remove
+                nodes.append(node)
+    return nodes
+
+
+def _collect_unused_import_lines(tree: ast.AST, unused_set: Set[str]) -> Set[int]:
+    """Gibt die Zeilennummern vollständig ungenutzter Imports zurück."""
+    return {line for node in _unused_import_nodes(tree, unused_set)
+            for line in range(node.lineno, node.end_lineno + 1)}
+
+
+def _remove_unused_imports(source: str, tree: ast.AST, unused_set: set[str]) -> tuple[str, set[int]]:
+    """Remove AST import spans without deleting neighboring executable code."""
+    raw = source.encode("utf-8")
+    offsets = [0]
+    # AST columns count UTF-8 bytes; only LF advances AST line numbers.
+    # str.splitlines() would incorrectly count form-feed as a new line.
+    for line in raw.split(b"\n")[:-1]:
+        offsets.append(offsets[-1] + len(line) + 1)
+    nodes = sorted(_unused_import_nodes(tree, unused_set),
+                   key=lambda node: (node.lineno, node.col_offset), reverse=True)
+    changed_lines: set[int] = set()
+    for node in nodes:
+        start = offsets[node.lineno - 1] + node.col_offset
+        end = offsets[node.end_lineno - 1] + node.end_col_offset
+        line_start = offsets[node.lineno - 1]
+        line_end = offsets[node.end_lineno] if node.end_lineno < len(offsets) else len(raw)
+        standalone = (not raw[line_start:start].strip(b" \t\f")
+                      and not raw[end:line_end].strip())
+        candidate = raw[:line_start] + raw[line_end:] if standalone else None
+        if candidate is not None:
+            try:
+                ast.parse(candidate.decode("utf-8"))
+            except SyntaxError:
+                candidate = None
+        # A pass keeps inline suites, empty function bodies and semicolon
+        # separators valid while leaving their neighboring statements intact.
+        raw = candidate if candidate is not None else raw[:start] + b"pass" + raw[end:]
+        changed_lines.update(range(node.lineno, node.end_lineno + 1))
+    updated = raw.decode("utf-8")
+    ast.parse(updated)  # Validate the complete result before touching any file.
+    return updated, changed_lines
 
 
 def auto_fix_unused_imports(output_widget: scrolledtext.ScrolledText, status_widget: Optional[tk.Label] = None) -> None:
@@ -1535,7 +1574,7 @@ def auto_fix_unused_imports(output_widget: scrolledtext.ScrolledText, status_wid
         # dialog. Remove only names approved earlier AND still unused now.
         current_result = analyze_source("".join(lines), _last_analysis_path)
         unused_set = set(_last_analysis_result.unused_imports) & set(current_result.unused_imports)
-        lines_to_remove = _collect_unused_import_lines(tree, unused_set)
+        updated_source, lines_to_remove = _remove_unused_imports("".join(lines), tree, unused_set)
 
         if not lines_to_remove:
             if status_widget is not None:
@@ -1553,10 +1592,8 @@ def auto_fix_unused_imports(output_widget: scrolledtext.ScrolledText, status_wid
             f.writelines(lines)
 
         # Neue Datei ohne ungenutzte Imports
-        new_lines = [line for i, line in enumerate(lines, 1) if i not in lines_to_remove]
-
         with open(_last_analysis_path, "w", encoding=detected_encoding) as f:
-            f.writelines(new_lines)
+            f.write(updated_source)
         
         # Ausgabe
         output_widget.insert(tk.END, f"\n\n{_t('gui_autofix_success_header')}\n")

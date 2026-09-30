@@ -5,7 +5,7 @@
 <p align="center">
   <a href="https://github.com/dev-bricks/MethodenAnalyser/releases/tag/v3.0.2"><img src="https://img.shields.io/badge/Version-3.0.2-blue?style=for-the-badge" alt="Version 3.0.2"></a>
   <a href="https://github.com/dev-bricks/MethodenAnalyser/actions/workflows/tests.yml"><img src="https://img.shields.io/badge/CI-Passing-success?style=for-the-badge&logo=githubactions&logoColor=white" alt="CI Status"></a>
-  <a href="#development--testing"><img src="https://img.shields.io/badge/Tests-180%20Passed-success?style=for-the-badge&logo=pytest&logoColor=white" alt="Tests 100% Green"></a>
+  <a href="#development--testing"><img src="https://img.shields.io/badge/Tests-188%20Passed-success?style=for-the-badge&logo=pytest&logoColor=white" alt="Tests 100% Green"></a>
   <img src="https://img.shields.io/badge/Python-3.10%20%7C%203.11%20%7C%203.12%20%7C%203.13-yellow?style=for-the-badge&logo=python&logoColor=white" alt="Python 3.10-3.13">
   <img src="https://img.shields.io/badge/Platform-Windows%20%7C%20Linux%20%7C%20macOS-lightgrey?style=for-the-badge" alt="Cross-Platform">
   <img src="https://img.shields.io/badge/GUI-Tkinter%20%2B%20CLI%20%2B%20PWA-orange?style=for-the-badge" alt="GUI Desktop + CLI + PWA">
@@ -61,7 +61,7 @@
 | **Callback Recognition** | Accurately identifies callback functions and GUI command bindings as actively used |
 | **Multi-File Scan** | Recursively analyzes entire Python repositories and multi-package trees |
 | **Desktop GUI** | Clean, accessible Tkinter desktop interface with live status bar, accessible tooltips, and shortcuts |
-| **Reversible Auto-Fix** | Rechecks the current source after confirmation and removes only approved imports that remain unused, with `.bak` backups |
+| **Reversible Auto-Fix** | Rechecks the current source after confirmation and removes only approved imports that remain unused, with `.bak` backups; preserves neighboring statements and validates the resulting syntax |
 | **Multi-Language UI** | Native support for 6 languages (`de`, `en`, `es`, `zh`, `ja`, `ru`) in GUI, CLI, and Web helper |
 | **Zero Dependencies** | Built 100% on the Python Standard Library; requires zero external packages at runtime |
 
