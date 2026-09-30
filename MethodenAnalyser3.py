@@ -1382,7 +1382,7 @@ def create_safe_filename(original_path: str, suffix: str) -> str:
     
     # Wenn Datei existiert, nummeriere
     counter = 1
-    while os.path.exists(export_path):
+    while os.path.lexists(export_path):
         export_path = f"{base_path}_{counter}{suffix}"
         counter += 1
     
@@ -1442,12 +1442,18 @@ def run_analysis(output_widget: scrolledtext.ScrolledText, status_widget: tk.Lab
 
     # Export mit Bestätigung
     try:
-        export_path = create_safe_filename(path, "_analysis.txt")
-        
-        with open(export_path, "w", encoding="utf-8") as f:
-            f.write(f"{_t('gui_analyzed_file')}: {path}\n")
-            f.write(f"{_t('gui_date')}: {datetime.datetime.now().astimezone().strftime('%Y-%m-%d %H:%M:%S')}\n\n")
-            f.write(generate_report(result))
+        text = (
+            f"{_t('gui_analyzed_file')}: {path}\n"
+            f"{_t('gui_date')}: {datetime.datetime.now().astimezone().strftime('%Y-%m-%d %H:%M:%S')}\n\n"
+            + generate_report(result)
+        )
+        while True:
+            export_path = create_safe_filename(path, "_analysis.txt")
+            try:
+                _write_report_bytes(text.encode("utf-8"), export_path, exclusive=True, label="Text")
+            except FileExistsError:
+                continue
+            break
         
         output_widget.insert(tk.END, f"\n{_t('gui_report_saved')}: {export_path}")
         if status_widget is not None:
@@ -2080,27 +2086,38 @@ def build_json_report(
 def write_json_report(report: dict[str, Any], output_path: str) -> str:
     """Veröffentlicht einen vollständigen JSON-Report per atomarem Dateitausch."""
     data = (json.dumps(report, indent=2, ensure_ascii=False) + "\n").encode("utf-8")
+    return _write_report_bytes(data, output_path)
+
+
+def _write_report_bytes(
+    data: bytes, output_path: str, *, exclusive: bool = False, label: str = "JSON",
+) -> str:
+    """Write a complete report; publish exclusively or replace atomically."""
     target = os.path.abspath(output_path)
-    destination = pathlib.Path(target).resolve()
+    raw_path = pathlib.Path(target)
+    destination = raw_path.parent.resolve() / raw_path.name if exclusive else raw_path.resolve()
     destination.parent.mkdir(parents=True, exist_ok=True)
-    mode = stat.S_IMODE(destination.stat().st_mode) if destination.exists() else None
+    mode = stat.S_IMODE(destination.stat().st_mode) if not exclusive and destination.exists() else None
     if mode is not None and not mode & (stat.S_IWUSR | stat.S_IWGRP | stat.S_IWOTH):
-        raise PermissionError("JSON report target is read-only")
+        raise PermissionError(f"{label} report target is read-only")
     staged = None
     try:
         with tempfile.NamedTemporaryFile(
             mode="wb", dir=destination.parent,
-            prefix=f".{destination.name}.json-", delete=False,
+            prefix=f".{destination.name}.report-", delete=False,
         ) as handle:
             staged = pathlib.Path(handle.name)
             if handle.write(data) != len(data):
-                raise OSError("Incomplete JSON report write")
+                raise OSError(f"Incomplete {label} report write")
             handle.flush()
             os.fsync(handle.fileno())
         if mode is not None:
             staged.chmod(mode)
-        os.replace(staged, destination)
-        staged = None
+        if exclusive:
+            os.link(staged, destination)
+        else:
+            os.replace(staged, destination)
+            staged = None
     finally:
         if staged is not None:
             staged.chmod(stat.S_IRUSR | stat.S_IWUSR)
@@ -2199,8 +2216,8 @@ def run_project_analysis(output_widget: scrolledtext.ScrolledText, status_widget
         output_widget.insert(tk.END, generate_project_report(result))
         
         export_path = os.path.join(folder_path, "project_analysis.txt")
-        with open(export_path, "w", encoding="utf-8") as f:
-            f.write(generate_project_report(result, project_name=_extract_project_display_name(folder_path)))
+        text = generate_project_report(result, project_name=_extract_project_display_name(folder_path))
+        _write_report_bytes(text.encode("utf-8"), export_path, label="Text")
         output_widget.insert(tk.END, f"\n{_t('gui_saved')}: {export_path}")
         if status_widget is not None:
             status_widget.config(text=f"{_t('status_analysis_done')} {os.path.basename(folder_path)}")
