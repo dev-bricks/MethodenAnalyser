@@ -4,14 +4,13 @@ from __future__ import annotations
 import json
 import sys
 from pathlib import Path
-from unittest.mock import patch, mock_open
+from unittest.mock import mock_open, patch
 
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from translator import TranslationSystem  # noqa: E402
-
+from translator import TranslationSystem
 
 # ---------------------------------------------------------------------------
 # Bug #9-1: german_hints enthält ASCII-Digraphe und false-positive "ok"

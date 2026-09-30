@@ -12,7 +12,6 @@ import unittest
 from contextlib import redirect_stdout
 from pathlib import Path
 
-
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 SCRIPT_PATH = PROJECT_ROOT / "MethodenAnalyser3.py"
 
@@ -25,6 +24,8 @@ class MethodenAnalyserCliTests(unittest.TestCase):
     ) -> subprocess.CompletedProcess[str]:
         env = os.environ.copy()
         env["PYTHONIOENCODING"] = "utf-8"
+        if "--lang" not in args:
+            args = ("--lang", "de", *args)
         return subprocess.run(
             [sys.executable, str(SCRIPT_PATH), *args],
             input=input_text,
@@ -219,16 +220,14 @@ class MethodenAnalyserCliTests(unittest.TestCase):
         for node in ast.walk(tree):
             if isinstance(node, ast.Assign):
                 for target in node.targets:
-                    if isinstance(target, ast.Name) and target.id == "TOOL_VERSION":
-                        if isinstance(node.value, ast.Constant):
-                            tool_version = node.value.value
+                    if isinstance(target, ast.Name) and target.id == "TOOL_VERSION" and isinstance(node.value, ast.Constant):
+                        tool_version = node.value.value
 
             # Variante A (f-string): f"Python Code Analyzer v{TOOL_VERSION}\n\n"
             if isinstance(node, ast.JoinedStr):
                 for part in node.values:
-                    if isinstance(part, ast.FormattedValue):
-                        if isinstance(part.value, ast.Name) and part.value.id == "TOOL_VERSION":
-                            version_from_tool_version = True
+                    if isinstance(part, ast.FormattedValue) and isinstance(part.value, ast.Name) and part.value.id == "TOOL_VERSION":
+                        version_from_tool_version = True
 
             # Variante B (i18n): _t("info_body").replace("{version}", TOOL_VERSION)
             if (
@@ -309,8 +308,9 @@ class RegressionTests(unittest.TestCase):
         Substring matchen — Pfade wie 'C:/Users/builder/...' dürfen NICHT
         ausgeschlossen werden."""
         sys.path.insert(0, str(PROJECT_ROOT))
-        from MethodenAnalyser3 import collect_python_files
         import tempfile
+
+        from MethodenAnalyser3 import collect_python_files
 
         with tempfile.TemporaryDirectory() as tmpdir:
             base = pathlib.Path(tmpdir)
@@ -333,12 +333,12 @@ class RegressionTests(unittest.TestCase):
     def test_project_cli_handles_permission_error_gracefully(self) -> None:
         """Regression (Bug B): _run_cli_project muss Exception aus analyze_project
         abfangen und Exit-Code 1 liefern statt unbehandelt zu crashen."""
+        import io
         import tempfile
         import unittest.mock
-        import io
 
         sys.path.insert(0, str(PROJECT_ROOT))
-        from MethodenAnalyser3 import _run_cli_project, EXIT_ANALYSIS_ERROR
+        from MethodenAnalyser3 import EXIT_ANALYSIS_ERROR, _run_cli_project
 
         with tempfile.TemporaryDirectory() as tmpdir:
             captured = io.StringIO()
@@ -472,6 +472,7 @@ class TestEncodingHandling(unittest.TestCase):
     def _call_auto_fix(self, filepath, result):
         """Setzt Globals, ruft auto_fix_unused_imports mit gemockter GUI auf."""
         import unittest.mock
+
         import MethodenAnalyser3 as m3
         orig_path = m3._last_analysis_path
         orig_result = m3._last_analysis_result

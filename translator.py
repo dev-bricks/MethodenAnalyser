@@ -21,7 +21,7 @@ import locale
 import os
 import re
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Set, Union
+from typing import Any
 
 
 class TranslationSystem:
@@ -30,7 +30,7 @@ class TranslationSystem:
     SUPPORTED_LANGUAGES: tuple[str, ...] = ("de", "en", "es", "zh", "ja", "ru")
     DEFAULT_LANGUAGE: str = "de"
 
-    def __init__(self, default_lang: str = "de", app_dir: Optional[Union[str, Path]] = None):
+    def __init__(self, default_lang: str = "de", app_dir: str | Path | None = None):
         """
         Initialisiert das Translation-System.
 
@@ -64,7 +64,7 @@ class TranslationSystem:
             "fehler", "optionen", "anzeigen",
         ]
 
-        self.translations: Dict[str, Any] = {}
+        self.translations: dict[str, Any] = {}
         self._load_translations()
 
     def _load_translations(self) -> None:
@@ -74,7 +74,7 @@ class TranslationSystem:
                 with open(self.translations_file, "r", encoding="utf-8") as f:
                     data = json.load(f)
                     self.translations = data if isinstance(data, dict) else {}
-            except Exception:
+            except (OSError, UnicodeError, json.JSONDecodeError):
                 self.translations = {}
         else:
             self.translations = {}
@@ -122,7 +122,7 @@ class TranslationSystem:
         """Liefert die aktive Sprache."""
         return self.current_lang
 
-    def get_supported_languages(self) -> List[str]:
+    def get_supported_languages(self) -> list[str]:
         """Liefert die Liste aller unterstützten Sprachcodes."""
         return list(self.SUPPORTED_LANGUAGES)
 
@@ -130,7 +130,7 @@ class TranslationSystem:
         """Prüft, ob ein Sprachcode unterstützt wird."""
         return lang in self.SUPPORTED_LANGUAGES
 
-    def add_translation(self, key: str, translations: Dict[str, str]) -> None:
+    def add_translation(self, key: str, translations: dict[str, str]) -> None:
         """Fügt einen Eintrag mit Übersetzungen hinzu oder aktualisiert ihn."""
         if key not in self.translations:
             self.translations[key] = {}
@@ -138,7 +138,7 @@ class TranslationSystem:
             self.translations[key].update(translations)
             self._save_translations()
 
-    def scan_and_update(self, project_dir: Optional[Union[str, Path]] = None) -> Dict[str, Any]:
+    def scan_and_update(self, project_dir: str | Path | None = None) -> dict[str, Any]:
         """Scannt Projekt-Dateien nach deutschen Strings und aktualisiert translations.json."""
         if project_dir is None:
             p_dir = self.app_dir
@@ -160,8 +160,8 @@ class TranslationSystem:
 
         return {"added": added, "missing": missing, "total": len(self.translations)}
 
-    def _find_german_strings(self, directory: Path) -> Set[str]:
-        german_strings: Set[str] = set()
+    def _find_german_strings(self, directory: Path) -> set[str]:
+        german_strings: set[str] = set()
         skip_dirs = {"build", "dist", "venv", ".venv", "__pycache__", "releases", ".git"}
 
         for py_file in directory.rglob("*.py"):
@@ -170,7 +170,7 @@ class TranslationSystem:
             try:
                 with open(py_file, "r", encoding="utf-8") as f:
                     content = f.read()
-            except Exception:
+            except (OSError, UnicodeError):
                 continue
 
             for pattern in self.string_patterns:
@@ -186,7 +186,7 @@ class TranslationSystem:
         text_lower = text.lower()
         return any(hint in text_lower for hint in self.german_hints)
 
-    def get_missing_translations(self, target_lang: str = "en") -> List[str]:
+    def get_missing_translations(self, target_lang: str = "en") -> list[str]:
         """Gibt Keys zurück, denen eine Übersetzung in target_lang fehlt."""
         return [
             k for k, v in self.translations.items()
@@ -217,7 +217,7 @@ LOCALE_PREFIX_MAP: dict[str, str] = {
 }
 
 
-def normalize_language_code(code: Optional[str]) -> Optional[str]:
+def normalize_language_code(code: str | None) -> str | None:
     """Normalisiert einen Sprachcode oder Bezeichner auf die unterstützten Sprachen."""
     if not code or not isinstance(code, str):
         return None
@@ -246,7 +246,7 @@ def detect_system_language(default: str = "de") -> str:
         detected = normalize_language_code(loc)
         if detected:
             return detected
-    except Exception:
+    except (ValueError, TypeError):
         pass
 
     try:
@@ -254,13 +254,13 @@ def detect_system_language(default: str = "de") -> str:
         detected = normalize_language_code(loc)
         if detected:
             return detected
-    except Exception:
+    except (ValueError, TypeError):
         pass
 
     return default if default in TranslationSystem.SUPPORTED_LANGUAGES else TranslationSystem.DEFAULT_LANGUAGE
 
 
-def detect_language_from_header(accept_language: Optional[str]) -> Optional[str]:
+def detect_language_from_header(accept_language: str | None) -> str | None:
     """Parst einen HTTP Accept-Language Header und liefert die bevorzugte unterstützte Sprache."""
     if not accept_language or not isinstance(accept_language, str):
         return None

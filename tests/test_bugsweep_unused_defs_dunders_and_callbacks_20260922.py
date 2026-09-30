@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Regression tests for Bugsweep 2026-09-22: False positive detection in unused_defs.
 
 Bugsweep focus: Definitions-Nutzungsanalyse (unused_defs: Dunder-Methoden,

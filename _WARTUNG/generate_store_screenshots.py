@@ -8,13 +8,12 @@ import time
 import tkinter as tk
 from pathlib import Path
 from tkinter import scrolledtext
-from typing import Dict, List
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from MethodenAnalyser3 import (  # noqa: E402
+from MethodenAnalyser3 import (
     OUTPUT_FONT,
     OUTPUT_HEIGHT,
     OUTPUT_WIDTH,
@@ -117,7 +116,7 @@ def _build_project_report(lang: str = "de") -> str:
     return header + generate_project_report(result)
 
 
-def get_button_labels(lang: str = "de") -> List[tuple[str, str]]:
+def get_button_labels(lang: str = "de") -> list[tuple[str, str]]:
     if lang == "en":
         return [
             ("📂 Analyze File", "#2e7d32"),
@@ -133,7 +132,7 @@ def get_button_labels(lang: str = "de") -> List[tuple[str, str]]:
     ]
 
 
-def build_scenarios(lang: str = "de") -> List[Dict[str, str]]:
+def build_scenarios(lang: str = "de") -> list[dict[str, str]]:
     if lang == "en":
         return [
             {
@@ -181,7 +180,7 @@ def _create_window(
     report: str,
     title: str,
     subtitle: str,
-    buttons: List[tuple[str, str]] | None = None,
+    buttons: list[tuple[str, str]] | None = None,
 ) -> tk.Tk | None:
     try:
         root = tk.Tk()
@@ -259,15 +258,15 @@ def _create_window(
         output.insert("1.0", report)
         output.configure(state=tk.DISABLED)
         return root
-    except Exception:
+    except Exception:  # noqa: BLE001 -- optional native GUI rendering falls back on unsupported hosts
         return None
 
 
 def _capture(
     root: tk.Tk | None,
     destination: Path,
-    scenario: Dict[str, str] | None = None,
-    buttons_list: List[tuple[str, str]] | None = None,
+    scenario: dict[str, str] | None = None,
+    buttons_list: list[tuple[str, str]] | None = None,
 ) -> None:
     from PIL import Image, ImageDraw, ImageFont, ImageGrab
 
@@ -288,12 +287,12 @@ def _capture(
                 image = ImageGrab.grab(bbox=(left, top, right, bottom))
                 image.save(destination, "PNG")
                 captured = True
-        except Exception:
+        except Exception:  # noqa: BLE001 -- optional screen capture falls back when unavailable
             captured = False
         finally:
             try:
                 root.destroy()
-            except Exception:
+            except Exception:  # noqa: BLE001, S110 -- cleanup tolerates an already destroyed Tk root
                 pass
 
     if not captured:
@@ -310,7 +309,7 @@ def _capture(
             font_sub2 = ImageFont.truetype("segoeui.ttf", 11)
             font_btn = ImageFont.truetype("segoeuib.ttf", 10)
             font_body = ImageFont.truetype("consola.ttf", 10)
-        except Exception:
+        except OSError:
             font_title = font_sub1 = font_sub2 = font_btn = font_body = (
                 ImageFont.load_default()
             )
@@ -349,7 +348,7 @@ def _capture(
         img.save(destination, "PNG")
 
 
-def generate_store_screenshots(lang: str = "de") -> Dict[str, object]:
+def generate_store_screenshots(lang: str = "de") -> dict[str, object]:
     target_dir = (
         SCREENSHOT_DIR / lang if lang in ("de", "en") else SCREENSHOT_DIR
     )
@@ -426,7 +425,7 @@ def generate_store_screenshots(lang: str = "de") -> Dict[str, object]:
     return manifest
 
 
-def generate_all_store_screenshots() -> Dict[str, Dict[str, object]]:
+def generate_all_store_screenshots() -> dict[str, dict[str, object]]:
     return {
         "de": generate_store_screenshots(lang="de"),
         "en": generate_store_screenshots(lang="en"),

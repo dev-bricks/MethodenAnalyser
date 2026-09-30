@@ -35,7 +35,7 @@ The tool strictly adheres to 10 architectural and security invariants:
 - INV-ENCODING-04: Lossless Multi-Encoding Resilience (UTF-8 default with Latin-1 fallback)
 - INV-ISOLATION-05: Loopback Web Companion Isolation (binds to 127.0.0.1 by default)
 - INV-TRAVERSAL-06: Path Traversal & ZIP Safety Bounds (blocks `..` and bounds member sizes)
-- INV-AUTOFIX-07: Reversible Auto-Fix with Atomic `.bak` Backup
+- INV-AUTOFIX-07: Reversible Auto-Fix with `.bak` Backup; current source is rechecked after confirmation, and only approved imports that remain unused are removed. Import spans preserve neighboring statements; empty suites retain pass, and the result is syntax-checked before writing.
 - INV-PLATFORM-08: Cross-Platform Parity across Windows, Linux, and macOS
 - INV-SYNC-09: Cloud-Sync & Multi-Agent Lock Resilience (fail-closed against `LOCK.*`)
 - INV-SLA-10: 48h Initial Response & 5-Business-Day Triage SLA

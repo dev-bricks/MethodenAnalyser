@@ -8,8 +8,8 @@ Verwendung:
 """
 
 import json
-import re
 import os
+import re
 import sys
 
 TRANSLATION_FILE = "locales/translations.json"
@@ -49,7 +49,7 @@ def find_german_strings(source_dir):
                 try:
                     with open(path, "r", encoding="utf-8") as f:
                         content = f.read()
-                except Exception:
+                except (OSError, UnicodeError):
                     continue
                 for pattern in STRING_PATTERNS:
                     for match in pattern.findall(content):

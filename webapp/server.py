@@ -15,7 +15,6 @@ from pathlib import Path, PurePosixPath
 from typing import Any
 from urllib.parse import unquote, urlparse
 
-
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 STATIC_ROOT = Path(__file__).resolve().parent / "static"
 ASSETS_ROOT = PROJECT_ROOT / "store_assets"
@@ -27,7 +26,7 @@ MAX_ZIP_TOTAL_BYTES = 2 * 1024 * 1024
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from MethodenAnalyser3 import (  # noqa: E402
+from MethodenAnalyser3 import (
     _file_has_findings,
     _project_has_findings,
     analyze_project,
@@ -37,12 +36,11 @@ from MethodenAnalyser3 import (  # noqa: E402
     generate_report,
     set_runtime_language,
 )
-from translator import (  # noqa: E402
+from translator import (
     TranslationSystem,
     detect_language_from_header,
     detect_system_language,
 )
-
 
 LOCAL_ONLY_HOSTS = {"127.0.0.1", "::1", "localhost"}
 WILDCARD_HOSTS = {"0.0.0.0", "::"}
@@ -364,7 +362,7 @@ class MethodenAnalyserPwaHandler(BaseHTTPRequestHandler):
             raw_body = self.rfile.read(length).decode("utf-8")
             payload = json.loads(raw_body)
             if not isinstance(payload, dict):
-                raise ValueError("JSON-Body muss ein Objekt sein.")
+                raise TypeError("JSON-Body muss ein Objekt sein.")
             response = analyze_payload(payload)
         except UnicodeDecodeError as exc:
             self._send_json({"ok": False, "error": f"Request-Body ist kein gültiges UTF-8: {exc}"}, status=400)
@@ -378,10 +376,10 @@ class MethodenAnalyserPwaHandler(BaseHTTPRequestHandler):
         except zipfile.BadZipFile:
             self._send_json({"ok": False, "error": "ZIP-Archiv ist beschädigt oder ungültig."}, status=400)
             return
-        except ValueError as exc:
+        except (ValueError, TypeError) as exc:
             self._send_json({"ok": False, "error": str(exc)}, status=400)
             return
-        except Exception as exc:
+        except Exception as exc:  # noqa: BLE001 -- HTTP boundary converts unexpected analysis failures to a 500 response
             self._send_json({"ok": False, "error": f"Analyse fehlgeschlagen: {exc}"}, status=500)
             return
 

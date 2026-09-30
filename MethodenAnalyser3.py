@@ -1,28 +1,29 @@
 import argparse
-import json
-import tkinter as tk
-from tkinter import filedialog, scrolledtext, messagebox
 import ast
-import re
-import os
-import sys
-import pathlib
-import pkgutil
 import builtins
 import collections
 import datetime
 import difflib
 import fnmatch
+import json
+import os
+import pathlib
+import pkgutil
+import re
 import sqlite3
+import sys
 import threading
+import tkinter as tk
 import warnings
-from typing import Set, Dict, List, Tuple, Any, Optional, Callable
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from functools import lru_cache
+from tkinter import filedialog, messagebox, scrolledtext
+from typing import Any
 
 try:
     from translator import TranslationSystem, detect_system_language
-except Exception:  # pragma: no cover - Übersetzung ist optional
+except ImportError:  # pragma: no cover - Übersetzung ist optional
     TranslationSystem = None
 
     def detect_system_language(default: str = "de") -> str:
@@ -86,7 +87,7 @@ def _config_path() -> pathlib.Path:
     return _config_dir() / "config.json"
 
 
-def load_app_config() -> Dict[str, Any]:
+def load_app_config() -> dict[str, Any]:
     """Liest die persistente App-Konfiguration (leer bei Fehlen/Korruption)."""
     try:
         with open(_config_path(), "r", encoding="utf-8") as handle:
@@ -96,7 +97,7 @@ def load_app_config() -> Dict[str, Any]:
         return {}
 
 
-def save_app_config(config: Dict[str, Any]) -> bool:
+def save_app_config(config: dict[str, Any]) -> bool:
     """Speichert die App-Konfiguration; True bei Erfolg."""
     try:
         _config_dir().mkdir(parents=True, exist_ok=True)
@@ -319,26 +320,26 @@ CASE_TRANSITION_PATTERN = re.compile(r'[a-z][A-Z]|[A-Z][a-z]')
 class AnalysisResult:
     """Struktur für Analyse-Ergebnisse mit konsistenten Typen."""
     # Listen statt Sets für UI-Darstellung
-    calls: List[str]
-    defs: List[str]
-    imported_definitions: List[str]  # Explizit importierte Namen
-    module_provided_attrs: List[str]  # NEU: Durch Module verfügbar gemachte Attribute
-    missing_defs: List[str]
-    unused_defs: List[str]
-    imports: List[str]
-    used_imports: List[str]
-    unused_imports: List[str]
-    duplicate_imports: List[str]
-    missing_imports: List[str]
-    dynamic_usage: List[str] = field(default_factory=list)
-    dynamic_methods: List[str] = field(default_factory=list)
-    check_builtins_and_stdlib: List[Tuple[str, str]] = field(default_factory=list)
-    framework_hooks: List[Tuple[str, str]] = field(default_factory=list)
-    import_scopes: Dict[str, List[str]] = field(default_factory=dict)
-    name_matches: List[Tuple[str, str]] = field(default_factory=list)
-    typehints: List[str] = field(default_factory=list)
-    module_attribute_usage: Dict[str, List[str]] = field(default_factory=dict)  # NEU: Modul → Attribute Mapping
-    todo_comments: List[Tuple[int, str, str]] = field(default_factory=list)  # (Zeile, Typ, Text)
+    calls: list[str]
+    defs: list[str]
+    imported_definitions: list[str]  # Explizit importierte Namen
+    module_provided_attrs: list[str]  # NEU: Durch Module verfügbar gemachte Attribute
+    missing_defs: list[str]
+    unused_defs: list[str]
+    imports: list[str]
+    used_imports: list[str]
+    unused_imports: list[str]
+    duplicate_imports: list[str]
+    missing_imports: list[str]
+    dynamic_usage: list[str] = field(default_factory=list)
+    dynamic_methods: list[str] = field(default_factory=list)
+    check_builtins_and_stdlib: list[tuple[str, str]] = field(default_factory=list)
+    framework_hooks: list[tuple[str, str]] = field(default_factory=list)
+    import_scopes: dict[str, list[str]] = field(default_factory=dict)
+    name_matches: list[tuple[str, str]] = field(default_factory=list)
+    typehints: list[str] = field(default_factory=list)
+    module_attribute_usage: dict[str, list[str]] = field(default_factory=dict)  # NEU: Modul → Attribute Mapping
+    todo_comments: list[tuple[int, str, str]] = field(default_factory=list)  # (Zeile, Typ, Text)
     total_lines: int = 0
 
 
@@ -350,10 +351,10 @@ class ImportScopeAnalyzer(ast.NodeVisitor):
     """Analysiert Imports nach Scope (Top-Level, Klasse, Methode)."""
 
     def __init__(self):
-        self.top_level: Set[str] = set()
-        self.class_level: Dict[str, Set[str]] = collections.defaultdict(set)
-        self.method_level: Dict[str, Set[str]] = collections.defaultdict(set)
-        self.scope_stack: List[Tuple[str, str]] = []
+        self.top_level: set[str] = set()
+        self.class_level: dict[str, set[str]] = collections.defaultdict(set)
+        self.method_level: dict[str, set[str]] = collections.defaultdict(set)
+        self.scope_stack: list[tuple[str, str]] = []
 
     def visit_Import(self, node: ast.Import) -> None:
         """Verarbeitet Import-Statements."""
@@ -389,7 +390,7 @@ class ImportScopeAnalyzer(ast.NodeVisitor):
         self.generic_visit(node)
         self.scope_stack.pop()
 
-    def _assign_imports(self, names: Set[str]) -> None:
+    def _assign_imports(self, names: set[str]) -> None:
         """Ordnet Imports dem aktuellen Scope zu."""
         if not self.scope_stack:
             self.top_level |= names
@@ -405,17 +406,17 @@ class CodeAnalyzer(ast.NodeVisitor):
     """Analysiert Aufrufe, Definitionen und Imports mit Attribut-Zugriff-Erkennung."""
 
     def __init__(self):
-        self.calls: Set[str] = set()
-        self.defs: Set[str] = set()
-        self.imports: List[str] = []
-        self.import_names: Set[str] = set()
-        self.imported_definitions: Set[str] = set()
-        self.used_names: Set[str] = set()
-        self.local_names: Set[str] = set()
+        self.calls: set[str] = set()
+        self.defs: set[str] = set()
+        self.imports: list[str] = []
+        self.import_names: set[str] = set()
+        self.imported_definitions: set[str] = set()
+        self.used_names: set[str] = set()
+        self.local_names: set[str] = set()
         # NEU: Track Modul.Attribut Zugriffe
-        self.module_attribute_calls: Dict[str, Set[str]] = collections.defaultdict(set)
-        self.imported_modules: Set[str] = set()  # Nur Modulnamen (für import X)
-        self.class_methods: Dict[str, Set[str]] = collections.defaultdict(set)
+        self.module_attribute_calls: dict[str, set[str]] = collections.defaultdict(set)
+        self.imported_modules: set[str] = set()  # Nur Modulnamen (für import X)
+        self.class_methods: dict[str, set[str]] = collections.defaultdict(set)
 
     def visit_Call(self, node: ast.Call) -> None:
         """Verarbeitet Funktionsaufrufe und erkennt Modul-Attribut-Zugriffe."""
@@ -601,12 +602,12 @@ class CodeAnalyzer(ast.NodeVisitor):
 # HILFSFUNKTIONEN
 # ============================================================================
 
-def _extract_attribute_chain(node: ast.AST) -> Tuple[Optional[str], List[str]]:
+def _extract_attribute_chain(node: ast.AST) -> tuple[str | None, list[str]]:
     """
     Extrahiert den Wurzel-Namen und die geordnete Kette von Attributen.
     Z.B. os.path.exists -> ('os', ['path', 'exists'])
     """
-    chain: List[str] = []
+    chain: list[str] = []
     curr = node
     while isinstance(curr, ast.Attribute):
         chain.append(curr.attr)
@@ -630,7 +631,7 @@ def has_case_transition(name: str) -> bool:
     return bool(CASE_TRANSITION_PATTERN.search(name))
 
 
-def scan_dynamic_usage(code: str) -> Tuple[List[str], Set[str]]:
+def scan_dynamic_usage(code: str) -> tuple[list[str], set[str]]:
     """
     Erkennt dynamische Methodenaufrufe (getattr, bind, command, etc.).
     
@@ -658,7 +659,7 @@ def scan_dynamic_usage(code: str) -> Tuple[List[str], Set[str]]:
 
 
 @lru_cache(maxsize=1)
-def build_stdlib_whitelist() -> Set[str]:
+def build_stdlib_whitelist() -> set[str]:
     """
     Erstellt Whitelist für Standard-Library-Methoden.
     
@@ -733,11 +734,11 @@ def is_valid_missing_def(name: str) -> bool:
 
 
 def filter_missing_defs(
-    missing_defs: Set[str],
-    false_positives: Set[str],
-    typehints: Set[str],
-    whitelist: Set[str],
-) -> List[str]:
+    missing_defs: set[str],
+    false_positives: set[str],
+    typehints: set[str],
+    whitelist: set[str],
+) -> list[str]:
     """
     Filtert falsche Positive aus fehlenden Definitionen.
     
@@ -764,14 +765,14 @@ def filter_missing_defs(
 
 
 def filter_unused_defs(
-    defs: Set[str],
-    calls: Set[str],
-    used_names: Set[str],
-    typehints: Set[str],
-    string_refs: Set[str],
-    framework_and_widgets: Set[str],
-    exported_class_methods: Optional[Set[str]] = None,
-) -> List[str]:
+    defs: set[str],
+    calls: set[str],
+    used_names: set[str],
+    typehints: set[str],
+    string_refs: set[str],
+    framework_and_widgets: set[str],
+    exported_class_methods: set[str] | None = None,
+) -> list[str]:
     """
     Filtert echte ungenutzte Definitionen heraus und eliminiert False Positives.
 
@@ -808,7 +809,7 @@ def filter_unused_defs(
             continue
 
         # Event-Handler und AST-Visitor-Hooks
-        if name.startswith("on_") or name.startswith("visit_"):
+        if name.startswith(("on_", "visit_")):
             continue
 
         unused.append(name)
@@ -821,7 +822,7 @@ _TODO_PATTERN = re.compile(
 )
 
 
-def scan_todo_comments(code: str) -> List[Tuple[int, str, str]]:
+def scan_todo_comments(code: str) -> list[tuple[int, str, str]]:
     """
     Scannt Quellcode nach TODO/FIXME/HACK/NOTE/XXX Kommentaren.
 
@@ -845,7 +846,7 @@ def scan_todo_comments(code: str) -> List[Tuple[int, str, str]]:
 
 
 @lru_cache(maxsize=128)
-def _get_module_all_attributes(module_name: str) -> Optional[Set[str]]:
+def _get_module_all_attributes(module_name: str) -> set[str] | None:
     """Liest Attribute bereits geladener Module, ohne Analyse-Imports auszuführen."""
     mod = sys.modules.get(module_name)
     if mod is None:
@@ -853,7 +854,7 @@ def _get_module_all_attributes(module_name: str) -> Optional[Set[str]]:
     return set(dir(mod))
 
 
-def get_available_module_attributes(analyzer: 'CodeAnalyzer') -> Set[str]:
+def get_available_module_attributes(analyzer: 'CodeAnalyzer') -> set[str]:
     """
     Ermittelt alle Attribute, die durch importierte Module verfügbar sind.
     
@@ -931,8 +932,8 @@ def analyze_source(code: str, source_name: str = "<snippet>") -> AnalysisResult:
         tree = ast.parse(code, filename=source_name)
     except SyntaxError as e:
         raise RuntimeError(f"Syntax-Fehler in Zeile {e.lineno}: {e.msg}")
-    except Exception as e:
-        raise RuntimeError(f"Fehler beim Parsen: {e}")
+    except (ValueError, TypeError, RecursionError, MemoryError) as e:
+        raise RuntimeError(f"Fehler beim Parsen: {e}") from e
 
     # AST-Analysen
     analyzer = CodeAnalyzer()
@@ -971,14 +972,14 @@ def analyze_source(code: str, source_name: str = "<snippet>") -> AnalysisResult:
     # NICHT als 'used' -> sie wuerden faelschlich als ungenutzt gemeldet und vom Auto-Fix
     # aus der echten Datei geloescht (NameError / fehlendes __all__-Public-API). Daher
     # alle in String-Literalen vorkommenden Bezeichner als genutzt behandeln (konservativ).
-    _string_refs: Set[str] = set()
+    _string_refs: set[str] = set()
     for _n in ast.walk(tree):
         if isinstance(_n, ast.Constant) and isinstance(_n.value, str):
             _string_refs.update(re.findall(r"[A-Za-z_][A-Za-z0-9_]*", _n.value))
     unused_imports = analyzer.import_names - analyzer.used_names - _string_refs
 
     # Öffentliche Methoden exportierter Klassen (in __all__) erfassen
-    exported_class_methods: Set[str] = set()
+    exported_class_methods: set[str] = set()
     for cls_name in (analyzer.defs & _string_refs):
         for method_name in analyzer.class_methods.get(cls_name, set()):
             if not method_name.startswith("_"):
@@ -1015,7 +1016,7 @@ def analyze_source(code: str, source_name: str = "<snippet>") -> AnalysisResult:
     framework_hooks = [
         (name, "magic" if name.startswith("__") else "handler")
         for name in sorted(defs)
-        if name.startswith("__") or name.startswith("on_")
+        if name.startswith(("__", "on_"))
     ]
 
     # Import-Scopes analysieren
@@ -1102,15 +1103,15 @@ def analyze_file(path: str) -> AnalysisResult:
                 UnicodeWarning,
                 stacklevel=2,
             )
-        except Exception as e:
-            raise RuntimeError(f"Fehler beim Lesen der Datei: {e}")
-    except Exception as e:
-        raise RuntimeError(f"Fehler beim Lesen der Datei: {e}")
+        except (OSError, UnicodeError) as e:
+            raise RuntimeError(f"Fehler beim Lesen der Datei: {e}") from e
+    except (OSError, UnicodeError) as e:
+        raise RuntimeError(f"Fehler beim Lesen der Datei: {e}") from e
 
     return analyze_source(code, source_name=path)
 
 
-def _extract_typehints(tree: ast.AST) -> Set[str]:
+def _extract_typehints(tree: ast.AST) -> set[str]:
     """
     Extrahiert verwendete Type-Hints aus bereits geparstem AST.
     
@@ -1120,16 +1121,11 @@ def _extract_typehints(tree: ast.AST) -> Set[str]:
     Returns:
         Set der verwendeten Type-Hint-Namen
     """
-    hints: Set[str] = set()
+    hints: set[str] = set()
     try:
         for node in ast.walk(tree):
             # Variable Annotationen
-            if isinstance(node, ast.AnnAssign) and node.annotation:
-                for sub in ast.walk(node.annotation):
-                    if isinstance(sub, ast.Name):
-                        hints.add(sub.id)
-            # Funktionsparameter Annotationen
-            elif isinstance(node, ast.arg) and node.annotation:
+            if isinstance(node, ast.AnnAssign) and node.annotation or isinstance(node, ast.arg) and node.annotation:
                 for sub in ast.walk(node.annotation):
                     if isinstance(sub, ast.Name):
                         hints.add(sub.id)
@@ -1148,14 +1144,14 @@ def _extract_typehints(tree: ast.AST) -> Set[str]:
                 for sub in ast.walk(node.bound):
                     if isinstance(sub, ast.Name):
                         hints.add(sub.id)
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001 -- optional AST enrichment reports errors without aborting analysis
         # Logge Fehler, aber breche nicht ab
         print(f"Warnung beim Extrahieren von Type-Hints: {e}", file=sys.stderr)
     
     return hints
 
 
-def _find_name_matches(calls: Set[str], defs: Set[str]) -> List[Tuple[str, str]]:
+def _find_name_matches(calls: set[str], defs: set[str]) -> list[tuple[str, str]]:
     """
     Findet ähnliche Namen zwischen Aufrufen und Definitionen.
     
@@ -1185,8 +1181,8 @@ def _find_name_matches(calls: Set[str], defs: Set[str]) -> List[Tuple[str, str]]
 def _analyze_import_scopes(
     scope_analyzer: ImportScopeAnalyzer, 
     analyzer: CodeAnalyzer,
-    string_refs: Optional[Set[str]] = None,
-) -> Dict[str, List[str]]:
+    string_refs: set[str] | None = None,
+) -> dict[str, list[str]]:
     """
     Analysiert Import-Scopes und gibt Empfehlungen.
     
@@ -1390,7 +1386,7 @@ def create_safe_filename(original_path: str, suffix: str) -> str:
     return export_path
 
 
-def run_analysis(output_widget: scrolledtext.ScrolledText, status_widget: Optional[tk.Label] = None) -> None:
+def run_analysis(output_widget: scrolledtext.ScrolledText, status_widget: tk.Label | None = None) -> None:
     """
     Lädt Datei und führt Analyse durch.
     
@@ -1428,7 +1424,7 @@ def run_analysis(output_widget: scrolledtext.ScrolledText, status_widget: Option
             status_widget.config(text=f"[FEHLER] {e}")
         messagebox.showerror(_t("dialog_analysis_error_title"), str(e))
         return
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001 -- GUI boundary reports unexpected analysis failures to the user
         output_widget.delete("1.0", tk.END)
         output_widget.insert(tk.END, f"[FEHLER] {_t('dialog_unexpected_error')}: {e}")
         if status_widget is not None:
@@ -1447,7 +1443,7 @@ def run_analysis(output_widget: scrolledtext.ScrolledText, status_widget: Option
         
         with open(export_path, "w", encoding="utf-8") as f:
             f.write(f"{_t('gui_analyzed_file')}: {path}\n")
-            f.write(f"{_t('gui_date')}: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n")
+            f.write(f"{_t('gui_date')}: {datetime.datetime.now().astimezone().strftime('%Y-%m-%d %H:%M:%S')}\n\n")
             f.write(generate_report(result))
         
         output_widget.insert(tk.END, f"\n{_t('gui_report_saved')}: {export_path}")
@@ -1459,7 +1455,7 @@ def run_analysis(output_widget: scrolledtext.ScrolledText, status_widget: Option
         if status_widget is not None:
             status_widget.config(text=_t("gui_no_permission_export"))
         messagebox.showwarning(_t("dialog_export_error_title"), _t("dialog_export_no_permission"))
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001 -- GUI boundary reports export failures to the user
         output_widget.insert(tk.END, f"\n{_t('gui_export_error')}: {e}")
         if status_widget is not None:
             status_widget.config(text=f"{_t('gui_export_error')}: {e}")
@@ -1468,9 +1464,9 @@ def run_analysis(output_widget: scrolledtext.ScrolledText, status_widget: Option
 
 
 
-def _collect_unused_import_lines(tree: ast.AST, unused_set: Set[str]) -> Set[int]:
-    """Gibt die Zeilennummern zurück, die zu vollständig ungenutzten Imports gehören."""
-    lines_to_remove: Set[int] = set()
+def _unused_import_nodes(tree: ast.AST, unused_set: set[str]) -> list[ast.stmt]:
+    """Find fully unused imports, excluding wildcard and future imports."""
+    nodes: list[ast.stmt] = []
     for node in ast.walk(tree):
         if isinstance(node, (ast.Import, ast.ImportFrom)):
             # __future__-Imports niemals entfernen — sie aendern Python-Semantik
@@ -1480,11 +1476,50 @@ def _collect_unused_import_lines(tree: ast.AST, unused_set: Set[str]) -> Set[int
             names = [alias.asname or alias.name.split(".")[0] for alias in node.names
                      if alias.name != "*"]
             if names and all(name in unused_set for name in names):
-                lines_to_remove.update(range(node.lineno, node.end_lineno + 1))
-    return lines_to_remove
+                nodes.append(node)
+    return nodes
 
 
-def auto_fix_unused_imports(output_widget: scrolledtext.ScrolledText, status_widget: Optional[tk.Label] = None) -> None:
+def _collect_unused_import_lines(tree: ast.AST, unused_set: set[str]) -> set[int]:
+    """Gibt die Zeilennummern vollständig ungenutzter Imports zurück."""
+    return {line for node in _unused_import_nodes(tree, unused_set)
+            for line in range(node.lineno, node.end_lineno + 1)}
+
+
+def _remove_unused_imports(source: str, tree: ast.AST, unused_set: set[str]) -> tuple[str, set[int]]:
+    """Remove AST import spans without deleting neighboring executable code."""
+    raw = source.encode("utf-8")
+    offsets = [0]
+    # AST columns count UTF-8 bytes; only LF advances AST line numbers.
+    # str.splitlines() would incorrectly count form-feed as a new line.
+    for line in raw.split(b"\n")[:-1]:
+        offsets.append(offsets[-1] + len(line) + 1)
+    nodes = sorted(_unused_import_nodes(tree, unused_set),
+                   key=lambda node: (node.lineno, node.col_offset), reverse=True)
+    changed_lines: set[int] = set()
+    for node in nodes:
+        start = offsets[node.lineno - 1] + node.col_offset
+        end = offsets[node.end_lineno - 1] + node.end_col_offset
+        line_start = offsets[node.lineno - 1]
+        line_end = offsets[node.end_lineno] if node.end_lineno < len(offsets) else len(raw)
+        standalone = (not raw[line_start:start].strip(b" \t\f")
+                      and not raw[end:line_end].strip())
+        candidate = raw[:line_start] + raw[line_end:] if standalone else None
+        if candidate is not None:
+            try:
+                ast.parse(candidate.decode("utf-8"))
+            except SyntaxError:
+                candidate = None
+        # A pass keeps inline suites, empty function bodies and semicolon
+        # separators valid while leaving their neighboring statements intact.
+        raw = candidate if candidate is not None else raw[:start] + b"pass" + raw[end:]
+        changed_lines.update(range(node.lineno, node.end_lineno + 1))
+    updated = raw.decode("utf-8")
+    ast.parse(updated)  # Validate the complete result before touching any file.
+    return updated, changed_lines
+
+
+def auto_fix_unused_imports(output_widget: scrolledtext.ScrolledText, status_widget: tk.Label | None = None) -> None:
     """
     Entfernt ungenutzte Imports aus der zuletzt analysierten Datei.
     
@@ -1492,8 +1527,6 @@ def auto_fix_unused_imports(output_widget: scrolledtext.ScrolledText, status_wid
         output_widget: ScrolledText-Widget für Ausgabe
         status_widget: Optionales Statusleisten-Widget für Statusanzeigen
     """
-    global _last_analysis_path, _last_analysis_result
-    
     if not _last_analysis_path or not _last_analysis_result:
         if status_widget is not None:
             status_widget.config(text=_t("dialog_no_file_msg"))
@@ -1531,8 +1564,11 @@ def auto_fix_unused_imports(output_widget: scrolledtext.ScrolledText, status_wid
         tree = ast.parse("".join(lines))
 
         # Import-Zeilen markieren die entfernt werden sollen
-        unused_set = set(_last_analysis_result.unused_imports)
-        lines_to_remove = _collect_unused_import_lines(tree, unused_set)
+        # Findings may be stale after an editor change or the confirmation
+        # dialog. Remove only names approved earlier AND still unused now.
+        current_result = analyze_source("".join(lines), _last_analysis_path)
+        unused_set = set(_last_analysis_result.unused_imports) & set(current_result.unused_imports)
+        updated_source, lines_to_remove = _remove_unused_imports("".join(lines), tree, unused_set)
 
         if not lines_to_remove:
             if status_widget is not None:
@@ -1550,10 +1586,8 @@ def auto_fix_unused_imports(output_widget: scrolledtext.ScrolledText, status_wid
             f.writelines(lines)
 
         # Neue Datei ohne ungenutzte Imports
-        new_lines = [line for i, line in enumerate(lines, 1) if i not in lines_to_remove]
-
         with open(_last_analysis_path, "w", encoding=detected_encoding) as f:
-            f.writelines(new_lines)
+            f.write(updated_source)
         
         # Ausgabe
         output_widget.insert(tk.END, f"\n\n{_t('gui_autofix_success_header')}\n")
@@ -1565,7 +1599,7 @@ def auto_fix_unused_imports(output_widget: scrolledtext.ScrolledText, status_wid
         
         messagebox.showinfo(_t("dialog_success_title"), f"{_t('dialog_autofix_success')}\nBackup: {backup_path}")
         
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001 -- GUI boundary reports cleanup failures to the user
         if status_widget is not None:
             status_widget.config(text=f"[FEHLER] {e}")
         messagebox.showerror(_t("dialog_error_title"), f"{_t('dialog_autofix_failed')}: {e}")
@@ -1577,7 +1611,7 @@ def auto_fix_unused_imports(output_widget: scrolledtext.ScrolledText, status_wid
 # MULTI-FILE / PROJEKT-ANALYSE
 # ============================================================================
 
-DEFAULT_EXCLUDE_PATTERNS: List[str] = [
+DEFAULT_EXCLUDE_PATTERNS: list[str] = [
     "__pycache__", ".git", ".venv", "venv", "env",
     "node_modules", ".eggs", "build", "dist"
 ]
@@ -1586,7 +1620,7 @@ DEFAULT_EXCLUDE_PATTERNS: List[str] = [
 def _should_exclude_path(
     py_file: pathlib.Path,
     rel_posix: str,
-    patterns: List[str],
+    patterns: list[str],
     case_insensitive: bool = False,
 ) -> bool:
     """Prüft, ob eine Python-Datei durch Ausschlussmuster ignoriert werden soll."""
@@ -1631,7 +1665,7 @@ def _should_exclude_path(
     return False
 
 
-def collect_python_files(folder_path: str, exclude_patterns: Optional[List[str]] = None) -> List[str]:
+def collect_python_files(folder_path: str, exclude_patterns: list[str] | None = None) -> list[str]:
     """Sammelt alle Python-Dateien in einem Ordner rekursiv mit Verzeichnis-Pruning."""
     if not os.path.exists(folder_path):
         raise FileNotFoundError(f"Projekt-Verzeichnis nicht gefunden: {folder_path}")
@@ -1677,24 +1711,27 @@ class ProjectAnalysisResult:
     """Aggregierte Ergebnisse einer Projekt-Analyse."""
     folder_path: str
     files_analyzed: int
-    files_with_errors: List[Tuple[str, str]]
+    files_with_errors: list[tuple[str, str]]
     total_lines: int
     total_defs: int
     total_imports: int
-    all_unused_imports: Dict[str, List[str]]
-    all_unused_defs: Dict[str, List[str]]
-    all_missing_defs: Dict[str, List[str]]
-    all_missing_imports: Dict[str, List[str]]
-    all_duplicate_imports: Dict[str, List[str]]
-    file_results: Dict[str, AnalysisResult]
+    all_unused_imports: dict[str, list[str]]
+    all_unused_defs: dict[str, list[str]]
+    all_missing_defs: dict[str, list[str]]
+    all_missing_imports: dict[str, list[str]]
+    all_duplicate_imports: dict[str, list[str]]
+    file_results: dict[str, AnalysisResult]
 
 
 def analyze_project(
     folder_path: str,
     progress_callback=None,
-    exclude_patterns: Optional[List[str]] = None,
+    exclude_patterns: list[str] | None = None,
 ) -> ProjectAnalysisResult:
     """Analysiert alle Python-Dateien in einem Projektordner."""
+    # The collector resolves aliases (e.g. /var -> /private/var on macOS,
+    # or Windows junctions). Reports must use the same canonical base.
+    folder_path = str(pathlib.Path(folder_path).resolve())
     python_files = collect_python_files(folder_path, exclude_patterns=exclude_patterns)
     files_with_errors, file_results = [], {}
     all_unused_imports, all_unused_defs = {}, {}
@@ -1721,7 +1758,7 @@ def analyze_project(
                 all_missing_imports[rel_path] = result.missing_imports
             if result.duplicate_imports:
                 all_duplicate_imports[rel_path] = result.duplicate_imports
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001 -- project scan isolates failures per file and records each error
             files_with_errors.append((file_path, str(e)))
     
     return ProjectAnalysisResult(
@@ -1750,7 +1787,7 @@ def _extract_project_display_name(path: str) -> str:
 
 def generate_project_report(
     result: ProjectAnalysisResult,
-    project_name: Optional[str] = None,
+    project_name: str | None = None,
 ) -> str:
     """Generiert einen formatierten Projekt-Report."""
     proj_name = (
@@ -1816,7 +1853,7 @@ def _generated_at_iso() -> str:
     )
 
 
-def _todo_comments_as_dicts(result: AnalysisResult) -> List[Dict[str, Any]]:
+def _todo_comments_as_dicts(result: AnalysisResult) -> list[dict[str, Any]]:
     """Wandelt TODO-Kommentare in JSON-kompatible Objekte um."""
     return [
         {"line": lineno, "tag": tag, "text": text}
@@ -1824,7 +1861,7 @@ def _todo_comments_as_dicts(result: AnalysisResult) -> List[Dict[str, Any]]:
     ]
 
 
-def _analysis_summary(result: AnalysisResult) -> Dict[str, int]:
+def _analysis_summary(result: AnalysisResult) -> dict[str, int]:
     """Verdichtete Metriken für eine einzelne Analyse."""
     return {
         "calls": len(result.calls),
@@ -1839,7 +1876,7 @@ def _analysis_summary(result: AnalysisResult) -> Dict[str, int]:
     }
 
 
-def _analysis_result_to_json(result: AnalysisResult) -> Dict[str, Any]:
+def _analysis_result_to_json(result: AnalysisResult) -> dict[str, Any]:
     """Serialisiert ein Dateiergebnis in das Austauschformat."""
     return {
         "summary": _analysis_summary(result),
@@ -1870,7 +1907,7 @@ def _analysis_result_to_json(result: AnalysisResult) -> Dict[str, Any]:
     }
 
 
-def _json_file_entry(path: str, result: AnalysisResult) -> Dict[str, Any]:
+def _json_file_entry(path: str, result: AnalysisResult) -> dict[str, Any]:
     """Erstellt einen files[]-Eintrag für den JSON-Report."""
     return {
         "path": path,
@@ -1878,7 +1915,7 @@ def _json_file_entry(path: str, result: AnalysisResult) -> Dict[str, Any]:
     }
 
 
-def _project_summary(result: ProjectAnalysisResult) -> Dict[str, int]:
+def _project_summary(result: ProjectAnalysisResult) -> dict[str, int]:
     """Verdichtete Metriken für eine Projektanalyse."""
     return {
         "files_analyzed": result.files_analyzed,
@@ -1897,8 +1934,8 @@ def _project_summary(result: ProjectAnalysisResult) -> Dict[str, int]:
 def build_json_report(
     source_kind: str,
     result: AnalysisResult | ProjectAnalysisResult,
-    source_name: Optional[str] = None,
-) -> Dict[str, Any]:
+    source_name: str | None = None,
+) -> dict[str, Any]:
     """
     Baut `methodenanalyser-report-v1.json` für Datei, Projekt oder Snippet.
 
@@ -1908,7 +1945,7 @@ def build_json_report(
     if source_kind not in {"file", "project", "snippet", "zip"}:
         raise ValueError(f"Unbekannte source_kind: {source_kind}")
 
-    report: Dict[str, Any] = {
+    report: dict[str, Any] = {
         "schema_version": JSON_SCHEMA_VERSION,
         "tool_version": TOOL_VERSION,
         "source_kind": source_kind,
@@ -1985,7 +2022,7 @@ def build_json_report(
     return report
 
 
-def write_json_report(report: Dict[str, Any], output_path: str) -> str:
+def write_json_report(report: dict[str, Any], output_path: str) -> str:
     """Schreibt einen JSON-Report und gibt den absoluten Pfad zurück."""
     target = os.path.abspath(output_path)
     target_dir = os.path.dirname(target)
@@ -2006,7 +2043,7 @@ class ToolTip:
     def __init__(self, widget: tk.Widget, text: str = ""):
         self.widget = widget
         self.text = text
-        self.tip_window: Optional[tk.Toplevel] = None
+        self.tip_window: tk.Toplevel | None = None
         self.widget.bind("<Enter>", self.show_tip, add="+")
         self.widget.bind("<Leave>", self.hide_tip, add="+")
         self.widget.bind("<FocusIn>", self.show_tip, add="+")
@@ -2020,13 +2057,13 @@ class ToolTip:
                 if isinstance(child, tk.Label):
                     child.config(text=self.text)
 
-    def show_tip(self, event: Optional[Any] = None) -> None:
+    def show_tip(self, event: Any | None = None) -> None:
         if self.tip_window or not self.text:
             return
         try:
             x = self.widget.winfo_rootx() + 20
             y = self.widget.winfo_rooty() + self.widget.winfo_height() + 5
-        except Exception:
+        except tk.TclError:
             return
 
         self.tip_window = tw = tk.Toplevel(self.widget)
@@ -2034,7 +2071,7 @@ class ToolTip:
         tw.wm_geometry(f"+{x}+{y}")
         try:
             tw.attributes("-topmost", True)
-        except Exception:
+        except tk.TclError:
             pass
 
         label = tk.Label(
@@ -2051,16 +2088,16 @@ class ToolTip:
         )
         label.pack(ipadx=1)
 
-    def hide_tip(self, event: Optional[Any] = None) -> None:
+    def hide_tip(self, event: Any | None = None) -> None:
         if self.tip_window:
             try:
                 self.tip_window.destroy()
-            except Exception:
+            except tk.TclError:
                 pass
             self.tip_window = None
 
 
-def run_project_analysis(output_widget: scrolledtext.ScrolledText, status_widget: Optional[tk.Label] = None) -> None:
+def run_project_analysis(output_widget: scrolledtext.ScrolledText, status_widget: tk.Label | None = None) -> None:
     """Ordner-Dialog und Projekt-Analyse."""
     folder_path = filedialog.askdirectory(title=_t("dialog_select_project"))
     if not folder_path:
@@ -2089,11 +2126,11 @@ def run_project_analysis(output_widget: scrolledtext.ScrolledText, status_widget
         
         export_path = os.path.join(folder_path, "project_analysis.txt")
         with open(export_path, "w", encoding="utf-8") as f:
-            f.write(generate_project_report(result))
+            f.write(generate_project_report(result, project_name=_extract_project_display_name(folder_path)))
         output_widget.insert(tk.END, f"\n{_t('gui_saved')}: {export_path}")
         if status_widget is not None:
             status_widget.config(text=f"{_t('status_analysis_done')} {os.path.basename(folder_path)}")
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001 -- GUI boundary reports project failures to the user
         if status_widget is not None:
             status_widget.config(text=f"[FEHLER] {e}")
         messagebox.showerror(_t("dialog_error_title"), str(e))
@@ -2263,7 +2300,7 @@ def create_gui() -> None:
         status_bar.config(text=_t("status_ready"))
         try:
             menubar.entryconfig(1, label=_t("menu_language"))
-        except Exception:
+        except tk.TclError:
             pass
         # Willkommenstext nur neu rendern, solange keine Analyse-Ausgabe angezeigt wird.
         if output.get("1.0", "1.end").strip() in _WELCOME_HEADS:
@@ -2364,24 +2401,24 @@ def _emit_cli_report(report: str) -> None:
         sys.stdout.write("\n")
 
 
-def _write_cli_json_if_requested(report: Dict[str, Any], output_path: Optional[str]) -> bool:
+def _write_cli_json_if_requested(report: dict[str, Any], output_path: str | None) -> bool:
     """Schreibt optional den JSON-Report; Fehler gehen nach stderr."""
     if not output_path:
         return True
     try:
         written_path = write_json_report(report, output_path)
-    except Exception as exc:
+    except Exception as exc:  # noqa: BLE001 -- CLI boundary reports export failures and returns a failure result
         print(f"[FEHLER] {_t('cli_json_export_failed')}: {exc}", file=sys.stderr)
         return False
     print(f"[OK] {_t('cli_json_saved')}: {written_path}", file=sys.stderr)
     return True
 
 
-def _run_cli_file(path: str, json_output: Optional[str] = None) -> int:
+def _run_cli_file(path: str, json_output: str | None = None) -> int:
     """Führt eine Datei-Analyse ohne GUI aus."""
     try:
         result = analyze_file(path)
-    except Exception as exc:
+    except Exception as exc:  # noqa: BLE001 -- CLI boundary converts analysis failures to a nonzero exit code
         print(f"[FEHLER] {exc}", file=sys.stderr)
         return EXIT_ANALYSIS_ERROR
 
@@ -2392,7 +2429,7 @@ def _run_cli_file(path: str, json_output: Optional[str] = None) -> int:
     return EXIT_FINDINGS if _file_has_findings(result) else EXIT_OK
 
 
-def _run_cli_project(path: str, json_output: Optional[str] = None) -> int:
+def _run_cli_project(path: str, json_output: str | None = None) -> int:
     """Führt eine Projektanalyse ohne GUI aus."""
     if not os.path.isdir(path):
         print(f"[FEHLER] {_t('cli_project_not_found')}: {path}", file=sys.stderr)
@@ -2400,11 +2437,11 @@ def _run_cli_project(path: str, json_output: Optional[str] = None) -> int:
 
     try:
         result = analyze_project(path)
-    except Exception as exc:
+    except Exception as exc:  # noqa: BLE001 -- CLI boundary converts project failures to a nonzero exit code
         print(f"[FEHLER] {_t('cli_project_analysis_failed')}: {exc}", file=sys.stderr)
         return EXIT_ANALYSIS_ERROR
 
-    _emit_cli_report(generate_project_report(result))
+    _emit_cli_report(generate_project_report(result, project_name=_extract_project_display_name(path)))
     json_report = build_json_report("project", result, source_name=path)
     if not _write_cli_json_if_requested(json_report, json_output):
         return EXIT_ANALYSIS_ERROR
@@ -2414,11 +2451,11 @@ def _run_cli_project(path: str, json_output: Optional[str] = None) -> int:
     return EXIT_FINDINGS if _project_has_findings(result) else EXIT_OK
 
 
-def _run_cli_snippet(code: str, json_output: Optional[str] = None) -> int:
+def _run_cli_snippet(code: str, json_output: str | None = None) -> int:
     """Analysiert ein Snippet ohne temporäre Projektdateien."""
     try:
         result = analyze_source(code, source_name="<snippet>")
-    except Exception as exc:
+    except Exception as exc:  # noqa: BLE001 -- CLI boundary converts snippet failures to a nonzero exit code
         print(f"[FEHLER] {exc}", file=sys.stderr)
         return EXIT_ANALYSIS_ERROR
 
@@ -2486,7 +2523,7 @@ def build_cli_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def main(argv: Optional[List[str]] = None) -> int:
+def main(argv: list[str] | None = None) -> int:
     """Startet GUI oder CLI je nach Argumenten."""
     language_parser = argparse.ArgumentParser(add_help=False)
     language_parser.add_argument("--lang", choices=SUPPORTED_LANGUAGES, default=None)
