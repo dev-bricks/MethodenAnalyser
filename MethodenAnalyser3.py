@@ -11,7 +11,9 @@ import pathlib
 import pkgutil
 import re
 import sqlite3
+import stat
 import sys
+import tempfile
 import threading
 import tkinter as tk
 import warnings
@@ -1490,10 +1492,9 @@ def _remove_unused_imports(source: str, tree: ast.AST, unused_set: set[str]) -> 
     """Remove AST import spans without deleting neighboring executable code."""
     raw = source.encode("utf-8")
     offsets = [0]
-    # AST columns count UTF-8 bytes; only LF advances AST line numbers.
-    # str.splitlines() would incorrectly count form-feed as a new line.
-    for line in raw.split(b"\n")[:-1]:
-        offsets.append(offsets[-1] + len(line) + 1)
+    # AST columns count UTF-8 bytes. Recognize physical CR/LF boundaries
+    # without counting form-feed or rewriting untouched newline sequences.
+    offsets.extend(match.end() for match in re.finditer(rb"\r\n|\r|\n", raw))
     nodes = sorted(_unused_import_nodes(tree, unused_set),
                    key=lambda node: (node.lineno, node.col_offset), reverse=True)
     changed_lines: set[int] = set()
@@ -1517,6 +1518,64 @@ def _remove_unused_imports(source: str, tree: ast.AST, unused_set: set[str]) -> 
     updated = raw.decode("utf-8")
     ast.parse(updated)  # Validate the complete result before touching any file.
     return updated, changed_lines
+
+
+def _stage_auto_fix_bytes(path: pathlib.Path, data: bytes) -> pathlib.Path:
+    """Fully write and flush a same-directory temporary file."""
+    staged = None
+    complete = False
+    try:
+        with tempfile.NamedTemporaryFile(mode="wb", dir=path.parent,
+                                         prefix=f".{path.name}.autofix-", delete=False) as handle:
+            staged = pathlib.Path(handle.name)
+            if handle.write(data) != len(data):
+                raise OSError("Incomplete Auto-Fix write")
+            handle.flush()
+            os.fsync(handle.fileno())
+        complete = True
+        return staged
+    finally:
+        if staged is not None and not complete:
+            staged.unlink(missing_ok=True)
+
+
+def _commit_auto_fix(path: str, original: bytes, updated: bytes) -> str:
+    """Publish a complete backup exclusively, then atomically replace the source."""
+    source = pathlib.Path(path).resolve(strict=True)
+    mode = stat.S_IMODE(source.stat().st_mode)
+    staged_source = staged_backup = None
+    try:
+        staged_source = _stage_auto_fix_bytes(source, updated)
+        staged_backup = _stage_auto_fix_bytes(source, original)
+        if source.read_bytes() != original:
+            raise OSError("Source changed during Auto-Fix")
+        index = 0
+        while True:
+            suffix = f".bak.{index}" if index else ".bak"
+            backup = pathlib.Path(str(source) + suffix)
+            try:
+                # Same-directory hard-link publication is atomic and exclusive:
+                # an existing or concurrently created recovery copy is preserved.
+                os.link(staged_backup, backup)
+            except FileExistsError:
+                index += 1
+            else:
+                break
+        os.chmod(staged_source, mode)
+        if source.read_bytes() != original:
+            raise OSError("Source changed during Auto-Fix")
+        os.replace(staged_source, source)
+        return str(backup)
+    finally:
+        for staged in (staged_source, staged_backup):
+            if staged is not None:
+                try:
+                    # A staged source may carry the original read-only flag.
+                    # Clear it only on our temporary path before cleanup.
+                    staged.chmod(stat.S_IRUSR | stat.S_IWUSR)
+                except FileNotFoundError:
+                    continue
+                staged.unlink(missing_ok=True)
 
 
 def auto_fix_unused_imports(output_widget: scrolledtext.ScrolledText, status_widget: tk.Label | None = None) -> None:
@@ -1551,24 +1610,22 @@ def auto_fix_unused_imports(output_widget: scrolledtext.ScrolledText, status_wid
     try:
         # Datei lesen mit Encoding-Fallback — erkanntes Encoding für Schreibzugriff merken
         detected_encoding = "utf-8"
+        original_bytes = pathlib.Path(_last_analysis_path).read_bytes()
         try:
-            with open(_last_analysis_path, "r", encoding="utf-8") as f:
-                lines = f.readlines()
+            original_text = original_bytes.decode("utf-8")
         except UnicodeDecodeError:
             detected_encoding = "latin-1"
-            with open(_last_analysis_path, "r", encoding="latin-1") as f:
-                lines = f.readlines()
-
-        # AST parsen (readlines() beibehalten — splitlines() würde bei \x0c
-        # Zeilennummern gegenüber AST-lineno verschieben und falsche Zeilen löschen)
-        tree = ast.parse("".join(lines))
+            original_text = original_bytes.decode("latin-1")
+        # Parse the original text; physical byte offsets preserve mixed
+        # newline sequences and avoid treating form-feed as a new line.
+        tree = ast.parse(original_text)
 
         # Import-Zeilen markieren die entfernt werden sollen
         # Findings may be stale after an editor change or the confirmation
         # dialog. Remove only names approved earlier AND still unused now.
-        current_result = analyze_source("".join(lines), _last_analysis_path)
+        current_result = analyze_source(original_text, _last_analysis_path)
         unused_set = set(_last_analysis_result.unused_imports) & set(current_result.unused_imports)
-        updated_source, lines_to_remove = _remove_unused_imports("".join(lines), tree, unused_set)
+        updated_source, lines_to_remove = _remove_unused_imports(original_text, tree, unused_set)
 
         if not lines_to_remove:
             if status_widget is not None:
@@ -1581,13 +1638,8 @@ def auto_fix_unused_imports(output_widget: scrolledtext.ScrolledText, status_wid
 
         # Backup und Ausgabe im erkannten Encoding — verhindert Korrumpierung von
         # latin-1-Dateien mit nicht-ASCII-Zeichen und # coding: latin-1 Deklaration
-        backup_path = _last_analysis_path + ".bak"
-        with open(backup_path, "w", encoding=detected_encoding) as f:
-            f.writelines(lines)
-
-        # Neue Datei ohne ungenutzte Imports
-        with open(_last_analysis_path, "w", encoding=detected_encoding) as f:
-            f.write(updated_source)
+        updated_bytes = updated_source.encode(detected_encoding)
+        backup_path = _commit_auto_fix(_last_analysis_path, original_bytes, updated_bytes)
         
         # Ausgabe
         output_widget.insert(tk.END, f"\n\n{_t('gui_autofix_success_header')}\n")

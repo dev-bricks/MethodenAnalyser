@@ -5,7 +5,7 @@
 <p align="center">
   <a href="https://github.com/dev-bricks/MethodenAnalyser/releases/tag/v3.0.2"><img src="https://img.shields.io/badge/Version-3.0.2-blue?style=for-the-badge" alt="Version 3.0.2"></a>
   <a href="https://github.com/dev-bricks/MethodenAnalyser/actions/workflows/tests.yml"><img src="https://img.shields.io/badge/CI-Passing-success?style=for-the-badge&logo=githubactions&logoColor=white" alt="CI Status"></a>
-  <a href="#development--testing"><img src="https://img.shields.io/badge/Tests-189%20Passed-success?style=for-the-badge&logo=pytest&logoColor=white" alt="Tests 100% Green"></a>
+  <a href="#development--testing"><img src="https://img.shields.io/badge/Tests-203%20Passed-success?style=for-the-badge&logo=pytest&logoColor=white" alt="Tests 100% Green"></a>
   <img src="https://img.shields.io/badge/Python-3.10%20%7C%203.11%20%7C%203.12%20%7C%203.13-yellow?style=for-the-badge&logo=python&logoColor=white" alt="Python 3.10-3.13">
   <img src="https://img.shields.io/badge/Platform-Windows%20%7C%20Linux%20%7C%20macOS-lightgrey?style=for-the-badge" alt="Cross-Platform">
   <img src="https://img.shields.io/badge/GUI-Tkinter%20%2B%20CLI%20%2B%20PWA-orange?style=for-the-badge" alt="GUI Desktop + CLI + PWA">
@@ -173,7 +173,7 @@ MethodenAnalyser enforces 10 strict architectural, runtime, and security invaria
 | **INV-ENCODING-04** | Lossless Multi-Encoding Resilience | Default UTF-8 reading with automatic Latin-1 fallback. Never corrupts original character encodings, UTF-8 BOMs, or German umlauts. |
 | **INV-ISOLATION-05** | Loopback Web Companion Isolation | Local helper companion binds strictly to `127.0.0.1` by default. Deliberate `--host 0.0.0.0` LAN test mode requires explicit user configuration. |
 | **INV-TRAVERSAL-06** | Anti-Path-Traversal & ZIP Safety | Web companion rejects path traversal (`..`), bounds member counts, and enforces maximum archive byte limits to prevent ZIP bombs. |
-| **INV-AUTOFIX-07** | Reversible Auto-Fix with Backup | Auto-Fix requires explicit confirmation, rechecks current source usage and creates a `.bak` backup before writing modifications. |
+| **INV-AUTOFIX-07** | Reversible Auto-Fix with Backup | Auto-Fix requires explicit confirmation, rechecks current source usage and publishes a byte-exact backup without replacing existing copies (`.bak`, `.bak.1`, …), then atomically replaces the source from a flushed temporary file. Detected source changes abort the write; encoding, newline style and file mode are retained. |
 | **INV-PLATFORM-08** | Multi-Platform Parity | 100% standard library core verified across Windows Server 2025, Ubuntu Linux, and macOS 26. |
 | **INV-SYNC-09** | Cloud-Sync & Multi-Agent Lock Safety | Fails closed on lock detection (`LOCK.*`), ignores cloud sync conflict files (`*-conflict-*`), preventing concurrency races. |
 | **INV-SLA-10** | 48h Security SLA & 5-Day Triage | Strict vulnerability commitment: 48-hour initial response SLA and 5-business-day triage commitment with coordinated disclosure. |
