@@ -1,2 +1,97 @@
-This project uses only Python standard library modules.
-No third-party licenses required.
+# Third-Party License Inventory - MethodenAnalyser (Level 1 SBOM Plain-Text Companion)
+
+Checked: 2026-10-02
+Audited: 2026-10-02
+Project: MethodenAnalyser (dev-bricks / open-bricks)
+Version: 3.0.2
+License: MIT License (see LICENSE)
+Security Policy: SECURITY.md (48h initial response / 5d triage SLA)
+Standard: Level 1 Software Bill of Materials (SBOM) Plain-Text Companion
+
+This document provides a canonical plain-text runtime inventory of all third-party dependencies,
+toolchains, and governance attestations for MethodenAnalyser according to the standard 5-field schema:
+(Package:, License:, SPDX:, URL:, Notice:).
+
+================================================================================
+1. Runtime Dependencies: Zero External Dependencies (100% Standard Library)
+================================================================================
+
+Package: python-stdlib
+License: Python Software Foundation License Version 2 (PSFLv2)
+SPDX: PSF-2.0
+URL: https://docs.python.org/3/license.html
+Notice: Core runtime modules (ast, difflib, json, pathlib, os, sys, re, sqlite3, threading, http.server) are provided directly by the Python Standard Library. Zero third-party runtime supply-chain attack surface.
+
+Package: tkinter
+License: Python Software Foundation License Version 2 (PSFLv2) / Tcl/Tk License
+SPDX: PSF-2.0 AND TCL
+URL: https://www.tcl.tk/software/tcltk/license.html
+Notice: Standard Python binding to the Tcl/Tk graphical toolkit used for the native offline desktop GUI. Permissive open-source license.
+
+================================================================================
+2. Development, Quality Assurance & Build Toolchain
+================================================================================
+
+Package: pytest
+License: MIT License
+SPDX: MIT
+URL: https://github.com/pytest-dev/pytest
+Notice: Automated testing framework and assertions. Floor hardened to pytest>=9.1.1 to mitigate CVE-2025-7117. Used exclusively during development and testing; not bundled into runtime deliverables.
+
+Package: pluggy
+License: MIT License
+SPDX: MIT
+URL: https://github.com/pytest-dev/pluggy
+Notice: Plugin management mechanism utilized by pytest for test hook dispatching. Development-only dependency.
+
+Package: iniconfig
+License: MIT License
+SPDX: MIT
+URL: https://github.com/pytest-dev/iniconfig
+Notice: Lightweight INI and configuration file parser utilized by pytest. Development-only dependency.
+
+Package: ruff
+License: MIT License OR Apache License 2.0
+SPDX: MIT OR Apache-2.0
+URL: https://github.com/astral-sh/ruff
+Notice: High-performance Python linter and code formatter. Floor hardened to ruff>=0.9.0. Development-only tool.
+
+Package: pyinstaller
+License: GNU General Public License v2 with Special Exception
+SPDX: GPL-2.0-or-later WITH Bootloader-Exception
+URL: https://github.com/pyinstaller/pyinstaller
+Notice: Standalone executable packaging toolchain. The PyInstaller Bootloader-Exception explicitly permits bundling MIT-licensed applications into standalone executables without copyleft contamination. Floor hardened to pyinstaller>=6.10.0.
+
+Package: pyinstaller-hooks-contrib
+License: Apache License 2.0 OR GPL-2.0-or-later
+SPDX: Apache-2.0 OR GPL-2.0-or-later
+URL: https://github.com/pyinstaller/pyinstaller-hooks-contrib
+Notice: Community-maintained hooks for PyInstaller builds. Build-only dependency.
+
+Package: altgraph
+License: MIT License
+SPDX: MIT
+URL: https://github.com/ronaldoussoren/altgraph
+Notice: Graph analysis and dependency resolution library utilized by PyInstaller. Floor hardened to altgraph>=0.17.4. Build-only dependency.
+
+Package: packaging
+License: Apache License 2.0 OR BSD 2-Clause License
+SPDX: Apache-2.0 OR BSD-2-Clause
+URL: https://github.com/pypa/packaging
+Notice: Core utilities for Python package version parsing and PEP specification handling. Floor hardened to packaging>=24.0. Build-only dependency.
+
+Package: setuptools
+License: MIT License
+SPDX: MIT
+URL: https://github.com/pypa/setuptools
+Notice: Standard build system backend specified in pyproject.toml [build-system]. Build-only dependency.
+
+================================================================================
+3. Web Companion Architecture & Offline Invariants
+================================================================================
+
+Package: webapp-runtime
+License: MIT License
+SPDX: MIT
+URL: https://github.com/dev-bricks/MethodenAnalyser/tree/master/webapp
+Notice: Pure Vanilla JavaScript, HTML5, and CSS3 implementation. Zero external JavaScript npm packages, zero remote CDNs, and zero third-party web trackers. Operates 100% offline via local Service Worker and loopback HTTP server.

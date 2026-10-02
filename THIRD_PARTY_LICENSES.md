@@ -32,9 +32,11 @@ The following tools are used strictly during development, automated testing, and
 
 | Tool | Version Range | Purpose | License | Repository / Source |
 |---|---|---|---|---|
-| **pytest** | `>=7.0.0` | Automated test runner & assertions | MIT License | [pytest-dev/pytest](https://github.com/pytest-dev/pytest) |
-| **ruff** | `>=0.3.0` | Fast Python linter & code formatter | MIT / Apache 2.0 | [astral-sh/ruff](https://github.com/astral-sh/ruff) |
-| **PyInstaller** | `>=6.0.0` | Windows portable EXE compilation (`build_exe.bat`) | GPL-2.0 / Special Exception | [pyinstaller/pyinstaller](https://github.com/pyinstaller/pyinstaller) |
+| **pytest** | `>=9.1.1` | Automated test runner & assertions (CVE-2025-7117 hardened) | MIT License | [pytest-dev/pytest](https://github.com/pytest-dev/pytest) |
+| **ruff** | `>=0.9.0` | Fast Python linter & code formatter | MIT / Apache 2.0 | [astral-sh/ruff](https://github.com/astral-sh/ruff) |
+| **PyInstaller** | `>=6.10.0` | Windows portable EXE compilation (`build_exe.bat`) | GPL-2.0 / Special Exception | [pyinstaller/pyinstaller](https://github.com/pyinstaller/pyinstaller) |
+| **altgraph** | `>=0.17.4` | Dependency graph analysis for PyInstaller | MIT License | [ronaldoussoren/altgraph](https://github.com/ronaldoussoren/altgraph) |
+| **packaging** | `>=24.0` | Core Python package version utilities | Apache-2.0 / BSD-2-Clause | [pypa/packaging](https://github.com/pypa/packaging) |
 
 ---
 
