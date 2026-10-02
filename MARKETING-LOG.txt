@@ -2,6 +2,18 @@
 MARKETING & DISCOVERABILITY LOG - METHODENANALYSER (dev-bricks)
 ================================================================================
 
+[2026-10-02] SOFTWARE GITHUB STATUS-, ASSET- & REMOTE-SYNC (v3.0.2)
+--------------------------------------------------------------------------------
+Routine: SOFTWARE_GITHUB
+Target Repository: dev-bricks/MethodenAnalyser
+Maintainer / Author: Lukas Geiger
+Parent Organization: dev-bricks
+Umbrella Organization: open-bricks
+Scope: Remote fast-forward synchronization (7 merged PRs), PWA and mobile icon
+       assets integration (mobile_icons/ and webapp/), Webapp HTTP server root asset
+       fallback resolution, MIME types expansion (.ico, .svg), comprehensive icon
+       test coverage (tests/test_app_assets.py), documentation and badge parity (238 passed).
+
 [2026-09-11] PFAD A TECHNICAL HYGIENE & CI REINFORCEMENT (v3.0.2)
 --------------------------------------------------------------------------------
 Routine: GITHUBBOT_ONE_REPO_CLEANER (Pfad A)

@@ -94,4 +94,4 @@ code similarity detector Python local
 - Bytecode compilation: `python -m compileall -q .` clean.
 - Code style: `ruff check .` clean.
 - Version: 3.0.2
-- Last-checked: 2026-09-11
+- Last-checked: 2026-10-02

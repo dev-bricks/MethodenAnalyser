@@ -15,6 +15,9 @@ Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 - **Performance & I/O-Redundanz-Beseitigung (`analyze_project`)**: `AnalysisResult` zählt Zeilen (`total_lines`) direkt bei der AST-Analyse (`analyze_source`), wodurch der redundante zweite Datei-Lese-Durchlauf in `analyze_project` vollständig entfällt.
 
 ### Erweitert
+- **PWA & Mobile-Icon-Inventar (`mobile_icons/`, `webapp/`)**: Vollständige Suite von Multi-Resolution-Icons (`icon-192.png`, `icon-512.png`, `apple-touch-icon-180.png`, `favicon.ico`, `manifest.json`, `manifest.webmanifest`) für Web Companion und native Mobile-Einbindung integriert.
+- **Webapp-Server Root-Asset Fallback & MIME-Typen (`webapp/server.py`)**: Automatischer Fallback bei statischen Anfragen auf das übergeordnete `webapp/`-Verzeichnis für Standard-Browserpfade wie `/favicon.ico` und `/manifest.json`; `CONTENT_TYPES_BY_SUFFIX` um `.ico` (`image/x-icon`) und `.svg` (`image/svg+xml`) erweitert.
+- **Asset- & Icon-Vertragstests (`tests/test_app_assets.py`, `tests/test_webapp_server.py`)**: 7 neue automatisierte Tests zur Validierung von Master-Icon, Store-Tile-Logos, Mobile-Icons-Suite, PWA-Manifesten sowie Root-Favicon- und Manifest-Serverendpunkten (Gesamttestsuite auf 238 Tests ausgebaut, 100% grün).
 - **Desktop-UI Lokalisierung (`MA-I18N-02`)**: 25 neue Übersetzungsschlüssel in `locales/translations.json` über alle 6 Sprachen (`de`, `en`, `es`, `zh`, `ja`, `ru`), inklusive vollständiger Lokalisierung von Dateidialogen, Statusmeldungen, Export-Benachrichtigungen und Auto-Fix-Bestätigungen in `MethodenAnalyser3.py`.
 
 ## [3.0.2] - 2026-09-11

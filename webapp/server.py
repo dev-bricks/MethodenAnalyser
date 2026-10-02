@@ -47,9 +47,11 @@ WILDCARD_HOSTS = {"0.0.0.0", "::"}
 CONTENT_TYPES_BY_SUFFIX = {
     ".css": "text/css; charset=utf-8",
     ".html": "text/html; charset=utf-8",
+    ".ico": "image/x-icon",
     ".js": "text/javascript; charset=utf-8",
     ".json": "application/json; charset=utf-8",
     ".png": "image/png",
+    ".svg": "image/svg+xml",
     ".webmanifest": "application/manifest+json; charset=utf-8",
 }
 
@@ -330,6 +332,8 @@ class MethodenAnalyserPwaHandler(BaseHTTPRequestHandler):
 
         relative = "index.html" if path in {"", "/"} else unquote(path.lstrip("/"))
         target = _resolve_under(STATIC_ROOT, relative)
+        if target is None:
+            target = _resolve_under(STATIC_ROOT.parent, relative)
         self._send_file_or_404(target)
 
     def do_POST(self) -> None:

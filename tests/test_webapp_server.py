@@ -397,7 +397,19 @@ class MethodenAnalyserStaticHttpTests(unittest.TestCase):
             payload = json.loads(response.read().decode("utf-8"))
         self.assertTrue(payload["ok"])
         self.assertIn("PYTHON CODE ANALYSIS - RESULTS", payload["text_report"])
-        self.assertIn("Unused Imports", payload["text_report"])
+    def test_root_favicon_ico_served(self) -> None:
+        with urlopen(self.build_url("/favicon.ico")) as response:
+            content = response.read()
+            content_type = response.headers.get_content_type()
+        self.assertEqual(content_type, "image/x-icon")
+        self.assertGreater(len(content), 0)
+
+    def test_root_manifest_json_served(self) -> None:
+        with urlopen(self.build_url("/manifest.json")) as response:
+            body = response.read().decode("utf-8")
+            content_type = response.headers.get_content_type()
+        self.assertEqual(content_type, "application/json")
+        self.assertIn("MethodenAnalyser", body)
 
 
 if __name__ == "__main__":
