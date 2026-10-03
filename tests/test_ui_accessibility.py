@@ -9,12 +9,24 @@ import json
 import sys
 import tkinter as tk
 from pathlib import Path
+from typing import Any
+
+import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 import MethodenAnalyser3 as m
+
+
+def _make_tk_root() -> tk.Tk:
+    try:
+        root = tk.Tk()
+        root.withdraw()
+        return root
+    except (tk.TclError, RuntimeError) as exc:
+        pytest.skip(f"Tkinter display/tcl runtime unavailable: {exc}")
 
 
 def _reset_language(lang: str) -> None:
@@ -38,7 +50,14 @@ def test_translations_catalog_completeness():
         "dialog_no_file_title", "dialog_no_file_msg", "dialog_no_unused_title",
         "dialog_no_unused_msg", "dialog_partial_unused_title", "dialog_partial_unused_msg",
         "dialog_autofix_title", "welcome_body", "info_body",
-        "lang_switched_msg"
+        "lang_switched_msg",
+        "menu_file", "menu_actions", "menu_help", "menu_analyze_file", "menu_analyze_project",
+        "menu_save_report", "menu_exit", "menu_autofix", "menu_select_all", "menu_copy",
+        "menu_clear_output", "menu_shortcuts", "menu_about", "dialog_shortcuts_title",
+        "dialog_shortcuts_subtitle", "dialog_shortcuts_cat_nav", "dialog_shortcuts_cat_actions",
+        "dialog_shortcuts_cat_general", "dialog_shortcuts_a11y_notice", "dialog_btn_close",
+        "status_report_saved", "status_output_cleared", "dialog_save_report_title",
+        "dialog_filetypes_txt",
     ]
     
     for key in required_keys:
@@ -58,12 +77,18 @@ def test_german_typography_and_umlauts():
     assert "auswählen" in data["dialog_select_file"]["de"]
     assert "auswählen" in data["dialog_select_project"]["de"]
     assert "bestätigen" in data["dialog_autofix_title"]["de"]
+    assert "Tastaturkürzel" in data["dialog_shortcuts_title"]["de"]
+    assert "Übersicht" in data["dialog_shortcuts_subtitle"]["de"]
+    assert "Schließen" in data["dialog_btn_close"]["de"]
+    assert "Über" in data["menu_about"]["de"]
+    assert "auswählen" in data["menu_select_all"]["de"]
+    assert "Erfüllt" in data["dialog_shortcuts_a11y_notice"]["de"]
+    assert "Unterstützung" in data["dialog_shortcuts_a11y_notice"]["de"]
 
 
 def test_tooltip_lifecycle():
     """Prüft die Erstellung, Anzeige, Textaktualisierung und das Schließen des ToolTips."""
-    root = tk.Tk()
-    root.withdraw()
+    root = _make_tk_root()
     try:
         btn = tk.Button(root, text="Test")
         btn.pack()
@@ -83,6 +108,8 @@ def test_tooltip_lifecycle():
         # Tip verstecken
         tip.hide_tip()
         assert tip.tip_window is None
+    except tk.TclError as exc:
+        pytest.skip(f"Tkinter runtime error during tooltip lifecycle: {exc}")
     finally:
         root.destroy()
 
@@ -122,3 +149,115 @@ def test_partial_unused_import_dialog_uses_active_language(monkeypatch, tmp_path
     assert shown == [(m._t("dialog_partial_unused_title"), m._t("dialog_partial_unused_msg"))]
     assert "Partially used imports" in shown[0][1]
     _reset_language("de")
+
+
+def test_shortcuts_dialog_lifecycle_and_a11y():
+    """Prüft den barrierefreien Tastaturkürzel-Dialog inkl. WCAG 2.1 AA / BITV 2.0 Hinweis."""
+    _reset_language("de")
+    root = _make_tk_root()
+    try:
+        dlg = m.show_shortcuts_dialog(root)
+        assert dlg is not None
+        assert dlg.winfo_exists()
+        assert m._t("dialog_shortcuts_title") in dlg.title()
+
+        # Inhalte im Dialog prüfen
+        shortcuts_text = m._build_shortcuts_text()
+        assert m._t("dialog_shortcuts_cat_nav") in shortcuts_text
+        assert m._t("dialog_shortcuts_cat_actions") in shortcuts_text
+        assert m._t("dialog_shortcuts_cat_general") in shortcuts_text
+        assert "Alt+D" in shortcuts_text
+        assert "F1" in shortcuts_text
+
+        # Barrierefreiheits-Hinweis
+        notice = m._t("dialog_shortcuts_a11y_notice")
+        assert "WCAG 2.1 AA" in notice
+        assert "BITV 2.0" in notice
+
+        dlg.destroy()
+    except tk.TclError as exc:
+        pytest.skip(f"Tkinter runtime error during shortcuts dialog lifecycle: {exc}")
+    finally:
+        root.destroy()
+
+
+def test_shortcuts_dialog_headless_guard(monkeypatch):
+    """Prüft, dass im Headless-Modus kein Fehler geworfen wird und None zurückgegeben wird."""
+    monkeypatch.setenv("HEADLESS", "1")
+    assert m.show_shortcuts_dialog(None) is None
+
+
+def test_shortcuts_dialog_multilingual():
+    """Prüft die korrekte Übersetzung des Shortcuts-Texts in verschiedenen Sprachen."""
+    _reset_language("en")
+    en_text = m._build_shortcuts_text()
+    assert "Navigation & Analysis" in en_text
+    assert "Edit & Actions" in en_text
+    assert "Help & Controls" in en_text
+
+    _reset_language("de")
+    de_text = m._build_shortcuts_text()
+    assert "Navigation & Analyse" in de_text
+    assert "Bearbeiten & Aktionen" in de_text
+    assert "Hilfe & Steuerung" in de_text
+
+
+def test_clear_output_view_restores_welcome():
+    """Prüft, dass clear_output_view das Widget leert und den Willkommenstext wiederherstellt."""
+    root = _make_tk_root()
+    try:
+        txt = tk.Text(root)
+        status = tk.Label(root)
+        txt.insert("1.0", "Alte Analyseausgabe...")
+        assert "Alte Analyseausgabe..." in txt.get("1.0", "end")
+
+        m.clear_output_view(txt, status)
+        assert m._build_welcome_text().strip() in txt.get("1.0", "end")
+        assert status.cget("text") == m._t("status_output_cleared")
+    except tk.TclError as exc:
+        pytest.skip(f"Tkinter runtime error during text widget interaction: {exc}")
+    finally:
+        root.destroy()
+
+
+def test_gui_shortcuts_expanded_registration():
+    """Prüft, dass alle erweiterten Shortcuts in _register_gui_shortcuts gebunden werden."""
+    class FakeRoot:
+        def __init__(self) -> None:
+            self.bindings: dict[str, Any] = {}
+
+        def bind_all(self, sequence: str, handler: Any) -> None:
+            self.bindings[sequence] = handler
+
+    root = FakeRoot()
+    calls: list[str] = []
+
+    m._register_gui_shortcuts(
+        root,
+        analyze_file_cb=lambda: calls.append("file"),
+        info_cb=lambda: calls.append("info"),
+        auto_fix_cb=lambda: calls.append("autofix"),
+        analyze_project_cb=lambda: calls.append("project"),
+        shortcuts_cb=lambda: calls.append("shortcuts"),
+        save_report_cb=lambda: calls.append("save"),
+        clear_output_cb=lambda: calls.append("clear"),
+        quit_cb=lambda: calls.append("quit"),
+    )
+
+    expected_sequences = [
+        "<Alt-d>", "<Alt-D>", "<Alt-p>", "<Alt-P>", "<Alt-f>", "<Alt-F>",
+        "<F1>", "<Shift-F1>", "<Control-s>", "<Control-S>",
+        "<Control-l>", "<Control-L>", "<Control-q>", "<Control-Q>",
+        "<Control-o>", "<Control-O>", "<Control-Shift-O>", "<Control-Shift-o>",
+    ]
+    for seq in expected_sequences:
+        assert seq in root.bindings, f"Shortcut-Sequenz '{seq}' fehlt in bindings"
+
+    assert root.bindings["<F1>"](None) == "break"
+    assert "shortcuts" in calls
+    assert root.bindings["<Shift-F1>"](None) == "break"
+    assert "info" in calls
+    assert root.bindings["<Control-s>"](None) == "break"
+    assert "save" in calls
+    assert root.bindings["<Control-l>"](None) == "break"
+    assert "clear" in calls

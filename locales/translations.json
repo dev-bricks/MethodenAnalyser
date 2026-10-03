@@ -1270,5 +1270,197 @@
     "zh": "和",
     "ja": "および",
     "ru": "и"
+  },
+  "menu_file": {
+    "de": "&Datei",
+    "en": "&File",
+    "es": "&Archivo",
+    "zh": "文件(&F)",
+    "ja": "ファイル(&F)",
+    "ru": "&Файл"
+  },
+  "menu_actions": {
+    "de": "&Aktionen",
+    "en": "&Actions",
+    "es": "&Acciones",
+    "zh": "操作(&A)",
+    "ja": "アクション(&A)",
+    "ru": "&Действия"
+  },
+  "menu_help": {
+    "de": "&Hilfe",
+    "en": "&Help",
+    "es": "&Ayuda",
+    "zh": "帮助(&H)",
+    "ja": "ヘルプ(&H)",
+    "ru": "&Справка"
+  },
+  "menu_analyze_file": {
+    "de": "Datei analysieren... (Alt+D / Strg+O)",
+    "en": "Analyze File... (Alt+D / Ctrl+O)",
+    "es": "Analizar archivo... (Alt+D / Ctrl+O)",
+    "zh": "分析文件... (Alt+D / Ctrl+O)",
+    "ja": "ファイルを分析... (Alt+D / Ctrl+O)",
+    "ru": "Анализировать файл... (Alt+D / Ctrl+O)"
+  },
+  "menu_analyze_project": {
+    "de": "Projekt analysieren... (Alt+P / Strg+Shift+O)",
+    "en": "Analyze Project... (Alt+P / Ctrl+Shift+O)",
+    "es": "Analizar proyecto... (Alt+P / Ctrl+Shift+O)",
+    "zh": "分析项目... (Alt+P / Ctrl+Shift+O)",
+    "ja": "プロジェクトを分析... (Alt+P / Ctrl+Shift+O)",
+    "ru": "Анализировать проект... (Alt+P / Ctrl+Shift+O)"
+  },
+  "menu_save_report": {
+    "de": "Bericht speichern unter... (Strg+S)",
+    "en": "Save Report As... (Ctrl+S)",
+    "es": "Guardar informe como... (Ctrl+S)",
+    "zh": "保存报告为... (Ctrl+S)",
+    "ja": "レポートを名前を付けて保存... (Ctrl+S)",
+    "ru": "Сохранить отчет как... (Ctrl+S)"
+  },
+  "menu_exit": {
+    "de": "Beenden (Strg+Q)",
+    "en": "Exit (Ctrl+Q)",
+    "es": "Salir (Ctrl+Q)",
+    "zh": "退出 (Ctrl+Q)",
+    "ja": "終了 (Ctrl+Q)",
+    "ru": "Выход (Ctrl+Q)"
+  },
+  "menu_autofix": {
+    "de": "Auto-Fix ungenutzte Imports (Alt+F)",
+    "en": "Auto-Fix Unused Imports (Alt+F)",
+    "es": "Auto-Corregir imports no utilizados (Alt+F)",
+    "zh": "自动修复未使用的导入 (Alt+F)",
+    "ja": "未使用インポートの自動修正 (Alt+F)",
+    "ru": "Авто-исправление неиспользуемых импортов (Alt+F)"
+  },
+  "menu_select_all": {
+    "de": "Alles auswählen (Strg+A)",
+    "en": "Select All (Ctrl+A)",
+    "es": "Seleccionar todo (Ctrl+A)",
+    "zh": "全选 (Ctrl+A)",
+    "ja": "すべて選択 (Ctrl+A)",
+    "ru": "Выбрать все (Ctrl+A)"
+  },
+  "menu_copy": {
+    "de": "Auswahl kopieren (Strg+C)",
+    "en": "Copy Selection (Ctrl+C)",
+    "es": "Copiar selección (Ctrl+C)",
+    "zh": "复制所选内容 (Ctrl+C)",
+    "ja": "選択項目をコピー (Ctrl+C)",
+    "ru": "Копировать выделенное (Ctrl+C)"
+  },
+  "menu_clear_output": {
+    "de": "Ausgabe leeren (Strg+L)",
+    "en": "Clear Output (Ctrl+L)",
+    "es": "Limpiar salida (Ctrl+L)",
+    "zh": "清空输出 (Ctrl+L)",
+    "ja": "出力をクリア (Ctrl+L)",
+    "ru": "Очистить вывод (Ctrl+L)"
+  },
+  "menu_shortcuts": {
+    "de": "Tastaturkürzel & Barrierefreiheit (F1)",
+    "en": "Keyboard Shortcuts & Accessibility (F1)",
+    "es": "Atajos de teclado y accesibilidad (F1)",
+    "zh": "快捷键与无障碍 (F1)",
+    "ja": "キーボードショートカットとアクセシビリティ (F1)",
+    "ru": "Горячие клавиши и доступность (F1)"
+  },
+  "menu_about": {
+    "de": "Über MethodenAnalyser (Shift+F1)",
+    "en": "About MethodenAnalyser (Shift+F1)",
+    "es": "Acerca de MethodenAnalyser (Shift+F1)",
+    "zh": "关于 MethodenAnalyser (Shift+F1)",
+    "ja": "MethodenAnalyser について (Shift+F1)",
+    "ru": "О программе MethodenAnalyser (Shift+F1)"
+  },
+  "dialog_shortcuts_title": {
+    "de": "Tastaturkürzel & Barrierefreiheit",
+    "en": "Keyboard Shortcuts & Accessibility",
+    "es": "Atajos de teclado y accesibilidad",
+    "zh": "快捷键与无障碍",
+    "ja": "キーボードショートカットとアクセシビリティ",
+    "ru": "Горячие клавиши и доступность"
+  },
+  "dialog_shortcuts_subtitle": {
+    "de": "Übersicht aller Tastaturbefehle und Barrierefreiheitsfunktionen",
+    "en": "Overview of keyboard commands and accessibility features",
+    "es": "Resumen de atajos de teclado y funciones de accesibilidad",
+    "zh": "键盘快捷键与无障碍功能概览",
+    "ja": "キーボードコマンドとアクセシビリティ機能の概要",
+    "ru": "Обзор горячих клавиш и функций доступности"
+  },
+  "dialog_shortcuts_cat_nav": {
+    "de": "Navigation & Analyse",
+    "en": "Navigation & Analysis",
+    "es": "Navegación y análisis",
+    "zh": "导航与分析",
+    "ja": "ナビゲーションと分析",
+    "ru": "Навигация и анализ"
+  },
+  "dialog_shortcuts_cat_actions": {
+    "de": "Bearbeiten & Aktionen",
+    "en": "Edit & Actions",
+    "es": "Edición y acciones",
+    "zh": "编辑与操作",
+    "ja": "編集とアクション",
+    "ru": "Редактирование и действия"
+  },
+  "dialog_shortcuts_cat_general": {
+    "de": "Hilfe & Steuerung",
+    "en": "Help & Controls",
+    "es": "Ayuda y controles",
+    "zh": "帮助与控制",
+    "ja": "ヘルプと操作",
+    "ru": "Справка и управление"
+  },
+  "dialog_shortcuts_a11y_notice": {
+    "de": "Barrierefreiheit: Erfüllt WCAG 2.1 AA und BITV 2.0 Richtlinien für vollständige Tastaturbedienung und Screenreader-Unterstützung.",
+    "en": "Accessibility: Complies with WCAG 2.1 AA and BITV 2.0 standards for full keyboard navigation and screen reader support.",
+    "es": "Accesibilidad: Cumple con las pautas WCAG 2.1 AA y BITV 2.0 para navegación por teclado y soporte de lector de pantalla.",
+    "zh": "无障碍支持: 符合 WCAG 2.1 AA 和 BITV 2.0 无障碍标准，全面支持键盘操作与屏幕朗读器。",
+    "ja": "アクセシビリティ: キーボード操作およびスクリーンリーダー対応の WCAG 2.1 AA / BITV 2.0 ガイドラインに準拠しています。",
+    "ru": "Доступность: Соответствует стандартам WCAG 2.1 AA и BITV 2.0 для полноценного управления с клавиатуры и экранных дикторов."
+  },
+  "dialog_btn_close": {
+    "de": "Schließen",
+    "en": "Close",
+    "es": "Cerrar",
+    "zh": "关闭",
+    "ja": "閉じる",
+    "ru": "Закрыть"
+  },
+  "status_report_saved": {
+    "de": "Bericht erfolgreich gespeichert:",
+    "en": "Report successfully saved:",
+    "es": "Informe guardado con éxito:",
+    "zh": "报告已成功保存:",
+    "ja": "レポートが正常に保存されました:",
+    "ru": "Отчет успешно сохранен:"
+  },
+  "status_output_cleared": {
+    "de": "Ausgabefenster geleert",
+    "en": "Output window cleared",
+    "es": "Ventana de salida limpiada",
+    "zh": "输出窗口已清空",
+    "ja": "出力ウィンドウがクリアされました",
+    "ru": "Окно вывода очищено"
+  },
+  "dialog_save_report_title": {
+    "de": "Bericht speichern unter",
+    "en": "Save Report As",
+    "es": "Guardar informe como",
+    "zh": "保存报告为",
+    "ja": "レポートを名前を付けて保存",
+    "ru": "Сохранить отчет как"
+  },
+  "dialog_filetypes_txt": {
+    "de": "Textdateien (*.txt)",
+    "en": "Text Files (*.txt)",
+    "es": "Archivos de texto (*.txt)",
+    "zh": "文本文件 (*.txt)",
+    "ja": "テキストファイル (*.txt)",
+    "ru": "Текстовые файлы (*.txt)"
   }
 }

@@ -2232,6 +2232,170 @@ def _build_welcome_text() -> str:
     return _t("welcome_body").replace("{shortcut}", _get_keyboard_shortcut_hint())
 
 
+def show_info_dialog(parent: Any = None) -> None:
+    """Zeigt den Versions- und Informationsdialog."""
+    messagebox.showinfo(
+        _t("dialog_info_title"),
+        _t("info_body").replace("{version}", TOOL_VERSION),
+    )
+
+
+def _build_shortcuts_text() -> str:
+    """Baut die strukturierte Kurzübersicht für den Barrierefreiheits-Dialog."""
+    lines = [
+        f"[{_t('dialog_shortcuts_cat_nav')}]",
+        f"  Alt+D / Ctrl+O        {_t('tooltip_analyze_file')}",
+        f"  Alt+P / Ctrl+Shift+O  {_t('tooltip_analyze_project')}",
+        f"  Ctrl+S                {_t('menu_save_report')}",
+        f"  Ctrl+Q                {_t('menu_exit')}",
+        "",
+        f"[{_t('dialog_shortcuts_cat_actions')}]",
+        f"  Alt+F                 {_t('tooltip_autofix')}",
+        f"  Ctrl+A                {_t('menu_select_all')}",
+        f"  Ctrl+C                {_t('menu_copy')}",
+        f"  Ctrl+L                {_t('menu_clear_output')}",
+        "",
+        f"[{_t('dialog_shortcuts_cat_general')}]",
+        f"  F1                    {_t('menu_shortcuts')}",
+        f"  Shift+F1              {_t('menu_about')}",
+        f"  Esc / Enter           {_t('dialog_btn_close')}",
+    ]
+    return "\n".join(lines)
+
+
+def show_shortcuts_dialog(parent: Any = None) -> tk.Toplevel | None:
+    """Zeigt einen barrierefreien Tastaturkürzel- und Accessibility-Dialog nach WCAG 2.1 AA / BITV 2.0."""
+    if os.environ.get("HEADLESS") == "1":
+        return None
+
+    try:
+        dlg = tk.Toplevel(parent) if parent is not None else tk.Toplevel()
+    except tk.TclError:
+        return None
+
+    dlg.title(f"{_t('dialog_shortcuts_title')} - {_t('app_title')}")
+    dlg.geometry("620x520")
+    dlg.minsize(480, 380)
+    if parent is not None:
+        try:
+            dlg.transient(parent)
+        except tk.TclError:
+            pass
+
+    try:
+        if parent is not None and parent.winfo_viewable():
+            px = parent.winfo_rootx() + (parent.winfo_width() // 2) - 310
+            py = parent.winfo_rooty() + (parent.winfo_height() // 2) - 260
+            dlg.geometry(f"+{max(0, px)}+{max(0, py)}")
+    except (tk.TclError, AttributeError):
+        pass
+
+    header_frame = tk.Frame(dlg, bg="#2c3e50", padx=16, pady=12)
+    header_frame.pack(fill=tk.X)
+
+    title_label = tk.Label(
+        header_frame,
+        text=f"⌨️  {_t('dialog_shortcuts_title')}",
+        font=("Segoe UI" if os.name == "nt" else "Arial", 13, "bold"),
+        fg="#ffffff",
+        bg="#2c3e50",
+    )
+    title_label.pack(anchor=tk.W)
+
+    subtitle_label = tk.Label(
+        header_frame,
+        text=_t("dialog_shortcuts_subtitle"),
+        font=("Segoe UI" if os.name == "nt" else "Arial", 9),
+        fg="#ecf0f1",
+        bg="#2c3e50",
+    )
+    subtitle_label.pack(anchor=tk.W, pady=(2, 0))
+
+    content_frame = tk.Frame(dlg, padx=16, pady=12)
+    content_frame.pack(fill=tk.BOTH, expand=True)
+
+    txt = scrolledtext.ScrolledText(
+        content_frame,
+        wrap=tk.WORD,
+        font=("Consolas" if os.name == "nt" else "Courier", 9),
+        bg="#fafafa",
+        fg="#222222",
+        relief=tk.SOLID,
+        bd=1,
+    )
+    txt.pack(fill=tk.BOTH, expand=True)
+    txt.insert("1.0", _build_shortcuts_text())
+    txt.config(state=tk.DISABLED)
+
+    a11y_notice = tk.Label(
+        content_frame,
+        text=_t("dialog_shortcuts_a11y_notice"),
+        font=("Segoe UI" if os.name == "nt" else "Arial", 8, "italic"),
+        fg="#555555",
+        wraplength=560,
+        justify=tk.LEFT,
+    )
+    a11y_notice.pack(fill=tk.X, pady=(8, 0))
+
+    btn_frame = tk.Frame(dlg, padx=16, pady=10)
+    btn_frame.pack(fill=tk.X)
+
+    close_btn = tk.Button(
+        btn_frame,
+        text=_t("dialog_btn_close"),
+        command=dlg.destroy,
+        bg="#2c3e50",
+        fg="#ffffff",
+        font=("Segoe UI" if os.name == "nt" else "Arial", 9, "bold"),
+        padx=18,
+        pady=5,
+        cursor="hand2",
+    )
+    close_btn.pack(side=tk.RIGHT)
+    close_btn.focus_set()
+
+    dlg.bind("<Escape>", lambda _e: dlg.destroy())
+    dlg.bind("<Return>", lambda _e: dlg.destroy())
+
+    try:
+        dlg.grab_set()
+    except tk.TclError:
+        pass
+
+    return dlg
+
+
+def save_report_as(output_widget: scrolledtext.ScrolledText, status_widget: tk.Label | None = None) -> None:
+    """Ermöglicht das manuelle Speichern des aktuellen Berichts in eine frei wählbare Datei."""
+    report_text = output_widget.get("1.0", tk.END).strip()
+    if not report_text:
+        return
+    file_path = filedialog.asksaveasfilename(
+        title=_t("dialog_save_report_title"),
+        defaultextension=".txt",
+        filetypes=[(_t("dialog_filetypes_txt"), "*.txt"), (_t("dialog_filetypes_all"), "*.*")],
+    )
+    if not file_path:
+        return
+    try:
+        _write_report_bytes(report_text.encode("utf-8"), file_path, label="Text")
+        if status_widget is not None:
+            status_widget.config(text=f"{_t('status_report_saved')} {os.path.basename(file_path)}")
+        messagebox.showinfo(_t("dialog_success_title"), f"{_t('status_report_saved')} {file_path}")
+    except Exception as e:
+        if status_widget is not None:
+            status_widget.config(text=f"[FEHLER] {e}")
+        messagebox.showerror(_t("dialog_error_title"), str(e))
+
+
+def clear_output_view(output_widget: scrolledtext.ScrolledText, status_widget: tk.Label | None = None) -> None:
+    """Leert das Ausgabefenster und stellt den Willkommenstext wieder her."""
+    output_widget.delete("1.0", tk.END)
+    output_widget.insert(tk.END, _build_welcome_text())
+    if status_widget is not None:
+        status_widget.config(text=_t("status_output_cleared"))
+
+
 def create_gui() -> None:
     """Erstellt und startet die GUI-Anwendung."""
     root = tk.Tk()
@@ -2261,12 +2425,6 @@ def create_gui() -> None:
     # Button-Frame für besseres Layout
     button_frame = tk.Frame(root)
     button_frame.pack(pady=10)
-    
-    def show_info_dialog() -> None:
-        messagebox.showinfo(
-            _t("dialog_info_title"),
-            _t("info_body").replace("{version}", TOOL_VERSION),
-        )
 
     # Analyse-Button
     btn = tk.Button(
@@ -2287,7 +2445,7 @@ def create_gui() -> None:
     info_btn = tk.Button(
         button_frame,
         text=_t("btn_info"),
-        command=show_info_dialog,
+        command=lambda: show_info_dialog(root),
         bg="#2196F3",
         fg="white",
         font=("Arial", 10),
@@ -2367,39 +2525,106 @@ def create_gui() -> None:
     # Willkommensnachricht
     output.insert(tk.END, _build_welcome_text())
 
-    # --- Menue "Sprache / Language" (Welle-1 U1: sichtbarer DE/EN-Schalter) ---
+    def _select_all_output(_event: Any = None) -> str:
+        output.tag_add("sel", "1.0", tk.END)
+        output.mark_set("insert", "1.0")
+        output.see("insert")
+        return "break"
+
+    output.bind("<Control-a>", _select_all_output)
+    output.bind("<Control-A>", _select_all_output)
+
+    # Kontextmenü für das Ausgabefeld
+    output_ctx_menu = tk.Menu(output, tearoff=0)
+    output_ctx_menu.add_command(
+        label=_t("menu_copy"),
+        command=lambda: output.event_generate("<<Copy>>"),
+    )
+    output_ctx_menu.add_command(
+        label=_t("menu_select_all"),
+        command=_select_all_output,
+    )
+    output_ctx_menu.add_separator()
+    output_ctx_menu.add_command(
+        label=_t("menu_save_report"),
+        command=lambda: save_report_as(output, status_bar),
+    )
+    output_ctx_menu.add_command(
+        label=_t("menu_clear_output"),
+        command=lambda: clear_output_view(output, status_bar),
+    )
+
+    def _show_output_context_menu(event: Any) -> None:
+        try:
+            output_ctx_menu.tk_popup(event.x_root, event.y_root)
+        finally:
+            output_ctx_menu.grab_release()
+
+    output.bind("<Button-3>", _show_output_context_menu)
+    output.bind(
+        "<App>",
+        lambda _e: output_ctx_menu.tk_popup(output.winfo_rootx() + 20, output.winfo_rooty() + 20),
+    )
+
+    # --- Menüleiste mit Mnemonics & Standardmenüs (WCAG 2.1 AA / BITV 2.0) ---
     translator = get_translator()
     current_lang = translator.get_language() if translator is not None else get_saved_language()
     lang_var = tk.StringVar(value=current_lang)
 
-    def apply_language(lang: str) -> None:
-        """Wechselt Sprache, persistiert sie und stellt die Oberflaeche live um."""
-        if translator is not None:
-            translator.set_language(lang)
-        set_saved_language(lang)
-        lang_var.set(lang)
-        root.title(_t("app_title"))
-        btn.config(text=_t("btn_analyze_file"))
-        info_btn.config(text=_t("btn_info"))
-        fix_btn.config(text=_t("btn_autofix"))
-        project_btn.config(text=_t("btn_analyze_project"))
-        btn_tip.set_text(_t("tooltip_analyze_file"))
-        info_tip.set_text(_t("tooltip_info"))
-        fix_tip.set_text(_t("tooltip_autofix"))
-        project_tip.set_text(_t("tooltip_analyze_project"))
-        shortcut_hint.config(text=_get_keyboard_shortcut_hint())
-        status_bar.config(text=_t("status_ready"))
-        try:
-            menubar.entryconfig(1, label=_t("menu_language"))
-        except tk.TclError:
-            pass
-        # Willkommenstext nur neu rendern, solange keine Analyse-Ausgabe angezeigt wird.
-        if output.get("1.0", "1.end").strip() in _WELCOME_HEADS:
-            output.delete("1.0", tk.END)
-            output.insert(tk.END, _build_welcome_text())
-        messagebox.showinfo(_t("dialog_language_title"), _t("lang_switched_msg"))
-
     menubar = tk.Menu(root)
+
+    # Datei-Menü
+    file_menu = tk.Menu(menubar, tearoff=0)
+    file_menu.add_command(
+        label=_t("menu_analyze_file"),
+        command=lambda: run_analysis(output, status_bar),
+        accelerator="Alt+D",
+    )
+    file_menu.add_command(
+        label=_t("menu_analyze_project"),
+        command=lambda: run_project_analysis(output, status_bar),
+        accelerator="Alt+P",
+    )
+    file_menu.add_separator()
+    file_menu.add_command(
+        label=_t("menu_save_report"),
+        command=lambda: save_report_as(output, status_bar),
+        accelerator="Ctrl+S",
+    )
+    file_menu.add_separator()
+    file_menu.add_command(
+        label=_t("menu_exit"),
+        command=root.destroy,
+        accelerator="Ctrl+Q",
+    )
+    menubar.add_cascade(label=_t("menu_file"), menu=file_menu)
+
+    # Aktionen-Menü
+    actions_menu = tk.Menu(menubar, tearoff=0)
+    actions_menu.add_command(
+        label=_t("menu_autofix"),
+        command=lambda: auto_fix_unused_imports(output, status_bar),
+        accelerator="Alt+F",
+    )
+    actions_menu.add_separator()
+    actions_menu.add_command(
+        label=_t("menu_select_all"),
+        command=_select_all_output,
+        accelerator="Ctrl+A",
+    )
+    actions_menu.add_command(
+        label=_t("menu_copy"),
+        command=lambda: output.event_generate("<<Copy>>"),
+        accelerator="Ctrl+C",
+    )
+    actions_menu.add_command(
+        label=_t("menu_clear_output"),
+        command=lambda: clear_output_view(output, status_bar),
+        accelerator="Ctrl+L",
+    )
+    menubar.add_cascade(label=_t("menu_actions"), menu=actions_menu)
+
+    # Sprache-Menü
     lang_menu = tk.Menu(menubar, tearoff=0)
     for label, code in (
         ("Deutsch", "de"),
@@ -2416,14 +2641,84 @@ def create_gui() -> None:
             command=lambda c=code: apply_language(c),
         )
     menubar.add_cascade(label=_t("menu_language"), menu=lang_menu)
+
+    # Hilfe-Menü
+    help_menu = tk.Menu(menubar, tearoff=0)
+    help_menu.add_command(
+        label=_t("menu_shortcuts"),
+        command=lambda: show_shortcuts_dialog(root),
+        accelerator="F1",
+    )
+    help_menu.add_command(
+        label=_t("menu_about"),
+        command=lambda: show_info_dialog(root),
+        accelerator="Shift+F1",
+    )
+    menubar.add_cascade(label=_t("menu_help"), menu=help_menu)
+
     root.config(menu=menubar)
+
+    def apply_language(lang: str) -> None:
+        """Wechselt Sprache, persistiert sie und stellt die gesamte Oberfläche live um."""
+        if translator is not None:
+            translator.set_language(lang)
+        set_saved_language(lang)
+        lang_var.set(lang)
+        root.title(_t("app_title"))
+        btn.config(text=_t("btn_analyze_file"))
+        info_btn.config(text=_t("btn_info"))
+        fix_btn.config(text=_t("btn_autofix"))
+        project_btn.config(text=_t("btn_analyze_project"))
+        btn_tip.set_text(_t("tooltip_analyze_file"))
+        info_tip.set_text(_t("tooltip_info"))
+        fix_tip.set_text(_t("tooltip_autofix"))
+        project_tip.set_text(_t("tooltip_analyze_project"))
+        shortcut_hint.config(text=_get_keyboard_shortcut_hint())
+        status_bar.config(text=_t("status_ready"))
+
+        # Menü-Beschriftungen dynamisch nachführen
+        try:
+            menubar.entryconfig(0, label=_t("menu_file"))
+            menubar.entryconfig(1, label=_t("menu_actions"))
+            menubar.entryconfig(2, label=_t("menu_language"))
+            menubar.entryconfig(3, label=_t("menu_help"))
+
+            file_menu.entryconfig(0, label=_t("menu_analyze_file"))
+            file_menu.entryconfig(1, label=_t("menu_analyze_project"))
+            file_menu.entryconfig(3, label=_t("menu_save_report"))
+            file_menu.entryconfig(5, label=_t("menu_exit"))
+
+            actions_menu.entryconfig(0, label=_t("menu_autofix"))
+            actions_menu.entryconfig(2, label=_t("menu_select_all"))
+            actions_menu.entryconfig(3, label=_t("menu_copy"))
+            actions_menu.entryconfig(4, label=_t("menu_clear_output"))
+
+            help_menu.entryconfig(0, label=_t("menu_shortcuts"))
+            help_menu.entryconfig(1, label=_t("menu_about"))
+
+            output_ctx_menu.entryconfig(0, label=_t("menu_copy"))
+            output_ctx_menu.entryconfig(1, label=_t("menu_select_all"))
+            output_ctx_menu.entryconfig(3, label=_t("menu_save_report"))
+            output_ctx_menu.entryconfig(4, label=_t("menu_clear_output"))
+        except tk.TclError:
+            pass
+
+        # Willkommenstext nur neu rendern, solange keine Analyse-Ausgabe angezeigt wird.
+        if output.get("1.0", "1.end").strip() in _WELCOME_HEADS:
+            output.delete("1.0", tk.END)
+            output.insert(tk.END, _build_welcome_text())
+        messagebox.showinfo(_t("dialog_language_title"), _t("lang_switched_msg"))
 
     _register_gui_shortcuts(
         root,
         analyze_file_cb=lambda: run_analysis(output, status_bar),
-        info_cb=show_info_dialog,
+        info_cb=lambda: show_info_dialog(root),
         auto_fix_cb=lambda: auto_fix_unused_imports(output, status_bar),
         analyze_project_cb=lambda: run_project_analysis(output, status_bar),
+        shortcuts_cb=lambda: show_shortcuts_dialog(root),
+        save_report_cb=lambda: save_report_as(output, status_bar),
+        clear_output_cb=lambda: clear_output_view(output, status_bar),
+        quit_cb=root.destroy,
     )
     output.focus_set()
 
@@ -2441,8 +2736,13 @@ def _register_gui_shortcuts(
     info_cb: Callable[[], None],
     auto_fix_cb: Callable[[], None],
     analyze_project_cb: Callable[[], None],
+    shortcuts_cb: Callable[[], None] | None = None,
+    save_report_cb: Callable[[], None] | None = None,
+    clear_output_cb: Callable[[], None] | None = None,
+    quit_cb: Callable[[], None] | None = None,
 ) -> None:
     """Bindet globale Tastaturkürzel für die primären GUI-Aktionen."""
+    f1_target = shortcuts_cb if shortcuts_cb is not None else info_cb
     shortcuts = {
         "<Alt-d>": analyze_file_cb,
         "<Alt-D>": analyze_file_cb,
@@ -2450,8 +2750,23 @@ def _register_gui_shortcuts(
         "<Alt-P>": analyze_project_cb,
         "<Alt-f>": auto_fix_cb,
         "<Alt-F>": auto_fix_cb,
-        "<F1>": info_cb,
+        "<F1>": f1_target,
     }
+    if shortcuts_cb is not None:
+        shortcuts["<Shift-F1>"] = info_cb
+    if save_report_cb is not None:
+        shortcuts["<Control-s>"] = save_report_cb
+        shortcuts["<Control-S>"] = save_report_cb
+    if clear_output_cb is not None:
+        shortcuts["<Control-l>"] = clear_output_cb
+        shortcuts["<Control-L>"] = clear_output_cb
+    if quit_cb is not None:
+        shortcuts["<Control-q>"] = quit_cb
+        shortcuts["<Control-Q>"] = quit_cb
+    shortcuts["<Control-o>"] = analyze_file_cb
+    shortcuts["<Control-O>"] = analyze_file_cb
+    shortcuts["<Control-Shift-O>"] = analyze_project_cb
+    shortcuts["<Control-Shift-o>"] = analyze_project_cb
 
     for sequence, callback in shortcuts.items():
         def _handler(_event: Any, cb: Callable[[], None] = callback) -> str:
