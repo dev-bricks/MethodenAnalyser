@@ -63,6 +63,9 @@ Parent-Organization = "https://github.com/dev-bricks"
 Marketing-Log = "https://github.com/dev-bricks/MethodenAnalyser/blob/master/MARKETING-LOG.txt"
 Third-Party-Licenses = "https://github.com/dev-bricks/MethodenAnalyser/blob/master/THIRD_PARTY_LICENSES.md"
 "Security-Advisories" = "https://github.com/dev-bricks/MethodenAnalyser/security/advisories/new"
+"Third-Party-Licenses (Text)" = "https://github.com/dev-bricks/MethodenAnalyser/blob/master/THIRD_PARTY_LICENSES.txt"
+"LLM-Ready" = "https://github.com/dev-bricks/MethodenAnalyser/blob/master/llms.txt"
+Contributing = "https://github.com/dev-bricks/MethodenAnalyser/blob/master/CONTRIBUTING.md"
 Support = "mailto:support@lukasgeiger.com"
 
 [project.optional-dependencies]

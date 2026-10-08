@@ -386,3 +386,72 @@ def test_marketing_log_recent_hygiene_entry():
     assert "[2026-09-11] PFAD A TECHNICAL HYGIENE" in content
     assert "v3.0.2" in content
     assert "GITHUBBOT_ONE_REPO_CLEANER (Pfad A)" in content
+
+
+def test_ascii_four_view_architectural_topology_parity_en_de():
+    """Verify both README.md and README_de.md contain the ASCII Four-View Architectural Topology."""
+    for filename in ["README.md", "README_de.md"]:
+        content = (ROOT / filename).read_text(encoding="utf-8")
+        assert "FOUR-VIEW ARCHITECTURAL TOPOLOGY" in content or "VIER-SICHTEN-ARCHITEKTUR" in content
+        if filename == "README.md":
+            assert "[VIEW 1: USER & INTERFACE ARCHITECTURE" in content
+            assert "[VIEW 2: AST ENGINE, LEXICAL TRAVERSAL" in content
+            assert "[VIEW 3: REVERSIBLE AUTO-FIX ENGINE" in content
+            assert "[VIEW 4: SECURITY, RUNASINVOKER PRIVACY PERIMETER" in content
+        else:
+            assert "[SICHT 1: BENUTZER- & SCHNITTSTELLEN-ARCHITEKTUR" in content
+            assert "[SICHT 2: AST-ANALYSE-ENGINE, LEXIKALISCHE TRAVERSIERUNG" in content
+            assert "[SICHT 3: REVERSIBLE AUTO-FIX-ENGINE" in content
+            assert "[SICHT 4: SICHERHEIT, RUNASINVOKER-DATENSCHUTZ-PERIMETER" in content
+
+
+def test_eighteen_point_quick_navigation_and_reciprocal_anchors():
+    """Verify all 18 standard section anchors exist in both README.md and README_de.md."""
+    for filename in ["README.md", "README_de.md"]:
+        content = (ROOT / filename).read_text(encoding="utf-8")
+        for i in range(1, 19):
+            anchor = f'<a id="sec-{i:02d}"></a>'
+            assert anchor in content, f"Anchor {anchor} missing in {filename}"
+
+
+def test_target_personas_and_ten_dimension_comparative_matrix():
+    """Verify target personas (PERSONA-01..04) and 10-dimension comparative matrix."""
+    for filename in ["README.md", "README_de.md"]:
+        content = (ROOT / filename).read_text(encoding="utf-8")
+        assert "PERSONA-01" in content
+        assert "PERSONA-02" in content
+        assert "PERSONA-03" in content
+        assert "PERSONA-04" in content
+        assert "pylint" in content
+        assert "flake8" in content
+        assert "vulture" in content
+        assert "radon" in content
+
+
+def test_level1_sbom_re_audit_stand_20261008():
+    """Verify Level 1 SBOM text companion and markdown re-audit Stand 2026-10-08."""
+    txt_content = (ROOT / "THIRD_PARTY_LICENSES.txt").read_text(encoding="utf-8")
+    md_content = (ROOT / "THIRD_PARTY_LICENSES.md").read_text(encoding="utf-8")
+
+    assert "Audited: 2026-10-08" in txt_content or "Stand: 2026-10-08" in txt_content
+    assert "RunAsInvoker" in txt_content
+    assert "INV-LOCAL-01" in txt_content
+    assert "INV-SLA-10" in txt_content
+
+    assert "2026-10-08" in md_content
+    assert "RunAsInvoker" in md_content
+
+
+def test_marketing_log_pfad_b_audit_recency_20261008():
+    """Verify MARKETING-LOG.txt documents the 2026-10-08 Pfad B audit."""
+    content = (ROOT / "MARKETING-LOG.txt").read_text(encoding="utf-8")
+    assert "[2026-10-08] PFAD B DISCOVERABILITY" in content
+    assert "GITHUBBOT_ONE_REPO_MARKETING_AND_DESIGN (Pfad B)" in content
+    assert "REC-20261008-01" in content
+
+
+def test_version_freeze_discipline_302():
+    """Verify version 3.0.2 is strictly frozen across all metadata."""
+    pyproject_text = (ROOT / "pyproject.toml").read_text(encoding="utf-8")
+    assert 'version = "3.0.2"' in pyproject_text
+    assert m3.__version__ == "3.0.2"

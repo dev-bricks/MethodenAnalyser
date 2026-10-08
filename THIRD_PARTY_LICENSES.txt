@@ -1,7 +1,7 @@
 # Third-Party License Inventory - MethodenAnalyser (Level 1 SBOM Plain-Text Companion)
 
-Checked: 2026-10-02
-Audited: 2026-10-02
+Checked: 2026-10-08
+Audited: 2026-10-08
 Project: MethodenAnalyser (dev-bricks / open-bricks)
 Version: 3.0.2
 License: MIT License (see LICENSE)
@@ -95,3 +95,41 @@ License: MIT License
 SPDX: MIT
 URL: https://github.com/dev-bricks/MethodenAnalyser/tree/master/webapp
 Notice: Pure Vanilla JavaScript, HTML5, and CSS3 implementation. Zero external JavaScript npm packages, zero remote CDNs, and zero third-party web trackers. Operates 100% offline via local Service Worker and loopback HTTP server.
+
+================================================================================
+4. Governance & Runtime Invariants Verification Matrix (Stand: 2026-10-08)
+================================================================================
+
+INV-LOCAL-01    100% Local-First & Zero-Egress           VERIFIED (No outbound sockets, telemetries, or remote endpoints)
+INV-SECURITY-02 Non-Elevation / RunAsInvoker             VERIFIED (Unprivileged user mode execution, no admin/root elevation)
+INV-AST-03      Inert Static AST Parsing                 VERIFIED (ast.parse exclusively, zero runtime execution/dynamic import)
+INV-ENCODING-04 Lossless Multi-Encoding Resilience        VERIFIED (UTF-8 primary, Latin-1 fallback, preserves BOM and umlauts)
+INV-ISOLATION-05 Loopback Web Companion Isolation        VERIFIED (Default loopback 127.0.0.1 binding; 0.0.0.0 requires flag)
+INV-TRAVERSAL-06 Anti-Path-Traversal & ZIP Safety Bounds VERIFIED (Rejects .., bounds member count and maximum byte size)
+INV-AUTOFIX-07  Reversible Auto-Fix with Atomic Backup   VERIFIED (Atomic .bak creation, flushed temporary writes, usage recheck)
+INV-PLATFORM-08 Multi-Platform Standard Library Parity   VERIFIED (Standard library verified on Windows, Linux, macOS 26)
+INV-SYNC-09     Multi-Host Lock & Sync Safety (Fail-Closed) VERIFIED (Rejects LOCK.* files; ignores cloud sync conflict files)
+INV-SLA-10      48h Security Response & 5-Day Triage SLA VERIFIED (Committed vulnerability policy in SECURITY.md)
+
+================================================================================
+5. Unprivileged Execution Mode Certification (INV-SECURITY-02)
+================================================================================
+
+MethodenAnalyser is certified to execute exclusively in standard unprivileged user space
+("RunAsInvoker"). It never requests, requires, or invokes administrative, root, or elevated
+operating system privileges. Inspected code is strictly parsed inertly via Python's AST
+compiler; inspected files are never dynamically executed.
+
+================================================================================
+6. Statutory Notice (§ 521 BGB Gefälligkeitsrecht) & Security Contacts
+================================================================================
+
+Gratuitous Open-Source Donation: This software is provided free of charge as an open-source
+contribution ("unentgeltliche Open-Source-Schenkung" under German Civil Code §§ 516 ff. BGB).
+Pursuant to § 521 BGB, statutory liability is limited to intent and gross negligence.
+
+Security Contact & Coordinated Vulnerability Disclosure:
+- GitHub Advisory: https://github.com/dev-bricks/MethodenAnalyser/security/advisories/new
+- Ecosystem Security: security@open-bricks.org / security@ellmos.ai
+- Maintainer: support@lukasgeiger.com / lukas@open-bricks.org
+- Binding SLA: Initial acknowledgement within 48 hours; triage within 5 business days.

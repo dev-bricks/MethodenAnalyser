@@ -5,6 +5,16 @@ Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
 ## [Unreleased]
 
+### Discoverability, Visuelle Vier-Sichten-Topologie & Design (Pfad B 2026-10-08)
+- **Visuelle Vier-Sichten-Architektur (Four-View ASCII Topology)**: Bereitstellung der vollständigen ASCII Four-View Architectural Topology in Abschnitt 2 von `README.md` und `README_de.md` (`VIEW 1..4` / `SICHT 1..4`) mit Projektion aller 10 Invarianten `INV-LOCAL-01` bis `INV-SLA-10` über Desktop-GUI/CLI/PWA, inerte AST-Analyse- & Duplikat-Engine, reversiblen Auto-Fix & atomare Publikation sowie RunAsInvoker Zero-Egress Sicherheitsperimeter.
+- **18-Punkte Bilinguale Schnellnavigation**: Vollständige bilaterale Harmonisierung von `README.md` und `README_de.md` mit reziproken dualen HTML-Ankern (`<a id="sec-01"></a>` bis `<a id="sec-18"></a>`) und Schnellnavigationsleiste über alle 18 nummerierten Abschnitte.
+- **Zielgruppen & Discoverability (Personas & Search Queries)**: Definition von 4 Entwickler-Personas (`PERSONA-01` bis `PERSONA-04`) und 10 hochspezifischen Suchanfragen in deutscher und englischer Sprache in Abschnitt 3.
+- **10-Dimensionen Vergleichsmatrix vs. Linters**: Detaillierte architektonische Gegenüberstellung gegenüber `pylint`, `flake8`, `vulture` und `radon` über 10 technische Dimensionen und Laufzeitinvarianten in Abschnitt 9.
+- **Level 1 SBOM Text-Begleiter Re-Audit Stand 2026-10-08**: Re-Auditierung von `THIRD_PARTY_LICENSES.txt` und `THIRD_PARTY_LICENSES.md` Stand 2026-10-08 mit Invarianten-Kreuztabelle, unprivilegierter `RunAsInvoker`-Zertifizierung, § 521 BGB Gefälligkeitsrecht und verbindlicher 48h-Sicherheits-SLA.
+- **PEP 621 Metadaten-Erweiterung**: `pyproject.toml` um `Third-Party-Licenses (Text)`, `LLM-Ready` und `Contributing` URLs ergänzt unter strikter Wahrung des Versions-Freezes auf Version `3.0.2` (per `T-20260920-167562623`).
+- **Bilinguale Beitragsrichtlinie (`CONTRIBUTING.md`)**: Umfassender Ausbau mit Spezifikation aller 10 Invarianten, Plan-D-Workflow (`C:\_Local_DEV\repos\MethodenAnalyser`), Pre-Commit-Toren und gesetzlichem Haftungsausschluss.
+- **Vertragstest-Erweiterung (`tests/test_metadata.py`)**: 6 neue automatisierte Tests für Vier-Sichten-Topologie, 18-Punkte-Navigation, Personas, Level 1 SBOM und Pfad-B-Recency Stand 2026-10-08.
+
 ### UX, Barrierefreiheit & Tastatur-Ergonomie (UX & Accessibility Review 2026-10-03)
 - **Barrierefreie Menüleiste mit Mnemonics**: Vollständige Menüleiste (`&Datei`, `&Aktionen`, `&Sprache`, `&Hilfe`) nach WCAG 2.1 AA / BITV 2.0 mit Mnemonics und Standard-Shortcuts (`Alt+D`/`Ctrl+O` Datei analysieren, `Alt+P`/`Ctrl+Shift+O` Projekt analysieren, `Ctrl+S` Bericht speichern unter..., `Ctrl+Q` Beenden, `Alt+F` Auto-Fix, `Ctrl+A` Alles auswählen, `Ctrl+C` Kopieren, `Ctrl+L` Ausgabe leeren, `F1` Tastaturkürzel & Barrierefreiheit, `Shift+F1` Über MethodenAnalyser).
 - **Zentraler Dialog für Tastaturkürzel & Barrierefreiheit (`show_shortcuts_dialog`)**: Neuer modaler, strukturierter Dialog mit kategorisierter Tastaturbefehls-Übersicht (Navigation & Analyse, Bearbeiten & Aktionen, Hilfe & Steuerung), Schließen per `Escape`/`Return` und offiziellem Barrierefreiheits-Konformitätshinweis nach WCAG 2.1 AA und BITV 2.0; abgesichert mit Headless-Offscreen-Bypass.

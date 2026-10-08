@@ -54,14 +54,15 @@ All analysis runs locally. The tool does not include telemetry, cloud sync, exte
 
 ## Main Files
 
-- `README.md`: user-facing overview, quickstart, dual Mermaid diagrams, and governance matrix.
-- `README_de.md`: German translation and localized documentation with full parity.
+- `README.md`: user-facing overview, quickstart, ASCII Four-View Topology, dual Mermaid diagrams, 18-point navigation and governance matrix.
+- `README_de.md`: German translation and localized documentation with full 18-point reciprocal parity.
 - `EXPORTFORMAT.md`: `methodenanalyser-report-v1.json` schema.
 - `WEBAPP.md`: local browser helper details and LAN test mode specifications.
 - `BUILD.md`: bounded pytest/PyInstaller development and build contract.
 - `SECURITY.md`: bilingual security policy with 48h SLA and 5-day triage commitment.
-- `THIRD_PARTY_LICENSES.md`: dependency declarations (zero external runtime dependencies).
-- `MARKETING-LOG.txt`: discoverability strategy and audience segmentation.
+- `THIRD_PARTY_LICENSES.txt`: Level 1 SBOM plain-text companion re-audited Stand 2026-10-08 (zero runtime dependencies, RunAsInvoker certified).
+- `THIRD_PARTY_LICENSES.md`: dependency declarations & Invariants Verification Matrix Stand 2026-10-08.
+- `MARKETING-LOG.txt`: discoverability strategy, live traffic metrics and Pfad B audit log Stand 2026-10-08.
 - `_sources/CROSSCHECK.md`: dependency and toolchain readback.
 - `.github/workflows/tests.yml`: Windows 2025/VS 2026, Ubuntu and macOS 26 smoke matrix with compileall gate.
 
@@ -90,8 +91,8 @@ code similarity detector Python local
 
 - Canonical test command: `pytest` (or `python -m unittest discover -s tests -v`).
 - Development/build versions are bounded in `requirements-dev.txt` and checked in `BUILD.md`.
-- Test suite passing: 100% green across Windows, Linux, and macOS matrix (251 passed, 15 subtests).
+- Test suite passing: 100% green across Windows, Linux, and macOS matrix (255+ passed, 15 subtests).
 - Bytecode compilation: `python -m compileall -q .` clean.
 - Code style: `ruff check .` clean.
-- Version: 3.0.2
-- Last-checked: 2026-10-03
+- Version: 3.0.2 (strikte Version-Freeze-Disziplin per T-20260920-167562623)
+- Last-checked: 2026-10-08

@@ -2,6 +2,51 @@
 MARKETING & DISCOVERABILITY LOG - METHODENANALYSER (dev-bricks)
 ================================================================================
 
+[2026-10-08] PFAD B DISCOVERABILITY, VISUAL TOPOLOGY & DESIGN AUDIT (v3.0.2)
+--------------------------------------------------------------------------------
+Routine: GITHUBBOT_ONE_REPO_MARKETING_AND_DESIGN (Pfad B)
+Target Repository: dev-bricks/MethodenAnalyser
+Maintainer / Author: Lukas Geiger
+Parent Organization: dev-bricks
+Umbrella Organization: open-bricks
+Host: WORKSTATION-LG | Akteur: Antigravity (Gemini 3.8 Flash High)
+Version: 3.0.2 (strikte Version-Freeze-Disziplin per T-20260920-167562623)
+
+1. LIVE TRAFFIC & REACH AUDIT (14-DAY METRICS)
+- Clones: 529 total / 125 unique in 14 days (high programmatic adoption across developer machines)
+- Views: 2 total / 2 unique in 14 days
+- Traffic Trend: Consistent multi-workstation clone volume peaking on release and tooling cycles (337 clones on 2026-09-30, 74 clones on 2026-10-02).
+
+2. FOUR-VIEW ARCHITECTURAL TOPOLOGY
+- Deployed ASCII Four-View Architectural Topology in Section 2 of README.md & README_de.md:
+  * VIEW 1: User & Interface Architecture (Desktop GUI, CLI Flags, Local PWA Companion) [INV-LOCAL-01, INV-SECURITY-02, INV-ISOLATION-05]
+  * VIEW 2: AST Engine, Lexical Traversal & Code Duplicate Detector (ast.parse, Import/Scope Tracker, PEP 695, SequenceMatcher) [INV-AST-03, INV-ENCODING-04, INV-TRAVERSAL-06]
+  * VIEW 3: Reversible Auto-Fix Engine & Atomic Export Pipeline (Multi-stage .bak backup, flushed writes, collision guard) [INV-AUTOFIX-07, INV-PLATFORM-08]
+  * VIEW 4: Security, RunAsInvoker Privacy Perimeter & Governance (RunAsInvoker, Zero-Egress, Lock & Sync Defense, 48h SLA) [INV-SECURITY-02, INV-SYNC-09, INV-SLA-10]
+
+3. 18-POINT BILINGUAL NAVIGATION PARITY
+- Complete bilateral parity between README.md and README_de.md across all 18 standard sections.
+- Reciprocal dual HTML anchors (<a id="sec-01"></a> to <a id="sec-18"></a>) and semantic aliases.
+
+4. TARGET PERSONAS & HIGH-INTENT DISCOVERABILITY
+- PERSONA-01: Python Refactoring Engineers & Code Quality Leads
+- PERSONA-02: Air-Gapped & Security-Sensitive Developers
+- PERSONA-03: CI/CD Automation Engineers & Toolchain Authors
+- PERSONA-04: Educators, Students & Python Practitioners
+- 10 targeted discovery keyword phrases in English and German.
+
+5. 10-DIMENSION COMPARATIVE MATRIX
+- Comprehensive comparison vs pylint, flake8, vulture, and radon across 10 technical dimensions and runtime invariants.
+
+6. LEVEL 1 SBOM TEXT COMPANION RE-AUDIT (STAND 2026-10-08)
+- Re-audited THIRD_PARTY_LICENSES.txt and THIRD_PARTY_LICENSES.md Stand 2026-10-08.
+- Verified 100% standard library runtime, zero copyleft contamination, unprivileged RunAsInvoker non-elevation, § 521 BGB statutory disclaimer, and 48h Security Response SLA.
+
+7. ACTIONABLE DISCOVERABILITY RECOMMENDATIONS
+- REC-20261008-01: Terminal Cast / Demo GIF: Add a lightweight animated SVG / terminal cast demonstrating the CLI `--file` and `--project` output alongside the desktop GUI screenshot to elevate README conversion.
+- REC-20261008-02: PyPI Standalone Distribution: Consider publishing `methodenanalyser` to PyPI as a zero-dependency CLI package (`pipx install methodenanalyser`) to capitalize on the 125 unique clone audience.
+- REC-20261008-03: Awesome-Python-Static-Analysis Listing: Submit PR to curated Awesome-Python and Python Code Quality lists highlighting zero-dependency AST analysis and Tkinter desktop GUI.
+
 [2026-10-02] SOFTWARE GITHUB STATUS-, ASSET- & REMOTE-SYNC (v3.0.2)
 --------------------------------------------------------------------------------
 Routine: SOFTWARE_GITHUB
