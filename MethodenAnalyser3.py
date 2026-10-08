@@ -1300,7 +1300,7 @@ def generate_report(result: AnalysisResult) -> str:
         report.append(f"\n{_t('cli_section_name_matches')}\n")
         report.append("-" * 70 + "\n")
         for call, match in result.name_matches:
-            report.append(f"  '{call}' → {_t('cli_maybe')} '{match}'?\n")
+            report.append(f"  '{call}' -> {_t('cli_maybe')} '{match}'?\n")
         report.append("\n")
 
     # Statistik
@@ -2801,10 +2801,17 @@ def _project_has_findings(result: ProjectAnalysisResult) -> bool:
 
 
 def _emit_cli_report(report: str) -> None:
-    """Schreibt Reports konsistent nach stdout."""
-    sys.stdout.write(report)
-    if not report.endswith("\n"):
-        sys.stdout.write("\n")
+    """Schreibt Reports konsistent nach stdout mit defensiver Encoding-Behandlung."""
+    try:
+        sys.stdout.write(report)
+        if not report.endswith("\n"):
+            sys.stdout.write("\n")
+    except UnicodeEncodeError:
+        encoding = getattr(sys.stdout, "encoding", None) or "utf-8"
+        sanitized = report.encode(encoding, errors="replace").decode(encoding)
+        sys.stdout.write(sanitized)
+        if not sanitized.endswith("\n"):
+            sys.stdout.write("\n")
 
 
 def _write_cli_json_if_requested(

@@ -5,6 +5,17 @@ Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
 ## [Unreleased]
 
+### CLI Windows cp1252-Resilienz & Tier-2 Translations-Paritäts-Tooling (2026-10-09)
+- **Windows cp1252 CLI Encoding-Resilienz (`MethodenAnalyser3.py`)**:
+  - `generate_report`: Unicode-Pfeil `\u2192` (`→`) bei der Ausgabe ähnlicher Namens-Matches (`name_matches`) durch ASCII-Pfeil `->` ersetzt. Behebt `BS-02-BACKLOG` und schließt `UnicodeEncodeError: 'charmap' codec can't encode character '\u2192'` auf Windows-Konsolen mit Standard-Codepage cp1252 zuverlässig aus.
+  - `_emit_cli_report`: Defensive Encoding-Behandlung für `sys.stdout` integriert. Fängt eventuelle `UnicodeEncodeError` zur Laufzeit ab und gibt sanitisierten Text mit `errors="replace"` aus, um unberechtigte CLI-Abstürze bei restriktiven Terminal-Encodings auszuschließen.
+- **Tier-2 6-Sprachen-Paritäts-Tooling (`manage_translations.py`)**:
+  - `manage_translations.py` um `--check` Flag erweitert (verifiziert 100% Schlüsselparität über alle 6 unterstützten Sprachen DE, EN, ES, ZH, JA, RU und liefert Exit-Code 0 bei Erfolg, 1 bei Fehlern).
+  - `--stats` Flag zur transparenten Anzeige von Gesamtbestand und prozentualem Deckungsgrad je Sprache ergänzt (183/183 Schlüssel, 100% Parität).
+  - Vollständige Abwärtskompatibilität für das Scannen und Hinzufügen neuer deutscher Strings beibehalten.
+- **Automatisierte Vertragstests (`tests/test_bugsweep_cp1252_cli_and_translations_parity_20261009.py`)**:
+  - 7 neue Unit- und Contract-Tests zur Absicherung der cp1252-Encoding-Sicherheit, des `_emit_cli_report`-Fallbacks, der 6-Sprachen-Paritätsprüfung via `manage_translations --check` und End-to-End CLI-Ausführung unter `PYTHONIOENCODING=cp1252` (7/7 passed, Gesamtsuite 264 passed, 3 skipped).
+
 ### Discoverability, Visuelle Vier-Sichten-Topologie & Design (Pfad B 2026-10-08)
 - **Visuelle Vier-Sichten-Architektur (Four-View ASCII Topology)**: Bereitstellung der vollständigen ASCII Four-View Architectural Topology in Abschnitt 2 von `README.md` und `README_de.md` (`VIEW 1..4` / `SICHT 1..4`) mit Projektion aller 10 Invarianten `INV-LOCAL-01` bis `INV-SLA-10` über Desktop-GUI/CLI/PWA, inerte AST-Analyse- & Duplikat-Engine, reversiblen Auto-Fix & atomare Publikation sowie RunAsInvoker Zero-Egress Sicherheitsperimeter.
 - **18-Punkte Bilinguale Schnellnavigation**: Vollständige bilaterale Harmonisierung von `README.md` und `README_de.md` mit reziproken dualen HTML-Ankern (`<a id="sec-01"></a>` bis `<a id="sec-18"></a>`) und Schnellnavigationsleiste über alle 18 nummerierten Abschnitte.
