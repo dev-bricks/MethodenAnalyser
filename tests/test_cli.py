@@ -508,11 +508,11 @@ class TestEncodingHandling(unittest.TestCase):
 
     def test_auto_fix_form_feed_line_alignment(self) -> None:
         """Regression (Fix A): Form-Feed \\x0c darf AST-Zeilennummern nicht verschieben
-        — splitlines() wuerde bei \\x0c extra Zeilen erzeugen, readlines() nicht."""
+        — splitlines() würde bei \\x0c extra Zeilen erzeugen, readlines() nicht."""
         import MethodenAnalyser3 as m3
 
         # \x0c vor import os: splitlines() wuerde Zeile 1=leer, 2=import os sehen,
-        # AST sieht aber lineno=1 fuer import os — readlines() bleibt konsistent.
+        # AST sieht aber lineno=1 für import os — readlines() bleibt konsistent.
         code = b"\x0cimport os\nimport sys\nprint(os.getcwd())\n"
         filepath = os.path.join(self.tmpdir, "formfeed_autofix.py")
         with open(filepath, "wb") as f:
@@ -531,7 +531,7 @@ class TestEncodingHandling(unittest.TestCase):
 
     def test_auto_fix_preserves_latin1_encoding_for_non_ascii_content(self) -> None:
         """Regression (Bug C): auto_fix darf bei latin-1-Dateien das Encoding nicht auf
-        UTF-8 aendern — wuerde Dateien mit '# coding: latin-1' und nicht-ASCII korrumpieren."""
+        UTF-8 ändern — würde Dateien mit '# coding: latin-1' und nicht-ASCII korrumpieren."""
         import MethodenAnalyser3 as m3
 
         # Datei mit latin-1 Nicht-ASCII-Zeichen (café = caf + \xe9)
@@ -551,7 +551,7 @@ class TestEncodingHandling(unittest.TestCase):
         # Das nicht-ASCII-Byte \xe9 (é in latin-1) muss erhalten bleiben
         self.assertIn(b"\xe9", raw_bytes, "latin-1 Byte \\xe9 darf nach auto_fix nicht fehlen")
         # Darf NICHT als UTF-8-Sequenz \xc3\xa9 codiert worden sein
-        self.assertNotIn(b"\xc3\xa9", raw_bytes, "Encoding darf nicht von latin-1 auf UTF-8 geaendert worden sein")
+        self.assertNotIn(b"\xc3\xa9", raw_bytes, "Encoding darf nicht von latin-1 auf UTF-8 geändert worden sein")
 
 
 class TestExceptHandlerAndDunders(unittest.TestCase):

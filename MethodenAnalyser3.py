@@ -64,7 +64,7 @@ EXIT_PARTIAL_ERROR = 3
 SUPPORTED_LANGUAGES = ("de", "en", "es", "zh", "ja", "ru")
 DEFAULT_LANGUAGE = "de"
 
-# Erste Zeile der Willkommensnachricht je Sprache (fuer Live-Neurendern beim Sprachwechsel)
+# Erste Zeile der Willkommensnachricht je Sprache (für Live-Neurendern beim Sprachwechsel)
 _WELCOME_HEADS = (
     "Willkommen beim Python Code Analyzer!",
     "Welcome to Python Code Analyzer!",
