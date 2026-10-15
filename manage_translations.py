@@ -73,7 +73,7 @@ def check_translations(source_dir="."):
     try:
         with open(trans_file, "r", encoding="utf-8") as f:
             translations = json.load(f)
-    except Exception as e:
+    except (OSError, ValueError) as e:
         print(f"[!] Fehler beim Laden von {trans_file}: {e}")
         return False
 
@@ -114,7 +114,7 @@ def show_stats(source_dir="."):
     try:
         with open(trans_file, "r", encoding="utf-8") as f:
             translations = json.load(f)
-    except Exception as e:
+    except (OSError, ValueError) as e:
         print(f"[!] Fehler beim Laden von {trans_file}: {e}")
         return
 

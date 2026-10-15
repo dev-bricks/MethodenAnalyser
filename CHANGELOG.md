@@ -5,6 +5,10 @@ Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
 ## [Unreleased]
 
+### CI-Lint und Python-3.10-Vertragstests (2026-10-15)
+- Die Fehlerbehandlung beim Laden von Übersetzungen und beim Speichern von Berichten auf erwartete Datei-, Daten- und Tk-Fehler begrenzt. Die bestehenden Ruff-Regeln bleiben aktiviert.
+- Importreihenfolge und einen überflüssigen Encoding-Header in zwei Testmodulen korrigiert. Der TOML-Vertragstest verwendet unter Python 3.10 den bereits von pytest benötigten `tomli`-Parser.
+
 ### CLI Windows cp1252-Resilienz & Tier-2 Translations-Paritäts-Tooling (2026-10-09)
 - **Windows cp1252 CLI Encoding-Resilienz (`MethodenAnalyser3.py`)**:
   - `generate_report`: Unicode-Pfeil `\u2192` (`→`) bei der Ausgabe ähnlicher Namens-Matches (`name_matches`) durch ASCII-Pfeil `->` ersetzt. Behebt `BS-02-BACKLOG` und schließt `UnicodeEncodeError: 'charmap' codec can't encode character '\u2192'` auf Windows-Konsolen mit Standard-Codepage cp1252 zuverlässig aus.
