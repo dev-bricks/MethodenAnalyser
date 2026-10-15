@@ -2382,7 +2382,7 @@ def save_report_as(output_widget: scrolledtext.ScrolledText, status_widget: tk.L
         if status_widget is not None:
             status_widget.config(text=f"{_t('status_report_saved')} {os.path.basename(file_path)}")
         messagebox.showinfo(_t("dialog_success_title"), f"{_t('status_report_saved')} {file_path}")
-    except Exception as e:
+    except (OSError, ValueError, tk.TclError) as e:
         if status_widget is not None:
             status_widget.config(text=f"[FEHLER] {e}")
         messagebox.showerror(_t("dialog_error_title"), str(e))
