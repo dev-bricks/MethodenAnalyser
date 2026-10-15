@@ -8,6 +8,7 @@ Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 ### CI-Lint und Python-3.10-Vertragstests (2026-10-15)
 - Die Fehlerbehandlung beim Laden von Übersetzungen und beim Speichern von Berichten auf erwartete Datei-, Daten- und Tk-Fehler begrenzt. Die bestehenden Ruff-Regeln bleiben aktiviert.
 - Importreihenfolge und einen überflüssigen Encoding-Header in zwei Testmodulen korrigiert. Der TOML-Vertragstest verwendet unter Python 3.10 den bereits von pytest benötigten `tomli`-Parser.
+- Pillow als reine Entwicklungs-/Testabhängigkeit für die Bildprüfungen deklariert und im CI-Installationsschritt ergänzt; die Anwendung selbst benötigt weiterhin nur die Standardbibliothek.
 
 ### CLI Windows cp1252-Resilienz & Tier-2 Translations-Paritäts-Tooling (2026-10-09)
 - **Windows cp1252 CLI Encoding-Resilienz (`MethodenAnalyser3.py`)**:
