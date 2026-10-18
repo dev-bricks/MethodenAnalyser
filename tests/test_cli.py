@@ -728,6 +728,51 @@ class CliLocalizationTests(unittest.TestCase):
         output = captured.getvalue()
         self.assertIn("ANÁLISIS DE CÓDIGO PYTHON - RESULTADOS", output)
 
+    def test_cli_main_with_lang_zh_outputs_chinese_report(self) -> None:
+        from MethodenAnalyser3 import main
+        captured = io.StringIO()
+        with redirect_stdout(captured):
+            exit_code = main(["--file", str(self.sample_file), "--lang", "zh"])
+        self.assertEqual(exit_code, 0)
+        output = captured.getvalue()
+        self.assertIn("PYTHON 代码分析 - 结果", output)
+
+    def test_cli_main_with_lang_ja_outputs_japanese_report(self) -> None:
+        from MethodenAnalyser3 import main
+        captured = io.StringIO()
+        with redirect_stdout(captured):
+            exit_code = main(["--file", str(self.sample_file), "--lang", "ja"])
+        self.assertEqual(exit_code, 0)
+        output = captured.getvalue()
+        self.assertIn("PYTHON コード分析 - 結果", output)
+
+    def test_cli_main_with_lang_ru_outputs_russian_report(self) -> None:
+        from MethodenAnalyser3 import main
+        captured = io.StringIO()
+        with redirect_stdout(captured):
+            exit_code = main(["--file", str(self.sample_file), "--lang", "ru"])
+        self.assertEqual(exit_code, 0)
+        output = captured.getvalue()
+        self.assertIn("АНАЛИЗ КОДА PYTHON - РЕЗУЛЬТАТЫ", output)
+
+    def test_cli_main_project_with_all_supported_languages(self) -> None:
+        from MethodenAnalyser3 import main
+        expected_titles = {
+            "de": "PROJEKT CODE ANALYSE",
+            "en": "PROJECT CODE ANALYSIS",
+            "es": "ANÁLISIS DE CÓDIGO DEL PROYECTO",
+            "zh": "项目代码分析",
+            "ja": "プロジェクトコード分析",
+            "ru": "АНАЛИЗ КОДА ПРОЕКТА",
+        }
+        for lang, expected_title in expected_titles.items():
+            captured = io.StringIO()
+            with redirect_stdout(captured):
+                exit_code = main(["--project", str(self.temp_dir), "--lang", lang])
+            self.assertEqual(exit_code, 0)
+            output = captured.getvalue()
+            self.assertIn(expected_title, output)
+
 
 if __name__ == "__main__":
     unittest.main()

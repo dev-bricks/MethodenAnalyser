@@ -397,6 +397,50 @@ class MethodenAnalyserStaticHttpTests(unittest.TestCase):
             payload = json.loads(response.read().decode("utf-8"))
         self.assertTrue(payload["ok"])
         self.assertIn("PYTHON CODE ANALYSIS - RESULTS", payload["text_report"])
+
+    def test_translation_endpoint_supports_all_six_languages(self) -> None:
+        expected_web_analyze = {
+            "de": "Analysieren",
+            "en": "Analyze",
+            "es": "Analizar",
+            "zh": "分析",
+            "ja": "分析",
+            "ru": "Анализировать",
+        }
+        for lang, expected_val in expected_web_analyze.items():
+            with urlopen(self.build_url(f"/api/translations?lang={lang}")) as response:
+                payload = json.loads(response.read().decode("utf-8"))
+            self.assertTrue(payload["ok"])
+            self.assertEqual(payload["language"], lang)
+            self.assertEqual(payload["translations"]["web_analyze"], expected_val)
+
+    def test_analyze_endpoint_supports_all_six_languages(self) -> None:
+        expected_titles = {
+            "de": "PYTHON CODE ANALYSE - ERGEBNISSE",
+            "en": "PYTHON CODE ANALYSIS - RESULTS",
+            "es": "ANÁLISIS DE CÓDIGO PYTHON - RESULTADOS",
+            "zh": "PYTHON 代码分析 - 结果",
+            "ja": "PYTHON コード分析 - 結果",
+            "ru": "АНАЛИЗ КОДА PYTHON - РЕЗУЛЬТАТЫ",
+        }
+        for lang, expected_title in expected_titles.items():
+            body = json.dumps({
+                "code": "def helper():\n    return 1\n",
+                "source_kind": "snippet",
+                "filename": "demo.py",
+                "lang": lang,
+            }).encode("utf-8")
+            req = urllib.request.Request(
+                self.build_url("/api/analyze"),
+                data=body,
+                headers={"Content-Type": "application/json"},
+                method="POST",
+            )
+            with urlopen(req) as response:
+                payload = json.loads(response.read().decode("utf-8"))
+            self.assertTrue(payload["ok"])
+            self.assertIn(expected_title, payload["text_report"])
+
     def test_root_favicon_ico_served(self) -> None:
         with urlopen(self.build_url("/favicon.ico")) as response:
             content = response.read()

@@ -5,6 +5,16 @@ Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
 ## [Unreleased]
 
+### Webapp- & CLI-Lokalisierung (MA-I18N-05, 2026-10-18)
+- **Erweiterte Vertragstests für CLI-Lokalisierung (`tests/test_cli.py`)**:
+  - Neue End-to-End-Tests für alle 6 P-006 Tier-2-Sprachen (DE, EN, ES, ZH, JA, RU) in Einzel- und Mehrdatei-Analysen sowie Projektberichten (`--project`).
+  - Verifikation der korrekten Ausgabe lokalisierter Header und Statusmeldungen für Chinesisch (`项目代码分析`), Japanisch (`プロジェクトコード分析`, `PYTHON コード分析 - 結果`) und Russisch (`АНАЛИЗ КОДА ПРОЕКТА`).
+- **Erweiterte Vertragstests für Webapp-Lokalisierung (`tests/test_webapp_server.py`)**:
+  - Vollständige End-to-End-Vertragstests für die REST-Schnittstellen `/api/translations?lang=...` und `/api/analyze` mit allen 6 Tier-2-Sprachen.
+  - Verifikation des dynamischen Sprachwechsels und lokalisierter Antwort-Payloads (z. B. lokalisierte UI-Labels wie `web_analyze` und formatiertes Analyseergebnis im gewählten Sprachkontext).
+- **Roadmap-Abschluss MA-I18N-05**:
+  - Vollständiger Abschluss des letzten offenen Arbeitspakets aus der I18N-Roadmap (`MA-I18N-05: Webapp- & CLI-Lokalisierung`) unter Erhalt aller 10 Architektur-Invarianten und 100% grüner Testsuite (269 passed, 4 skipped).
+
 ### CLI Windows cp1252-Resilienz & Tier-2 Translations-Paritäts-Tooling (2026-10-09)
 - **Windows cp1252 CLI Encoding-Resilienz (`MethodenAnalyser3.py`)**:
   - `generate_report`: Unicode-Pfeil `\u2192` (`→`) bei der Ausgabe ähnlicher Namens-Matches (`name_matches`) durch ASCII-Pfeil `->` ersetzt. Behebt `BS-02-BACKLOG` und schließt `UnicodeEncodeError: 'charmap' codec can't encode character '\u2192'` auf Windows-Konsolen mit Standard-Codepage cp1252 zuverlässig aus.
