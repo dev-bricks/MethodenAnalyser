@@ -544,7 +544,7 @@ ruff check .
 pytest -ra -v
 ```
 
-GitHub Actions runs these smoke tests on every push. The runner labels are pinned to current migration targets (`windows-2025-vs2026` and `macos-26`) to validate the same images that GitHub moves `windows-latest` and `macos-latest` toward.
+GitHub Actions runs these smoke tests on every push. The runner labels are pinned to current migration targets (`windows-2025-vs2026` and `macos-26`) to validate the same images that GitHub moves `windows-latest` and `macos-latest` toward, testing across all supported Python versions (3.10, 3.11, 3.12, 3.13) in a hardened 12-job cross-platform matrix.
 
 ---
 

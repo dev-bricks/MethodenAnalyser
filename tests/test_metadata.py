@@ -455,3 +455,48 @@ def test_version_freeze_discipline_302():
     pyproject_text = (ROOT / "pyproject.toml").read_text(encoding="utf-8")
     assert 'version = "3.0.2"' in pyproject_text
     assert m3.__version__ == "3.0.2"
+
+
+def test_ci_matrix_tri_platform_full_python_coverage():
+    """Verify CI workflow tests.yml includes full 12-job matrix (3 OS runners x 4 Python versions)."""
+    ci_path = ROOT / ".github" / "workflows" / "tests.yml"
+    assert ci_path.exists()
+    content = ci_path.read_text(encoding="utf-8")
+
+    expected_runners = ["windows-2025-vs2026", "ubuntu-latest", "macos-26"]
+    expected_pythons = ["3.10", "3.11", "3.12", "3.13"]
+
+    for runner in expected_runners:
+        for py_ver in expected_pythons:
+            job_snippet = f"- runner: {runner}\n            python-version: \"{py_ver}\""
+            assert (job_snippet in content or job_snippet.replace("\n", "\r\n") in content), (
+                f"Missing CI matrix job: {runner} with Python {py_ver}"
+            )
+
+
+def test_pep621_maintainers_and_license_files():
+    """Verify pyproject.toml declares maintainers, license-files and natural language classifiers."""
+    pyproject_path = ROOT / "pyproject.toml"
+    assert pyproject_path.exists()
+    content = pyproject_path.read_text(encoding="utf-8")
+
+    assert "maintainers = [" in content
+    assert "support@lukasgeiger.com" in content
+    assert 'license-files = ["LICENSE"]' in content
+    assert '"Natural Language :: German"' in content
+    assert '"Natural Language :: English"' in content
+
+
+def test_llms_txt_and_changelog_recent_pfad_a_audit():
+    """Verify llms.txt and CHANGELOG.md reflect Pfad A hygiene audit Stand 2026-10-29."""
+    llms_path = ROOT / "llms.txt"
+    assert llms_path.exists()
+    llms_content = llms_path.read_text(encoding="utf-8")
+    assert "Last-checked: 2026-10-29" in llms_content
+    assert "Full 12-job cross-platform CI matrix" in llms_content
+
+    changelog_path = ROOT / "CHANGELOG.md"
+    assert changelog_path.exists()
+    cl_content = changelog_path.read_text(encoding="utf-8")
+    assert "Repository-Hygiene, CI-Matrix-Härtung & PEP 621 Metadaten (Pfad A, 2026-10-29)" in cl_content
+    assert "gehärtete 12-fach Matrix über Python 3.10, 3.11, 3.12 und 3.13" in cl_content

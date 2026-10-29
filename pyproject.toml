@@ -12,6 +12,10 @@ license = { text = "MIT" }
 authors = [
     { name = "Lukas Geiger", email = "support@lukasgeiger.com" }
 ]
+maintainers = [
+    { name = "Lukas Geiger", email = "support@lukasgeiger.com" }
+]
+license-files = ["LICENSE"]
 dependencies = []
 keywords = [
     "static-analysis",
@@ -34,6 +38,8 @@ classifiers = [
     "Operating System :: POSIX :: Linux",
     "Operating System :: Microsoft :: Windows",
     "Operating System :: MacOS",
+    "Natural Language :: German",
+    "Natural Language :: English",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",

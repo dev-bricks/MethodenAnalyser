@@ -5,6 +5,21 @@ Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
 ## [Unreleased]
 
+### Repository-Hygiene, CI-Matrix-Härtung & PEP 621 Metadaten (Pfad A, 2026-10-29)
+- **CI-Matrix-Härtung (`.github/workflows/tests.yml`)**:
+  - Vervollständigung der CI-Matrix auf allen drei Zielplattformen (`windows-2025-vs2026`, `ubuntu-latest`, `macos-26`) um Python 3.10 und 3.12 (gehärtete 12-fach Matrix über Python 3.10, 3.11, 3.12 und 3.13).
+  - Lückenlose Absicherung von Bytecode-Kompilierung (`compileall`), Ruff-Linting und der gesamten Test-Suite über alle unterstützten Minor-Versionen.
+- **PEP 621 Metadaten-Härtung (`pyproject.toml`)**:
+  - `maintainers` Kontaktliste mit Maintainer-Angaben deklariert.
+  - `license-files = ["LICENSE"]` für modernes Packaging spezifiziert.
+  - Classifiers um `"Natural Language :: German"` und `"Natural Language :: English"` erweitert.
+  - Strikte Wahrung des Versions-Freezes auf Version `3.0.2` gemäß `T-20260920-167562623`.
+- **Dokumentations- & LLM-Kontextaktualisierung (`llms.txt`, `README.md`, `README_de.md`)**:
+  - `llms.txt`: Aktualisierung des Prüfdatums auf `Last-checked: 2026-10-29` und Dokumentation der 12-fachen Cross-Platform-Matrix.
+  - `README.md` und `README_de.md`: Dokumentation der gehärteten 12-fachen Matrix im CI-Abschnitt.
+- **Automatisierte Vertragstest-Erweiterung (`tests/test_metadata.py`)**:
+  - 3 neue automatisierte Vertragstests für die 12-fach Matrix-Abdeckung, PEP 621 Maintainer/Lizenz-Metadaten und LLM-Audit-Aktualität implementiert.
+
 ### Webapp- & CLI-Lokalisierung (MA-I18N-05, 2026-10-18)
 - **Erweiterte Vertragstests für CLI-Lokalisierung (`tests/test_cli.py`)**:
   - Neue End-to-End-Tests für alle 6 P-006 Tier-2-Sprachen (DE, EN, ES, ZH, JA, RU) in Einzel- und Mehrdatei-Analysen sowie Projektberichten (`--project`).

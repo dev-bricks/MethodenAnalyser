@@ -64,7 +64,7 @@ All analysis runs locally. The tool does not include telemetry, cloud sync, exte
 - `THIRD_PARTY_LICENSES.md`: dependency declarations & Invariants Verification Matrix Stand 2026-10-08.
 - `MARKETING-LOG.txt`: discoverability strategy, live traffic metrics and Pfad B audit log Stand 2026-10-08.
 - `_sources/CROSSCHECK.md`: dependency and toolchain readback.
-- `.github/workflows/tests.yml`: Windows 2025/VS 2026, Ubuntu and macOS 26 smoke matrix with compileall gate.
+- `.github/workflows/tests.yml`: Full 12-job cross-platform CI matrix (Windows 2025/VS 2026, Ubuntu, macOS 26 x Python 3.10..3.13) with compileall gate.
 
 ## Audience
 
@@ -91,8 +91,8 @@ code similarity detector Python local
 
 - Canonical test command: `pytest` (or `python -m unittest discover -s tests -v`).
 - Development/build versions are bounded in `requirements-dev.txt` and checked in `BUILD.md`.
-- Test suite passing: 100% green across Windows, Linux, and macOS matrix (255+ passed, 15 subtests).
+- Test suite passing: 100% green across Windows, Linux, and macOS matrix (270+ passed, 15 subtests).
 - Bytecode compilation: `python -m compileall -q .` clean.
 - Code style: `ruff check .` clean.
 - Version: 3.0.2 (strikte Version-Freeze-Disziplin per T-20260920-167562623)
-- Last-checked: 2026-10-08
+- Last-checked: 2026-10-29

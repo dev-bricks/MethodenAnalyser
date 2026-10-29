@@ -537,7 +537,7 @@ ruff check .
 pytest -ra -v
 ```
 
-GitHub Actions führt diese Tests bei jedem Push aus. Die Runner sind auf moderne Systeme (`windows-2025-vs2026`, `ubuntu-latest`, `macos-26`) ausgelegt.
+GitHub Actions führt diese Tests bei jedem Push aus. Die gehärtete 12-fach Matrix deckt alle unterstützten Python-Versionen (3.10, 3.11, 3.12, 3.13) über moderne Zielsysteme (`windows-2025-vs2026`, `ubuntu-latest`, `macos-26`) vollständig ab.
 
 ---
 
