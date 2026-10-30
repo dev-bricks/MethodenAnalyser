@@ -394,15 +394,16 @@ class ImportScopeAnalyzer(ast.NodeVisitor):
         self.scope_stack.pop()
 
     def _assign_imports(self, names: set[str]) -> None:
-        """Ordnet Imports dem aktuellen Scope zu."""
+        """Ordnet Imports dem aktuellen Scope zu (qualifizierter Pfad gegen Kollisionen)."""
         if not self.scope_stack:
             self.top_level |= names
         else:
-            scope_type, scope_name = self.scope_stack[-1]
+            scope_type, _ = self.scope_stack[-1]
+            qual_scope = ".".join(name for _, name in self.scope_stack)
             if scope_type == "class":
-                self.class_level[scope_name] |= names
+                self.class_level[qual_scope] |= names
             elif scope_type == "func":
-                self.method_level[scope_name] |= names
+                self.method_level[qual_scope] |= names
 
 
 class CodeAnalyzer(ast.NodeVisitor):
@@ -2083,10 +2084,22 @@ def build_json_report(
     return report
 
 
+def _resolve_json_export_path(output_path: str) -> str:
+    """
+    Löst einen Exportpfad robust auf: Verzeichnisse und Pfade mit Slash
+    werden automatisch mit DEFAULT_JSON_REPORT_NAME ergänzt.
+    """
+    clean = output_path.strip()
+    if clean.endswith(("/", "\\")) or (os.path.exists(clean) and os.path.isdir(clean)):
+        return os.path.join(clean, DEFAULT_JSON_REPORT_NAME)
+    return clean
+
+
 def write_json_report(report: dict[str, Any], output_path: str) -> str:
     """Veröffentlicht einen vollständigen JSON-Report per atomarem Dateitausch."""
+    resolved_path = _resolve_json_export_path(output_path)
     data = (json.dumps(report, indent=2, ensure_ascii=False) + "\n").encode("utf-8")
-    return _write_report_bytes(data, output_path)
+    return _write_report_bytes(data, resolved_path)
 
 
 def _write_report_bytes(
@@ -2822,16 +2835,17 @@ def _write_cli_json_if_requested(
     if not output_path:
         return True
     try:
-        target = os.path.normcase(os.path.realpath(output_path))
+        resolved_path = _resolve_json_export_path(output_path)
+        target = os.path.normcase(os.path.realpath(resolved_path))
         for source in protected_paths or []:
             same_path = target == os.path.normcase(os.path.realpath(source))
             same_file = (
-                os.path.exists(output_path) and os.path.exists(source)
-                and os.path.samefile(output_path, source)
+                os.path.exists(resolved_path) and os.path.exists(source)
+                and os.path.samefile(resolved_path, source)
             )
             if same_path or same_file:
                 raise ValueError("JSON-Ausgabe darf keine analysierte Quelldatei ersetzen.")
-        written_path = write_json_report(report, output_path)
+        written_path = write_json_report(report, resolved_path)
     except Exception as exc:  # noqa: BLE001 -- CLI boundary reports export failures and returns a failure result
         print(f"[FEHLER] {_t('cli_json_export_failed')}: {exc}", file=sys.stderr)
         return False

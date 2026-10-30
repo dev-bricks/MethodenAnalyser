@@ -16,6 +16,7 @@ import os
 import re
 import sys
 
+APP_DIR = os.path.dirname(os.path.abspath(__file__))
 TRANSLATION_FILE = os.path.join("locales", "translations.json")
 SUPPORTED_LANGUAGES = ["de", "en", "es", "zh", "ja", "ru"]
 
@@ -63,8 +64,10 @@ def find_german_strings(source_dir):
     return german_strings
 
 
-def check_translations(source_dir="."):
+def check_translations(source_dir=None):
     """Prüft ob alle Übersetzungen für alle 6 Sprachen vollständig vorhanden sind."""
+    if source_dir is None:
+        source_dir = APP_DIR
     trans_file = os.path.join(source_dir, TRANSLATION_FILE)
     if not os.path.exists(trans_file):
         print(f"[!] Datei nicht gefunden: {trans_file}")
@@ -104,8 +107,10 @@ def check_translations(source_dir="."):
     return True
 
 
-def show_stats(source_dir="."):
+def show_stats(source_dir=None):
     """Zeigt Statistiken über die Übersetzungen an."""
+    if source_dir is None:
+        source_dir = APP_DIR
     trans_file = os.path.join(source_dir, TRANSLATION_FILE)
     if not os.path.exists(trans_file):
         print(f"[!] Datei nicht gefunden: {trans_file}")
@@ -130,7 +135,9 @@ def show_stats(source_dir="."):
         print(f"  {lang.upper()}: {count}/{total} ({pct:.1f}%)")
 
 
-def manage_translations(source_dir="."):
+def manage_translations(source_dir=None):
+    if source_dir is None:
+        source_dir = APP_DIR
     trans_file = os.path.join(source_dir, TRANSLATION_FILE)
 
     if os.path.exists(trans_file):
@@ -172,12 +179,12 @@ def manage_translations(source_dir="."):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Verwalte und prüfe Übersetzungen für MethodenAnalyser.")
     parser.add_argument("pos_dir", nargs="?", default=None, help="Projektverzeichnis (optional)")
-    parser.add_argument("--dir", dest="source_dir", default=".", help="Projektverzeichnis")
+    parser.add_argument("--dir", dest="source_dir", default=None, help="Projektverzeichnis")
     parser.add_argument("--check", action="store_true", help="Vollständigkeit der 6 Sprachen prüfen und Exit-Code setzen")
     parser.add_argument("--stats", action="store_true", help="Übersetzungs-Statistiken anzeigen")
     args = parser.parse_args()
 
-    target_dir = args.pos_dir if args.pos_dir else args.source_dir
+    target_dir = args.pos_dir if args.pos_dir else (args.source_dir if args.source_dir else APP_DIR)
 
     if args.check:
         ok = check_translations(target_dir)

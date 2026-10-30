@@ -5,6 +5,22 @@ Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
 ## [Unreleased]
 
+### Bugsweep: Scope-Hierarchie, Multi-Local Kollision & Exportpfad-Resilienz (2026-10-30)
+- **ImportScopeAnalyzer Scope-Hierarchie & Multi-Local Kollisionsauflösung (`MethodenAnalyser3.py`)**:
+  - `_assign_imports` verwendet nun qualifizierte Scope-Pfade (`qual_scope = ".".join(name for _, name in self.scope_stack)`) anstelle des reinen Funktionsnamens.
+  - Verhindert Scope-Kollisionen gleichnamiger Methoden in unterschiedlichen Klassen (z.B. `Worker1.run` vs. `Worker2.run`) oder geschachtelter Funktionen.
+  - Lokale Imports in unterschiedlichen Klassen/Methoden werden nun zuverlässig als `multi_local` erkannt und nicht fälschlich in einem Scope zusammengeführt.
+- **CLI & JSON Exportpfad-Resilienz (`MethodenAnalyser3.py`)**:
+  - `_resolve_json_export_path` implementiert: Verzeichnisse und Pfade mit abschließendem Schrägstrich (`/` oder `\`) werden automatisch um `DEFAULT_JSON_REPORT_NAME` (`methodenanalyser-report-v1.json`) ergänzt.
+  - Verhindert `PermissionError: [WinError 5] Zugriff verweigert` beim Export in existierende Zielordner.
+  - `_write_cli_json_if_requested` prüft Pfadkollisionen und schützt Quelldateien zuverlässig vor dem Überschreiben.
+- **CWD-unabhängige Übersetzungsprüfung (`manage_translations.py`)**:
+  - `manage_translations.py` lokalisiert `locales/translations.json` nun relativ zu `APP_DIR` anstatt zum aktuellen Arbeitsverzeichnis (`CWD`).
+  - Ermöglicht fehlerfreie Ausführung von `manage_translations.py --check` und `--stats` aus beliebigen Pfaden.
+- **Automatisierte Regressionstests (`tests/test_bugsweep_scope_hierarchy_and_export_resilience_20261030.py`)**:
+  - 6 neue hermetische Regressionstests für Multi-Class-Scope-Kollisionen, getrennte Imports in unterschiedlichen Methoden, geschachtelte Hilfsfunktionen, Directory- und Slash-Exportpfade sowie CWD-unabhängigen CLI-Lauf.
+
+
 ### Repository-Hygiene, CI-Matrix-Härtung & PEP 621 Metadaten (Pfad A, 2026-10-29)
 - **CI-Matrix-Härtung (`.github/workflows/tests.yml`)**:
   - Vervollständigung der CI-Matrix auf allen drei Zielplattformen (`windows-2025-vs2026`, `ubuntu-latest`, `macos-26`) um Python 3.10 und 3.12 (gehärtete 12-fach Matrix über Python 3.10, 3.11, 3.12 und 3.13).
