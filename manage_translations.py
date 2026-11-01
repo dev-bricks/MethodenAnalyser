@@ -16,6 +16,15 @@ import os
 import re
 import sys
 
+if sys.platform == "win32":
+    try:
+        if hasattr(sys.stdout, "reconfigure"):
+            sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+        if hasattr(sys.stderr, "reconfigure"):
+            sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+
 APP_DIR = os.path.dirname(os.path.abspath(__file__))
 TRANSLATION_FILE = os.path.join("locales", "translations.json")
 SUPPORTED_LANGUAGES = ["de", "en", "es", "zh", "ja", "ru"]
@@ -135,6 +144,27 @@ def show_stats(source_dir=None):
         print(f"  {lang.upper()}: {count}/{total} ({pct:.1f}%)")
 
 
+def save_translations(trans_file, translations):
+    """Speichert translations.json atomar ueber eine temporaere Staging-Datei."""
+    os.makedirs(os.path.dirname(trans_file), exist_ok=True)
+    temp_file = f"{trans_file}.tmp.{os.getpid()}"
+    try:
+        with open(temp_file, "w", encoding="utf-8") as f:
+            json.dump(translations, f, indent=2, ensure_ascii=False)
+            f.flush()
+            os.fsync(f.fileno())
+        os.replace(temp_file, trans_file)
+        return True
+    except Exception as e:
+        if os.path.exists(temp_file):
+            try:
+                os.remove(temp_file)
+            except OSError:
+                pass
+        print(f"[FEHLER] translations.json konnte nicht atomar geschrieben werden: {e}", file=sys.stderr)
+        return False
+
+
 def manage_translations(source_dir=None):
     if source_dir is None:
         source_dir = APP_DIR
@@ -157,12 +187,7 @@ def manage_translations(source_dir=None):
             translations[s] = {lang: (s if lang == "de" else "") for lang in SUPPORTED_LANGUAGES}
             added.append(s)
 
-    try:
-        os.makedirs(os.path.dirname(trans_file), exist_ok=True)
-        with open(trans_file, "w", encoding="utf-8") as f:
-            json.dump(translations, f, indent=2, ensure_ascii=False)
-    except OSError as e:
-        print(f"[FEHLER] translations.json konnte nicht geschrieben werden: {e}", file=sys.stderr)
+    save_translations(trans_file, translations)
 
     if added:
         print(f"[+] {len(added)} neue Einträge hinzugefügt:")

@@ -5,6 +5,17 @@ Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
 ## [Unreleased]
 
+### Translation Stream Resilience & Atomic Write Engine (2026-11-01)
+- **UTF-8 Stream-Rekonfiguration unter Windows (`manage_translations.py`)**:
+  - `sys.stdout` und `sys.stderr` werden unter `win32` beim Start via `reconfigure(encoding="utf-8", errors="replace")` defensiv auf UTF-8 rekonfiguriert.
+  - Verhindert `UnicodeDecodeError` / `UnicodeEncodeError` (z. B. byte `0xe4` für 'ä' in 'Parität') beim Aufruf über Subprozesse, Pipes oder CI-Runner auf Windows cp1252-Konsolen.
+- **Atomares Speichern via Staging-Datei (`manage_translations.py`)**:
+  - `save_translations(trans_file, translations)` eingeführt: Verwendet atomares Staging (`.tmp.<pid>`), `flush()` und `os.fsync()` vor atomarem `os.replace`.
+  - Verhindert Beschädigung oder Kürzung von `locales/translations.json` bei Schreibfehlern oder Prozessabbruch; temporäre Staging-Dateien werden bei Fehlern automatisch bereinigt.
+- **Automatisierte Regressionstests (`tests/test_manage_translations_atomic_write_and_stream.py`)**:
+  - 4 neue hermetische Tests für atomare Speicherung, Originaldatenerhalt bei Fehlern, temporäre Dateibereinigung und CLI-Subprozess-Ausführung (`--check`, `--stats`).
+  - Vollständige Pytest-Suite auf 282 passed (100% grün) ausgebaut.
+
 ### Bugsweep: Scope-Hierarchie, Multi-Local Kollision & Exportpfad-Resilienz (2026-10-30)
 - **ImportScopeAnalyzer Scope-Hierarchie & Multi-Local Kollisionsauflösung (`MethodenAnalyser3.py`)**:
   - `_assign_imports` verwendet nun qualifizierte Scope-Pfade (`qual_scope = ".".join(name for _, name in self.scope_stack)`) anstelle des reinen Funktionsnamens.
