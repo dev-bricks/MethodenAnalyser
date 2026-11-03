@@ -5,7 +5,7 @@
 <p align="center">
   <a href="https://github.com/dev-bricks/MethodenAnalyser/releases/tag/v3.0.2"><img src="https://img.shields.io/badge/Version-3.0.2-blue?style=for-the-badge" alt="Version 3.0.2"></a>
   <a href="https://github.com/dev-bricks/MethodenAnalyser/actions/workflows/tests.yml"><img src="https://img.shields.io/badge/CI-Bestanden-success?style=for-the-badge&logo=githubactions&logoColor=white" alt="CI-Status"></a>
-  <a href="#sec-13"><img src="https://img.shields.io/badge/Tests-255%2B%20Bestanden%20%7C%20100%25-brightgreen?style=for-the-badge&logo=pytest&logoColor=white" alt="Tests 100% Grün"></a>
+  <a href="#sec-13"><img src="https://img.shields.io/badge/Tests-280%2B%20Bestanden%20%7C%20100%25-brightgreen?style=for-the-badge&logo=pytest&logoColor=white" alt="Tests 100% Grün"></a>
   <a href="MARKETING-LOG.txt"><img src="https://img.shields.io/badge/Gepr%C3%BCft-2026--10--08-brightgreen?style=for-the-badge" alt="Geprüft 2026-10-08"></a>
   <a href="THIRD_PARTY_LICENSES.txt"><img src="https://img.shields.io/badge/Level%201%20SBOM-Plain%20Text-blue?style=for-the-badge" alt="Level 1 SBOM: Plain Text"></a>
   <img src="https://img.shields.io/badge/Python-3.10%20%7C%203.11%20%7C%203.12%20%7C%203.13-yellow?style=for-the-badge&logo=python&logoColor=white" alt="Python 3.10-3.13">
