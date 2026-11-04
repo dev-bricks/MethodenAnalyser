@@ -2153,6 +2153,7 @@ class ToolTip:
         self.widget.bind("<FocusIn>", self.show_tip, add="+")
         self.widget.bind("<FocusOut>", self.hide_tip, add="+")
         self.widget.bind("<ButtonPress>", self.hide_tip, add="+")
+        self.widget.bind("<Escape>", self.hide_tip, add="+")
 
     def set_text(self, text: str) -> None:
         self.text = text
@@ -2367,6 +2368,14 @@ def show_shortcuts_dialog(parent: Any = None) -> tk.Toplevel | None:
     close_btn.pack(side=tk.RIGHT)
     close_btn.focus_set()
 
+    # Barrierefreie Tastaturnavigation im Dialog ohne Trap (WCAG 2.1 SC 2.1.2)
+    txt.bind("<Tab>", lambda _e: (close_btn.focus_set(), "break")[1])
+    txt.bind("<Shift-Tab>", lambda _e: (close_btn.focus_set(), "break")[1])
+    txt.bind("<ISO_Left_Tab>", lambda _e: (close_btn.focus_set(), "break")[1])
+    close_btn.bind("<Tab>", lambda _e: (txt.focus_set(), "break")[1])
+    close_btn.bind("<Shift-Tab>", lambda _e: (txt.focus_set(), "break")[1])
+    close_btn.bind("<ISO_Left_Tab>", lambda _e: (txt.focus_set(), "break")[1])
+
     dlg.bind("<Escape>", lambda _e: dlg.destroy())
     dlg.bind("<Return>", lambda _e: dlg.destroy())
 
@@ -2452,6 +2461,9 @@ def create_gui() -> None:
         cursor="hand2"
     )
     btn.pack(side=tk.LEFT, padx=5)
+    btn.bind("<Return>", lambda _e: btn.invoke(), add="+")
+    btn.bind("<Shift-Tab>", lambda _e: (output.focus_set(), "break")[1])
+    btn.bind("<ISO_Left_Tab>", lambda _e: (output.focus_set(), "break")[1])
     btn_tip = ToolTip(btn, _t("tooltip_analyze_file"))
     
     # Info-Button
@@ -2467,6 +2479,7 @@ def create_gui() -> None:
         cursor="hand2"
     )
     info_btn.pack(side=tk.LEFT, padx=5)
+    info_btn.bind("<Return>", lambda _e: info_btn.invoke(), add="+")
     info_tip = ToolTip(info_btn, _t("tooltip_info"))
     
     # Auto-Fix Button
@@ -2482,6 +2495,7 @@ def create_gui() -> None:
         cursor="hand2"
     )
     fix_btn.pack(side=tk.LEFT, padx=5)
+    fix_btn.bind("<Return>", lambda _e: fix_btn.invoke(), add="+")
     fix_tip = ToolTip(fix_btn, _t("tooltip_autofix"))
 
     # Projekt-Analyse Button
@@ -2497,6 +2511,8 @@ def create_gui() -> None:
         cursor="hand2"
     )
     project_btn.pack(side=tk.LEFT, padx=5)
+    project_btn.bind("<Return>", lambda _e: project_btn.invoke(), add="+")
+    project_btn.bind("<Tab>", lambda _e: (output.focus_set(), "break")[1])
     project_tip = ToolTip(project_btn, _t("tooltip_analyze_project"))
 
     def _bind_status_hint(widget: tk.Widget, tooltip_key: str) -> None:
@@ -2546,6 +2562,11 @@ def create_gui() -> None:
 
     output.bind("<Control-a>", _select_all_output)
     output.bind("<Control-A>", _select_all_output)
+
+    # Barrierefreie Tastaturnavigation ohne Keyboard-Trap (WCAG 2.1 SC 2.1.2)
+    output.bind("<Tab>", lambda _e: (btn.focus_set(), "break")[1])
+    output.bind("<Shift-Tab>", lambda _e: (project_btn.focus_set(), "break")[1])
+    output.bind("<ISO_Left_Tab>", lambda _e: (project_btn.focus_set(), "break")[1])
 
     # Kontextmenü für das Ausgabefeld
     output_ctx_menu = tk.Menu(output, tearoff=0)

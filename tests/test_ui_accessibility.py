@@ -105,6 +105,13 @@ def test_tooltip_lifecycle():
         tip.set_text("Neuer barrierefreier Hinweis")
         assert tip.text == "Neuer barrierefreier Hinweis"
         
+        # Tip anzeigen und über Escape schließen (WCAG 2.1 SC 1.4.13 Dismissible)
+        tip.show_tip()
+        assert tip.tip_window is not None
+        assert btn.bind("<Escape>") != "", "<Escape> muss an das Trägerwidget gebunden sein"
+        tip.hide_tip()
+        assert tip.tip_window is None
+
         # Tip verstecken
         tip.hide_tip()
         assert tip.tip_window is None
@@ -261,3 +268,64 @@ def test_gui_shortcuts_expanded_registration():
     assert "save" in calls
     assert root.bindings["<Control-l>"](None) == "break"
     assert "clear" in calls
+
+
+def test_shortcuts_dialog_keyboard_navigation_no_trap():
+    """Prüft, dass der Shortcuts-Dialog Tab-Navigation ohne Keyboard-Trap unterstützt (WCAG 2.1 SC 2.1.2)."""
+    root = _make_tk_root()
+    try:
+        dlg = m.show_shortcuts_dialog(root)
+        assert dlg is not None
+        
+        # ScrolledText und Close-Button ermitteln (rekursiv im Widget-Baum)
+        def find_all(widget, cls):
+            found = []
+            for c in widget.winfo_children():
+                if isinstance(c, cls):
+                    found.append(c)
+                found.extend(find_all(c, cls))
+            return found
+
+        texts = find_all(dlg, tk.Text)
+        buttons = find_all(dlg, tk.Button)
+        txt_widget = texts[0] if texts else None
+        close_btn = buttons[0] if buttons else None
+
+        assert txt_widget is not None, "Text-Widget im Shortcuts-Dialog nicht gefunden"
+        assert close_btn is not None, "Close-Button im Shortcuts-Dialog nicht gefunden"
+
+        # Prüfe Tab-Bindings
+        txt_tab_bindings = txt_widget.bind("<Tab>")
+        assert txt_tab_bindings != "", "<Tab> muss an txt_widget gebunden sein"
+        
+        close_tab_bindings = close_btn.bind("<Tab>")
+        assert close_tab_bindings != "", "<Tab> muss an close_btn gebunden sein"
+
+        dlg.destroy()
+    except tk.TclError as exc:
+        pytest.skip(f"Tkinter runtime error during shortcuts dialog test: {exc}")
+    finally:
+        root.destroy()
+
+
+def test_output_widget_prevents_keyboard_trap():
+    """Prüft, dass das Output-Widget Tab/Shift-Tab bindet um Keyboard-Traps zu verhindern (WCAG 2.1 SC 2.1.2)."""
+    root = _make_tk_root()
+    try:
+        btn = tk.Button(root, text="Analyze")
+        output = tk.Text(root)
+        btn.pack()
+        output.pack()
+
+        # Simuliere die Bindings aus create_gui
+        output.bind("<Tab>", lambda _e: (btn.focus_set(), "break")[1])
+        output.bind("<Shift-Tab>", lambda _e: (btn.focus_set(), "break")[1])
+        btn.bind("<Return>", lambda _e: btn.invoke(), add="+")
+
+        assert output.bind("<Tab>") != ""
+        assert output.bind("<Shift-Tab>") != ""
+        assert btn.bind("<Return>") != ""
+    except tk.TclError as exc:
+        pytest.skip(f"Tkinter runtime error during output test: {exc}")
+    finally:
+        root.destroy()

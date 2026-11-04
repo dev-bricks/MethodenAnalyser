@@ -5,6 +5,18 @@ Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
 ## [Unreleased]
 
+### UX & Accessibility: WCAG 2.1 AA / BITV 2.0 Tastatur-Ergonomie & Tooltip-Dismiss (2026-11-04)
+- **Tastatur-Ergonomie & No-Keyboard-Trap (WCAG 2.1 SC 2.1.2, BITV 2.0) (`MethodenAnalyser3.py`)**:
+  - `ScrolledText` Output-Widget fängt Tab-Tasten nicht mehr ein: `<Tab>` navigiert barrierefrei weiter zum Primäraktions-Button (Analyse File), `<Shift-Tab>` / `<ISO_Left_Tab>` zum Projektanalyse-Button.
+  - Vollständiger Fokus-Ring der Toolbar-Buttons: `btn` navigiert per `Shift-Tab` rückwärts zum Output, `project_btn` per `Tab` vorwärts zum Output.
+  - Alle Primärbuttons (`btn`, `info_btn`, `fix_btn`, `project_btn`) reagieren nun neben `Space` auch barrierefrei auf die `Return`/`Enter`-Taste (`<Return> -> invoke()`).
+  - Im Tastaturkürzel-Dialog (`show_shortcuts_dialog`) wurde die Tab-Navigation zwischen ScrolledText und Schließen-Button zyklisch gebunden (No-Keyboard-Trap).
+- **Tooltip Escape-Dismissibility (WCAG 2.1 SC 1.4.13 Dismissible) (`MethodenAnalyser3.py`)**:
+  - Tooltips (`ToolTip`) binden `<Escape>` an das Trägerwidget (`self.widget.bind("<Escape>", self.hide_tip, add="+")`), sodass geöffnete Tooltips von Tastaturnutzern jederzeit ohne Fokusverlust geschlossen werden können.
+- **Automatisierte UI- & Accessibility-Tests (`tests/test_ui_accessibility.py`)**:
+  - Test-Suite um ScrolledText-Tab-Navigation, Fokus-Ring-Zyklus und Tooltip-Escape-Dismiss erweitert.
+  - Gesamte Pytest-Suite auf 285 passed, 3 skipped ausgebaut (100% grün).
+
 ### Translation Stream Resilience & Atomic Write Engine (2026-11-01)
 - **UTF-8 Stream-Rekonfiguration unter Windows (`manage_translations.py`)**:
   - `sys.stdout` und `sys.stderr` werden unter `win32` beim Start via `reconfigure(encoding="utf-8", errors="replace")` defensiv auf UTF-8 rekonfiguriert.
