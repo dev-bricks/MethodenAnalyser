@@ -5,6 +5,31 @@ Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
 ## [Unreleased]
 
+### Windows Store Packaging & Tier-2 6-Sprachen-Harmonisierung nach Policy P-006 (2026-11-07)
+- **Store-Packaging & Manifest-Harmonisierung (`store_package.json`, `releases/windowsstore/store_settings.json`)**:
+  - Vollständige Tier-2 6-Sprachen-Harmonisierung (`de-DE`, `en-US`, `es-ES`, `zh-CN`, `ja-JP`, `ru-RU`).
+  - Kurzbeschreibungen für alle 6 Sprachen strikt <= 100 Zeichen.
+  - Exakt 7 Schlüsselwörter je Sprache nach Microsoft Partner Center Richtlinie 10.1.3 (jeweils <= 30 Zeichen, keine geschützten Drittmarken).
+  - Öffentliche HTTPS Privacy- und Support-URLs eingebunden.
+- **Desktop Bridge Manifest (`store_package/MethodenAnalyser/AppxManifest.xml`)**:
+  - Deklaration aller 6 Sprachressourcen (`de-de`, `en-us`, `es-es`, `zh-cn`, `ja-jp`, `ru-ru`) im `<Resources>`-Block.
+  - Bindung der StoreLogo (50x50), Square150x150Logo, Square44x44Logo, Wide310x150Logo und Square310x310Logo Kachelicons.
+- **6-Sprachen Store-Listing & Releases-Staging (`STORE_LISTING.md`, `releases/windowsstore/`)**:
+  - `STORE_LISTING.md` um Abschnitte für Deutsch, English, Español, 简体中文, 日本語 und Русский erweitert.
+  - Staging-Verzeichnis `releases/windowsstore/` aufgebaut mit `BUILD.md`, `WACK_PROTOCOL.md`, `store_settings.json`, `StoreLogo.png`, Kacheln und 6 Staging-Listings `store_listing_<lang>.md`.
+  - `.gitignore` Whitelist für Staging-Freigabe gepflegt.
+- **Store Screenshots (`releases/windowsstore/screenshots/`)**:
+  - Native Screenshots (1440x920) für DE und EN samt `manifest.json` über `_WARTUNG/generate_store_screenshots.py` bereitgestellt.
+- **Automatisierte Linter & WACK Preflight (`scripts/check_store_readiness.py`, `scripts/run_windows_wack.py`)**:
+  - `check_store_readiness.py` validiert 52+ Store-Kriterien (0 Findings, `METADATA & REPOSITORY STAGED`).
+  - `run_windows_wack.py` führt 8 WACK-Preflight-Checks aus (8/8 PASS).
+- **Hermetische Store- & Source-Platform-Vertragstests (`tests/test_store_materials.py`, `tests/test_store_readiness.py`, `tests/source_platform_smoke.py`)**:
+  - 24 neue automatisierte Vertragstests für Store-Metadaten, Kachel-Dimensionen, Richtlinie 10.1.3, Zeichenintegrität und portable Core-Verträge (Windows, Linux, macOS).
+  - Pytest-Gesamtsuite auf 301 passed (4 skipped, 15 subtests passed in 40.37s) ausgebaut.
+- **Dokumentations-Parität (`PORTIERUNGSPLAN.md`, `WINDOWS_STORE_PREP.md`, `SUPPORT.md`, `README.md`, `README_de.md`)**:
+  - Neue Dokumente `PORTIERUNGSPLAN.md`, `WINDOWS_STORE_PREP.md` und `SUPPORT.md` angelegt; Test-Badges in `README.md` und `README_de.md` auf 300+ Tests synchronisiert.
+
+
 ### UX & Accessibility: WCAG 2.1 AA / BITV 2.0 Tastatur-Ergonomie & Tooltip-Dismiss (2026-11-04)
 - **Tastatur-Ergonomie & No-Keyboard-Trap (WCAG 2.1 SC 2.1.2, BITV 2.0) (`MethodenAnalyser3.py`)**:
   - `ScrolledText` Output-Widget fängt Tab-Tasten nicht mehr ein: `<Tab>` navigiert barrierefrei weiter zum Primäraktions-Button (Analyse File), `<Shift-Tab>` / `<ISO_Left_Tab>` zum Projektanalyse-Button.

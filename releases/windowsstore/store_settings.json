@@ -1,0 +1,85 @@
+{
+  "app_name": "MethodenAnalyser",
+  "publisher": "CN=52596601-BAB4-4F3F-B182-E8F3F273B202",
+  "publisher_display": "Lukas Geiger",
+  "identity_name": "Geiger.MethodenAnalyser",
+  "version": "3.0.2.0",
+  "package_version": "3.0.2.0",
+  "executable": "MethodenAnalyser.exe",
+  "exe_name": "MethodenAnalyser",
+  "msix_name": "MethodenAnalyser.msix",
+  "capabilities": "runFullTrust, internetClient",
+  "category": "Developer Tools",
+  "age_rating": "3+",
+  "license": "MIT",
+  "privacy_url": "https://github.com/dev-bricks/MethodenAnalyser/blob/master/PRIVACY_POLICY.md",
+  "support_url": "https://github.com/dev-bricks/MethodenAnalyser/issues",
+  "languages": [
+    "de-DE",
+    "en-US",
+    "es-ES",
+    "zh-CN",
+    "ja-JP",
+    "ru-RU"
+  ],
+  "description_de": "Statischer Python-Code-Analyser für ungenutzte Imports, Definitionen und Code-Duplikate.",
+  "description_en": "Static Python code analyzer detecting unused imports, dead definitions, and code duplicates.",
+  "description_es": "Analizador estático de Python para detectar importaciones no usadas, código muerto y duplicados.",
+  "description_zh": "用于检测未使用的导入、无用定义和代码重复的静态Python代码分析工具。",
+  "description_ja": "未使用インポート、不要な定義、コード重複を検出するPython静的解析ツール。",
+  "description_ru": "Статический анализатор Python для поиска неиспользуемых импортов, определений и дубликатов.",
+  "keywords_de": [
+    "Code-Analyse",
+    "AST-Parser",
+    "Ungenutzte Imports",
+    "Duplikat-Erkennung",
+    "Refactoring",
+    "Clean Code",
+    "Entwickler-Tools"
+  ],
+  "keywords_en": [
+    "code analysis",
+    "AST parser",
+    "unused imports",
+    "duplicate detection",
+    "refactoring",
+    "clean code",
+    "developer tools"
+  ],
+  "keywords_es": [
+    "analisis de codigo",
+    "parser AST",
+    "importaciones",
+    "deteccion duplicados",
+    "refactorizacion",
+    "codigo limpio",
+    "herramientas desarrollo"
+  ],
+  "keywords_zh": [
+    "代码分析",
+    "AST解析器",
+    "未使用的导入",
+    "重复代码检测",
+    "代码重构",
+    "整洁代码",
+    "开发工具"
+  ],
+  "keywords_ja": [
+    "コード解析",
+    "ASTパーサー",
+    "未使用インポート",
+    "重複検出",
+    "リファクタリング",
+    "クリーンコード",
+    "開発ツール"
+  ],
+  "keywords_ru": [
+    "анализ кода",
+    "AST парсер",
+    "неиспользуемый импорт",
+    "поиск дубликатов",
+    "рефакторинг",
+    "чистый код",
+    "инструменты разработчика"
+  ]
+}

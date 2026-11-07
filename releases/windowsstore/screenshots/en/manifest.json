@@ -1,0 +1,27 @@
+{
+  "language": "en",
+  "generated_at": "2026-11-07 12:31:14",
+  "count": 4,
+  "screenshots": [
+    {
+      "path": "main.png",
+      "title": "Main Window",
+      "subtitle": "The classic desktop interface for local Python files"
+    },
+    {
+      "path": "file-analysis.png",
+      "title": "Quickly Analyze Single Files",
+      "subtitle": "AST-based analysis detecting unused imports and definitions"
+    },
+    {
+      "path": "project-analysis.png",
+      "title": "Project Overview with Summary Report",
+      "subtitle": "Evaluate multiple Python files including error files in a unified report"
+    },
+    {
+      "path": "duplicate-detection.png",
+      "title": "Highlight Similar Code Blocks",
+      "subtitle": "Identify duplicate candidates and refactoring targets in one report"
+    }
+  ]
+}

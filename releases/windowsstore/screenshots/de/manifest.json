@@ -1,0 +1,27 @@
+{
+  "language": "de",
+  "generated_at": "2026-11-07 12:31:12",
+  "count": 4,
+  "screenshots": [
+    {
+      "path": "main.png",
+      "title": "Hauptfenster",
+      "subtitle": "Die klassische Desktop-Oberfläche für lokale Python-Dateien"
+    },
+    {
+      "path": "file-analysis.png",
+      "title": "Einzeldateien schnell prüfen",
+      "subtitle": "AST-basierte Analyse mit ungenutzten Imports und Definitionen"
+    },
+    {
+      "path": "project-analysis.png",
+      "title": "Projektüberblick mit Sammelreport",
+      "subtitle": "Mehrere Python-Dateien inklusive Fehlerdateien gemeinsam auswerten"
+    },
+    {
+      "path": "duplicate-detection.png",
+      "title": "Ähnliche Code-Blöcke sichtbar machen",
+      "subtitle": "Duplikat-Hinweise und Refactoring-Kandidaten im selben Report"
+    }
+  ]
+}
