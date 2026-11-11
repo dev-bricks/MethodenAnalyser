@@ -12,7 +12,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
-import manage_translations as mt  # noqa: E402
+import manage_translations as mt
 
 
 def test_save_translations_atomic_write_creates_valid_json(tmp_path):

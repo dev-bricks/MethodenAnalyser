@@ -9,12 +9,15 @@ from __future__ import annotations
 import argparse
 import json
 import re
-import tomllib
-import zipfile
-from pathlib import Path
-from typing import Sequence
 import xml.etree.ElementTree as ET
+import zipfile
+from collections.abc import Sequence
+from pathlib import Path
 
+try:
+    import tomllib
+except ModuleNotFoundError:  # Python 3.10: tomli is installed alongside pytest
+    import tomli as tomllib
 
 REQUIRED_DOCUMENTS = (
     "PRIVACY_POLICY.md",
@@ -114,10 +117,7 @@ def _check_repository(project_root: Path) -> list[str]:
                 )
 
         capabilities = config.get("capabilities")
-        if isinstance(capabilities, list):
-            if "runFullTrust" not in capabilities:
-                findings.append("[repository] store_package.json must declare runFullTrust")
-        elif isinstance(capabilities, str):
+        if isinstance(capabilities, (list, str)):
             if "runFullTrust" not in capabilities:
                 findings.append("[repository] store_package.json must declare runFullTrust")
         else:
@@ -184,7 +184,7 @@ def _check_repository(project_root: Path) -> list[str]:
                 findings.append(
                     f"[repository] AppxManifest.xml missing resource languages: {expected_manifest_langs - manifest_langs}"
                 )
-        except Exception as exc:
+        except (OSError, ET.ParseError) as exc:
             findings.append(f"[repository] AppxManifest.xml parse error: {exc}")
 
     # Check tile icons in store_package/MethodenAnalyser/icons/
@@ -266,8 +266,10 @@ def _check_repository(project_root: Path) -> list[str]:
 def _check_evidence(evidence_root: Path | None) -> list[str]:
     if evidence_root is None:
         return [
-            "[external] evidence root was not supplied (Partner Center reservation, FullTrust review, "
-            "Windows tray smoke, live URL readback, SBOM, signed MSIX/hash, and WACK PASS remain open)"
+            (
+                "[external] evidence root was not supplied (Partner Center reservation, FullTrust review, "
+                "Windows tray smoke, live URL readback, SBOM, signed MSIX/hash, and WACK PASS remain open)"
+            )
         ]
     if not evidence_root.is_dir():
         return [f"[external] evidence root does not exist: {evidence_root}"]

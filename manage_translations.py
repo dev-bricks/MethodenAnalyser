@@ -22,7 +22,7 @@ if sys.platform == "win32":
             sys.stdout.reconfigure(encoding="utf-8", errors="replace")
         if hasattr(sys.stderr, "reconfigure"):
             sys.stderr.reconfigure(encoding="utf-8", errors="replace")
-    except Exception:
+    except (OSError, ValueError):
         pass
 
 APP_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -85,7 +85,7 @@ def check_translations(source_dir=None):
     try:
         with open(trans_file, "r", encoding="utf-8") as f:
             translations = json.load(f)
-    except Exception as e:
+    except (OSError, ValueError) as e:
         print(f"[!] Fehler beim Laden von {trans_file}: {e}")
         return False
 
@@ -128,7 +128,7 @@ def show_stats(source_dir=None):
     try:
         with open(trans_file, "r", encoding="utf-8") as f:
             translations = json.load(f)
-    except Exception as e:
+    except (OSError, ValueError) as e:
         print(f"[!] Fehler beim Laden von {trans_file}: {e}")
         return
 
@@ -155,7 +155,7 @@ def save_translations(trans_file, translations):
             os.fsync(f.fileno())
         os.replace(temp_file, trans_file)
         return True
-    except Exception as e:
+    except (OSError, TypeError, ValueError) as e:
         if os.path.exists(temp_file):
             try:
                 os.remove(temp_file)
