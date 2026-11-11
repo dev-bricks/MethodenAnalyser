@@ -17,7 +17,6 @@ from pathlib import Path
 import MethodenAnalyser3 as m
 from translator import TranslationSystem
 
-
 ROOT = Path(__file__).resolve().parents[1]
 
 

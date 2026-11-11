@@ -3,9 +3,8 @@ from __future__ import annotations
 import json
 import subprocess
 import sys
-from pathlib import Path
 import xml.etree.ElementTree as ET
-
+from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 EXPECTED_LANGUAGES = ("de-DE", "en-US", "es-ES", "zh-CN", "ja-JP", "ru-RU")

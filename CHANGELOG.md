@@ -5,6 +5,12 @@ Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
 ## [Unreleased]
 
+### CI-Korrektur: Lint- und Testlauf auf `master` wiederhergestellt (2026-11-11)
+- **Ruff**: 23 Befunde behoben, an denen alle 12 Matrixjobs vor dem Testschritt scheiterten. Fehlerbehandlungen in `MethodenAnalyser3.py`, `manage_translations.py`, `scripts/check_store_readiness.py` und `scripts/run_windows_wack.py` fangen jetzt die erwarteten Datei-, Daten-, XML- und Tk-Fehler statt pauschal `Exception`. Keine Lint-Regel wurde abgeschaltet.
+- **Python 3.10**: `tests/test_security_license_contract.py` und `scripts/check_store_readiness.py` fallen auf `tomli` zurück, weil `tomllib` erst ab Python 3.11 zur Standardbibliothek gehört.
+- **Pillow**: als Entwicklungs- und CI-Abhängigkeit erklärt (`pyproject.toml`, `requirements-dev.txt`, `tests.yml`); `tests/test_app_assets.py` importiert `PIL`. Die Laufzeit bleibt ohne externe Pakete.
+- **WACK-Preflight**: Zeitstempel im Report tragen jetzt den lokalen UTC-Versatz.
+
 ### Windows Store Packaging & Tier-2 6-Sprachen-Harmonisierung nach Policy P-006 (2026-11-07)
 - **Store-Packaging & Manifest-Harmonisierung (`store_package.json`, `releases/windowsstore/store_settings.json`)**:
   - Vollständige Tier-2 6-Sprachen-Harmonisierung (`de-DE`, `en-US`, `es-ES`, `zh-CN`, `ja-JP`, `ru-RU`).
