@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """run_windows_wack.py - Führt das Windows App Certification Kit (WACK) für MethodenAnalyser aus oder erstellt hermetische Preflight-Reports."""
 
 from __future__ import annotations
@@ -81,7 +80,7 @@ def resolve_report_path(project_root: Path, report_dir: Path | None, explicit: P
     if explicit is not None:
         return explicit.expanduser().resolve()
     base_dir = (report_dir or (project_root / "releases" / "windowsstore" / "test_reports")).expanduser().resolve()
-    timestamp = datetime.now().strftime("%Y%m%d")
+    timestamp = datetime.now().astimezone().strftime("%Y%m%d")
     return base_dir / f"{WACK_REPORT_PREFIX}{timestamp}.xml"
 
 
@@ -100,7 +99,7 @@ def is_windows_admin() -> bool:
         return False
     try:
         return bool(ctypes.windll.shell32.IsUserAnAdmin())
-    except Exception:
+    except (AttributeError, OSError):
         return False
 
 
@@ -163,7 +162,7 @@ def run_preflight_checks(project_root: Path, store_config: dict[str, object]) ->
                     "result": "FAIL",
                     "details": "Properties Logo-Element fehlt im Manifest",
                 })
-        except Exception as e:
+        except (OSError, ET.ParseError) as e:
             checks.append({
                 "id": "MANIFEST_SYNTAX",
                 "name": "AppxManifest-Validierung & XML-Wohlgeformtheit",
@@ -302,7 +301,7 @@ def write_xml_report(path: Path, checks: list[dict[str, object]]) -> WackSummary
     root = ET.Element("REPORT", {
         "TOOL": "WACK-Preflight-Runner",
         "VERSION": "1.0.0",
-        "TIMESTAMP": datetime.now().isoformat(),
+        "TIMESTAMP": datetime.now().astimezone().isoformat(),
     })
     summary_elem = ET.SubElement(root, "SUMMARY")
     passes = sum(1 for c in checks if c["result"] == "PASS")

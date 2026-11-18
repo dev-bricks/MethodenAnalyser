@@ -138,6 +138,7 @@ def test_manage_translations_check_outside_repo_cwd():
             [sys.executable, str(manage_py), "--check"],
             cwd=foreign_cwd,
             capture_output=True,
+            check=False,
             text=True,
         )
         assert res.returncode == 0, f"Fehler bei fremdem CWD: {res.stdout}\n{res.stderr}"
