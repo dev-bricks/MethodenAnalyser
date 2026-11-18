@@ -1,4 +1,7 @@
 const CACHE_NAME = "methodenanalyser-webapp-v3";
+// Inhalts-Hash aller STATIC_ASSETS-Dateien inkl. Manifest und Icons (tests/sw_asset_hash.test.mjs prueft ihn):
+// aendert sich eine davon, CACHE_NAME erhoehen, sonst behalten installierte PWAs den alten Code.
+const ASSET_HASH = 'af4ec644be12'; // eslint-disable-line no-unused-vars
 const STATIC_ASSETS = [
   "/",
   "/index.html",
